@@ -191,6 +191,13 @@ class CCuse(threading.Thread):
             log.LOGGER.warning(f"unhandled ioctl: {c_cmd}")
             return
         datatype = self.ioctls[c_cmd]
+        if write and not c_in_buf_sz:
+            self.c_lib.fuse_reply_ioctl_retry(c_req_p,
+                                              ctypes.byref(IoVec(c_arg_p,
+                                                                 ctypes.sizeof(datatype))), 1,
+                                              ctypes.byref(IoVec(c_arg_p,
+                                                                 ctypes.sizeof(datatype))), 1)
+            return
         if read and not c_out_buf_sz:
             self.c_lib.fuse_reply_ioctl_retry(c_req_p,
                                               None, 0,
