@@ -20,7 +20,6 @@ import errno
 import traceback
 
 from refuse import low
-from linuxpy import ioctl
 
 from v4l2codecs import log
 
@@ -184,8 +183,8 @@ class CCuse(threading.Thread):
             return errno.EIO
 
     def ioctl(self, c_req_p, c_cmd, c_arg_p, c_fi, flags, c_in_buf_p, c_in_buf_sz, c_out_buf_sz):
-        write = bool((c_cmd >> (ioctl.DIRSHIFT)) & 1)
-        read = bool((c_cmd >> (ioctl.DIRSHIFT + 1)) & 1)
+        write = bool((c_cmd >> 30) & 1)
+        read = bool((c_cmd >> 31) & 1)
         if c_cmd not in self.ioctls:
             self.c_lib.fuse_reply_err(c_req_p, errno.EINVAL)
             log.LOGGER.warning(f"unhandled ioctl: {c_cmd}")

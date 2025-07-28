@@ -16,24 +16,29 @@
 """
 import os
 import errno
-import ctypes
-
-from linuxpy.video import raw as v4l2
 
 from v4l2codecs import cuse
 from v4l2codecs import log
 from v4l2codecs import defs
+from v4l2codecs import v4l2
 
 
 class Device(cuse.Cuse):
     ioctls = {v4l2.IOC.QUERYCAP: v4l2.v4l2_capability,
-              v4l2.IOC.ENUM_FMT: v4l2.v4l2_fmtdesc}
+              v4l2.IOC.ENUM_FMT: v4l2.v4l2_fmtdesc,
+              v4l2.IOC.TRY_FMT: v4l2.v4l2_format,
+              v4l2.IOC.S_FMT: v4l2.v4l2_format,
+              v4l2.IOC.G_FMT: v4l2.v4l2_format}
 
     def __init__(self):
         self.name = "mpp"
         self.decoder = True
         self.encoder = False
         self.devname = "video0-ffmpeg-dec"
+        v4l2.v4l2_fmtdesc()
+        self.all_formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.PixelFormat.NV12, 0),
+                            (v4l2.BufType.VIDEO_OUTPUT, v4l2.PixelFormat.H264, v4l2.ImageFormatFlag.COMPRESSED)]
+        self.act_formats = []
         super().__init__(self.devname)
 
     def find_v4l2_index(self):
@@ -65,6 +70,13 @@ class Device(cuse.Cuse):
                 if major not in chardevs or minor not in chardevs[major]:
                     return major, minor
 
+    def getformat(self, formats, typ=None, fmt=None, flags=None):
+        for f_type, f_format, f_flags in formats:
+            if (typ is None or f_type == typ) and \
+                    (fmt is None or f_format == fmt) and \
+                    (flags is None or f_flags == flags):
+                return f_type, f_format, f_flags
+
     def ioctl_read(self, handler, cmd, data):
         if cmd == v4l2.IOC.QUERYCAP:
             data.driver = f"ffmpeg-{self.name}".encode()
@@ -82,5 +94,30 @@ class Device(cuse.Cuse):
                                v4l2.Capability.RDS_CAPTURE | \
                                v4l2.Capability.STREAMING
             return 0
+
         if cmd == v4l2.IOC.ENUM_FMT:
+            if not data.index < len(self.all_formats):
+                return errno.EINVAL
+            data.type, data.pixelformat, data.flags = self.all_formats[data.index]
             return 0
+        if cmd == v4l2.IOC.G_FMT:
+            fmt = self.getformat(self.act_formats, typ=data.type)
+            if fmt:
+                _typ, fmt, flags = fmt
+                data.fmt.pix.pixelformat = fmt
+                data.fmt.pix.flags = flags
+                return 0
+            return errno.EINVAL
+        if cmd == v4l2.IOC.S_FMT:
+            fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+            if fmt:
+                self.act_formats.append(fmt)
+                return 0
+            return errno.EINVAL
+        if cmd == v4l2.IOC.TRY_FMT:
+            fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+            if fmt:
+                return 0
+            return errno.EINVAL
+        log.LOGGER.warning(f"unhandled ioctl {v4l2.IOC(cmd).name}")
+        return errno.EINVAL
