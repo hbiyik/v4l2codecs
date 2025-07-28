@@ -29,17 +29,18 @@ class Device(cuse.Cuse):
               v4l2.IOC.TRY_FMT: v4l2.v4l2_format,
               v4l2.IOC.S_FMT: v4l2.v4l2_format,
               v4l2.IOC.G_FMT: v4l2.v4l2_format,
-              v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers}
+              v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers,
+              v4l2.IOC.QUERYBUF: v4l2.v4l2_buffer}
+
+    formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.PixelFormat.NV12, 0),
+               (v4l2.BufType.VIDEO_OUTPUT, v4l2.PixelFormat.H264, v4l2.ImageFormatFlag.COMPRESSED)]
 
     def __init__(self):
         self.name = "mpp"
         self.decoder = True
         self.encoder = False
         self.devname = "video0-ffmpeg-dec"
-        v4l2.v4l2_fmtdesc()
-        self.all_formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.PixelFormat.NV12, 0),
-                            (v4l2.BufType.VIDEO_OUTPUT, v4l2.PixelFormat.H264, v4l2.ImageFormatFlag.COMPRESSED)]
-        self.act_formats = []
+        self.formats_selected = []
         super().__init__(self.devname)
 
     def find_v4l2_index(self):
@@ -65,7 +66,7 @@ class Device(cuse.Cuse):
                 chardevs[major] = []
             if minor not in chardevs[major]:
                 chardevs[major].append(minor)
-        # dynamic addingment range
+        # dynamic assingment range
         for major in range(384, 512):
             for minor in range(256):
                 if major not in chardevs or minor not in chardevs[major]:
@@ -96,13 +97,13 @@ class Device(cuse.Cuse):
         return 0
 
     def ioctl_enum_fmt(self, data):
-        if not data.index < len(self.all_formats):
+        if not data.index < len(self.formats):
             return errno.EINVAL
-        data.type, data.pixelformat, data.flags = self.all_formats[data.index]
+        data.type, data.pixelformat, data.flags = self.formats[data.index]
         return 0
 
     def ioctl_g_fmt(self, data):
-        fmt = self.getformat(self.act_formats, typ=data.type)
+        fmt = self.getformat(self.formats_selected, typ=data.type)
         if fmt:
             _typ, fmt, flags = fmt
             data.fmt.pix.pixelformat = fmt
@@ -111,20 +112,25 @@ class Device(cuse.Cuse):
         return errno.EINVAL
 
     def ioctl_s_fmt(self, data):
-        fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+        fmt = self.getformat(self.formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
         if fmt:
-            self.act_formats.append(fmt)
+            # TODO: set formats by type rather than appending
+            # TODO: check dims
+            self.formats_selected.append(fmt)
             return 0
         return errno.EINVAL
 
     def ioctl_try_fmt(self, data):
-        fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+        fmt = self.getformat(self.formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
         if fmt:
             return 0
         return errno.EINVAL
 
     def ioctl_reqbufs(self, data):
-        pass
+        return 0
+
+    def ioctl_querybuf(self, data):
+        return 0
 
     def ioctl_read(self, handler, cmd, data):
         try:
@@ -136,4 +142,6 @@ class Device(cuse.Cuse):
         if not callback:
             log.LOGGER.warning(f"unhandled ioctl {ioctl_cmd.name}")
             return errno.EINVAL
-        return callback(data)
+        ret = callback(data)
+        log.LOGGER.debug(f"Handled ioctl {ioctl_cmd.name}")
+        return ret
