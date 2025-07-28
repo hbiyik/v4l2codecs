@@ -28,7 +28,8 @@ class Device(cuse.Cuse):
               v4l2.IOC.ENUM_FMT: v4l2.v4l2_fmtdesc,
               v4l2.IOC.TRY_FMT: v4l2.v4l2_format,
               v4l2.IOC.S_FMT: v4l2.v4l2_format,
-              v4l2.IOC.G_FMT: v4l2.v4l2_format}
+              v4l2.IOC.G_FMT: v4l2.v4l2_format,
+              v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers}
 
     def __init__(self):
         self.name = "mpp"
@@ -77,47 +78,62 @@ class Device(cuse.Cuse):
                     (flags is None or f_flags == flags):
                 return f_type, f_format, f_flags
 
-    def ioctl_read(self, handler, cmd, data):
-        if cmd == v4l2.IOC.QUERYCAP:
-            data.driver = f"ffmpeg-{self.name}".encode()
-            data.card = f"/dev/{self.devname}".encode()
-            data.bus_info = f"platform:{self.devname}".encode()
-            data.version = defs.VERSION_INT
-            data.capabilities = v4l2.Capability.VIDEO_CAPTURE | \
-                                v4l2.Capability.VIDEO_M2M | \
-                                v4l2.Capability.EXT_PIX_FORMAT | \
-                                v4l2.Capability.DEVICE_CAPS | \
-                                v4l2.Capability.RDS_CAPTURE | \
-                                v4l2.Capability.STREAMING
-            data.device_caps = v4l2.Capability.VIDEO_CAPTURE | \
-                               v4l2.Capability.VIDEO_M2M | \
-                               v4l2.Capability.RDS_CAPTURE | \
-                               v4l2.Capability.STREAMING
-            return 0
+    def ioctl_querycap(self, data):
+        data.driver = f"ffmpeg-{self.name}".encode()
+        data.card = f"/dev/{self.devname}".encode()
+        data.bus_info = f"platform:{self.devname}".encode()
+        data.version = defs.VERSION_INT
+        data.capabilities = v4l2.Capability.VIDEO_CAPTURE | \
+                            v4l2.Capability.VIDEO_M2M | \
+                            v4l2.Capability.EXT_PIX_FORMAT | \
+                            v4l2.Capability.DEVICE_CAPS | \
+                            v4l2.Capability.RDS_CAPTURE | \
+                            v4l2.Capability.STREAMING
+        data.device_caps = v4l2.Capability.VIDEO_CAPTURE | \
+                           v4l2.Capability.VIDEO_M2M | \
+                           v4l2.Capability.RDS_CAPTURE | \
+                           v4l2.Capability.STREAMING
+        return 0
 
-        if cmd == v4l2.IOC.ENUM_FMT:
-            if not data.index < len(self.all_formats):
-                return errno.EINVAL
-            data.type, data.pixelformat, data.flags = self.all_formats[data.index]
+    def ioctl_enum_fmt(self, data):
+        if not data.index < len(self.all_formats):
+            return errno.EINVAL
+        data.type, data.pixelformat, data.flags = self.all_formats[data.index]
+        return 0
+
+    def ioctl_g_fmt(self, data):
+        fmt = self.getformat(self.act_formats, typ=data.type)
+        if fmt:
+            _typ, fmt, flags = fmt
+            data.fmt.pix.pixelformat = fmt
+            data.fmt.pix.flags = flags
             return 0
-        if cmd == v4l2.IOC.G_FMT:
-            fmt = self.getformat(self.act_formats, typ=data.type)
-            if fmt:
-                _typ, fmt, flags = fmt
-                data.fmt.pix.pixelformat = fmt
-                data.fmt.pix.flags = flags
-                return 0
-            return errno.EINVAL
-        if cmd == v4l2.IOC.S_FMT:
-            fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
-            if fmt:
-                self.act_formats.append(fmt)
-                return 0
-            return errno.EINVAL
-        if cmd == v4l2.IOC.TRY_FMT:
-            fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
-            if fmt:
-                return 0
-            return errno.EINVAL
-        log.LOGGER.warning(f"unhandled ioctl {v4l2.IOC(cmd).name}")
         return errno.EINVAL
+
+    def ioctl_s_fmt(self, data):
+        fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+        if fmt:
+            self.act_formats.append(fmt)
+            return 0
+        return errno.EINVAL
+
+    def ioctl_try_fmt(self, data):
+        fmt = self.getformat(self.all_formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
+        if fmt:
+            return 0
+        return errno.EINVAL
+
+    def ioctl_reqbufs(self, data):
+        pass
+
+    def ioctl_read(self, handler, cmd, data):
+        try:
+            ioctl_cmd = v4l2.IOC(cmd)
+        except ValueError:
+            log.LOGGER.warning(f"unknown ioctl {cmd}")
+            return errno.EINVAL
+        callback = getattr(self, f"ioctl_{ioctl_cmd.name.lower()}", None)
+        if not callback:
+            log.LOGGER.warning(f"unhandled ioctl {ioctl_cmd.name}")
+            return errno.EINVAL
+        return callback(data)
