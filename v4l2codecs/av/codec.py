@@ -16,373 +16,576 @@
 """
 import ctypes
 import enum
-from ctypes import util
 
 from v4l2codecs import log
+from v4l2codecs import clib
+
+from v4l2codecs.av import util
 
 
-class CIntEnum(ctypes.c_int):
-    _enum_ = None
-
-    @property
-    def enum(self):
-        return self._enum_(self)
-
-
-class AvMediaType(CIntEnum):
+class EnumCodecID(clib.CIntEnum):
     class _enum_(enum.IntEnum):
-        AVMEDIA_TYPE_UNKNOWN = -1 = enum.auto()  # Usually treated as AVMEDIA_TYPE_DATA
-        AVMEDIA_TYPE_VIDEO = enum.auto()
-        AVMEDIA_TYPE_AUDIO = enum.auto()
-        AVMEDIA_TYPE_DATA = enum.auto() = enum.auto()  # Opaque data information usually continuous
-        AVMEDIA_TYPE_SUBTITLE = enum.auto()
-        AVMEDIA_TYPE_ATTACHMENT = enum.auto() = enum.auto()  # Opaque data information usually sparse
-        AVMEDIA_TYPE_NB = enum.auto()
+        AV_CODEC_ID_NONE = enum.auto()
+        AV_CODEC_ID_MPEG1VIDEO = enum.auto()
+        AV_CODEC_ID_MPEG2VIDEO = enum.auto()
+        AV_CODEC_ID_H261 = enum.auto()
+        AV_CODEC_ID_H263 = enum.auto()
+        AV_CODEC_ID_RV10 = enum.auto()
+        AV_CODEC_ID_RV20 = enum.auto()
+        AV_CODEC_ID_MJPEG = enum.auto()
+        AV_CODEC_ID_MJPEGB = enum.auto()
+        AV_CODEC_ID_LJPEG = enum.auto()
+        AV_CODEC_ID_SP5X = enum.auto()
+        AV_CODEC_ID_JPEGLS = enum.auto()
+        AV_CODEC_ID_MPEG4 = enum.auto()
+        AV_CODEC_ID_RAWVIDEO = enum.auto()
+        AV_CODEC_ID_MSMPEG4V1 = enum.auto()
+        AV_CODEC_ID_MSMPEG4V2 = enum.auto()
+        AV_CODEC_ID_MSMPEG4V3 = enum.auto()
+        AV_CODEC_ID_WMV1 = enum.auto()
+        AV_CODEC_ID_WMV2 = enum.auto()
+        AV_CODEC_ID_H263P = enum.auto()
+        AV_CODEC_ID_H263I = enum.auto()
+        AV_CODEC_ID_FLV1 = enum.auto()
+        AV_CODEC_ID_SVQ1 = enum.auto()
+        AV_CODEC_ID_SVQ3 = enum.auto()
+        AV_CODEC_ID_DVVIDEO = enum.auto()
+        AV_CODEC_ID_HUFFYUV = enum.auto()
+        AV_CODEC_ID_CYUV = enum.auto()
+        AV_CODEC_ID_H264 = enum.auto()
+        AV_CODEC_ID_INDEO3 = enum.auto()
+        AV_CODEC_ID_VP3 = enum.auto()
+        AV_CODEC_ID_THEORA = enum.auto()
+        AV_CODEC_ID_ASV1 = enum.auto()
+        AV_CODEC_ID_ASV2 = enum.auto()
+        AV_CODEC_ID_FFV1 = enum.auto()
+        AV_CODEC_ID_4XM = enum.auto()
+        AV_CODEC_ID_VCR1 = enum.auto()
+        AV_CODEC_ID_CLJR = enum.auto()
+        AV_CODEC_ID_MDEC = enum.auto()
+        AV_CODEC_ID_ROQ = enum.auto()
+        AV_CODEC_ID_INTERPLAY_VIDEO = enum.auto()
+        AV_CODEC_ID_XAN_WC3 = enum.auto()
+        AV_CODEC_ID_XAN_WC4 = enum.auto()
+        AV_CODEC_ID_RPZA = enum.auto()
+        AV_CODEC_ID_CINEPAK = enum.auto()
+        AV_CODEC_ID_WS_VQA = enum.auto()
+        AV_CODEC_ID_MSRLE = enum.auto()
+        AV_CODEC_ID_MSVIDEO1 = enum.auto()
+        AV_CODEC_ID_IDCIN = enum.auto()
+        AV_CODEC_ID_8BPS = enum.auto()
+        AV_CODEC_ID_SMC = enum.auto()
+        AV_CODEC_ID_FLIC = enum.auto()
+        AV_CODEC_ID_TRUEMOTION1 = enum.auto()
+        AV_CODEC_ID_VMDVIDEO = enum.auto()
+        AV_CODEC_ID_MSZH = enum.auto()
+        AV_CODEC_ID_ZLIB = enum.auto()
+        AV_CODEC_ID_QTRLE = enum.auto()
+        AV_CODEC_ID_TSCC = enum.auto()
+        AV_CODEC_ID_ULTI = enum.auto()
+        AV_CODEC_ID_QDRAW = enum.auto()
+        AV_CODEC_ID_VIXL = enum.auto()
+        AV_CODEC_ID_QPEG = enum.auto()
+        AV_CODEC_ID_PNG = enum.auto()
+        AV_CODEC_ID_PPM = enum.auto()
+        AV_CODEC_ID_PBM = enum.auto()
+        AV_CODEC_ID_PGM = enum.auto()
+        AV_CODEC_ID_PGMYUV = enum.auto()
+        AV_CODEC_ID_PAM = enum.auto()
+        AV_CODEC_ID_FFVHUFF = enum.auto()
+        AV_CODEC_ID_RV30 = enum.auto()
+        AV_CODEC_ID_RV40 = enum.auto()
+        AV_CODEC_ID_VC1 = enum.auto()
+        AV_CODEC_ID_WMV3 = enum.auto()
+        AV_CODEC_ID_LOCO = enum.auto()
+        AV_CODEC_ID_WNV1 = enum.auto()
+        AV_CODEC_ID_AASC = enum.auto()
+        AV_CODEC_ID_INDEO2 = enum.auto()
+        AV_CODEC_ID_FRAPS = enum.auto()
+        AV_CODEC_ID_TRUEMOTION2 = enum.auto()
+        AV_CODEC_ID_BMP = enum.auto()
+        AV_CODEC_ID_CSCD = enum.auto()
+        AV_CODEC_ID_MMVIDEO = enum.auto()
+        AV_CODEC_ID_ZMBV = enum.auto()
+        AV_CODEC_ID_AVS = enum.auto()
+        AV_CODEC_ID_SMACKVIDEO = enum.auto()
+        AV_CODEC_ID_NUV = enum.auto()
+        AV_CODEC_ID_KMVC = enum.auto()
+        AV_CODEC_ID_FLASHSV = enum.auto()
+        AV_CODEC_ID_CAVS = enum.auto()
+        AV_CODEC_ID_JPEG2000 = enum.auto()
+        AV_CODEC_ID_VMNC = enum.auto()
+        AV_CODEC_ID_VP5 = enum.auto()
+        AV_CODEC_ID_VP6 = enum.auto()
+        AV_CODEC_ID_VP6F = enum.auto()
+        AV_CODEC_ID_TARGA = enum.auto()
+        AV_CODEC_ID_DSICINVIDEO = enum.auto()
+        AV_CODEC_ID_TIERTEXSEQVIDEO = enum.auto()
+        AV_CODEC_ID_TIFF = enum.auto()
+        AV_CODEC_ID_GIF = enum.auto()
+        AV_CODEC_ID_DXA = enum.auto()
+        AV_CODEC_ID_DNXHD = enum.auto()
+        AV_CODEC_ID_THP = enum.auto()
+        AV_CODEC_ID_SGI = enum.auto()
+        AV_CODEC_ID_C93 = enum.auto()
+        AV_CODEC_ID_BETHSOFTVID = enum.auto()
+        AV_CODEC_ID_PTX = enum.auto()
+        AV_CODEC_ID_TXD = enum.auto()
+        AV_CODEC_ID_VP6A = enum.auto()
+        AV_CODEC_ID_AMV = enum.auto()
+        AV_CODEC_ID_VB = enum.auto()
+        AV_CODEC_ID_PCX = enum.auto()
+        AV_CODEC_ID_SUNRAST = enum.auto()
+        AV_CODEC_ID_INDEO4 = enum.auto()
+        AV_CODEC_ID_INDEO5 = enum.auto()
+        AV_CODEC_ID_MIMIC = enum.auto()
+        AV_CODEC_ID_RL2 = enum.auto()
+        AV_CODEC_ID_ESCAPE124 = enum.auto()
+        AV_CODEC_ID_DIRAC = enum.auto()
+        AV_CODEC_ID_BFI = enum.auto()
+        AV_CODEC_ID_CMV = enum.auto()
+        AV_CODEC_ID_MOTIONPIXELS = enum.auto()
+        AV_CODEC_ID_TGV = enum.auto()
+        AV_CODEC_ID_TGQ = enum.auto()
+        AV_CODEC_ID_TQI = enum.auto()
+        AV_CODEC_ID_AURA = enum.auto()
+        AV_CODEC_ID_AURA2 = enum.auto()
+        AV_CODEC_ID_V210X = enum.auto()
+        AV_CODEC_ID_TMV = enum.auto()
+        AV_CODEC_ID_V210 = enum.auto()
+        AV_CODEC_ID_DPX = enum.auto()
+        AV_CODEC_ID_MAD = enum.auto()
+        AV_CODEC_ID_FRWU = enum.auto()
+        AV_CODEC_ID_FLASHSV2 = enum.auto()
+        AV_CODEC_ID_CDGRAPHICS = enum.auto()
+        AV_CODEC_ID_R210 = enum.auto()
+        AV_CODEC_ID_ANM = enum.auto()
+        AV_CODEC_ID_BINKVIDEO = enum.auto()
+        AV_CODEC_ID_IFF_ILBM = enum.auto()
+        AV_CODEC_ID_KGV1 = enum.auto()
+        AV_CODEC_ID_YOP = enum.auto()
+        AV_CODEC_ID_VP8 = enum.auto()
+        AV_CODEC_ID_PICTOR = enum.auto()
+        AV_CODEC_ID_ANSI = enum.auto()
+        AV_CODEC_ID_A64_MULTI = enum.auto()
+        AV_CODEC_ID_A64_MULTI5 = enum.auto()
+        AV_CODEC_ID_R10K = enum.auto()
+        AV_CODEC_ID_MXPEG = enum.auto()
+        AV_CODEC_ID_LAGARITH = enum.auto()
+        AV_CODEC_ID_PRORES = enum.auto()
+        AV_CODEC_ID_JV = enum.auto()
+        AV_CODEC_ID_DFA = enum.auto()
+        AV_CODEC_ID_WMV3IMAGE = enum.auto()
+        AV_CODEC_ID_VC1IMAGE = enum.auto()
+        AV_CODEC_ID_UTVIDEO = enum.auto()
+        AV_CODEC_ID_BMV_VIDEO = enum.auto()
+        AV_CODEC_ID_VBLE = enum.auto()
+        AV_CODEC_ID_DXTORY = enum.auto()
+        AV_CODEC_ID_V410 = enum.auto()
+        AV_CODEC_ID_XWD = enum.auto()
+        AV_CODEC_ID_CDXL = enum.auto()
+        AV_CODEC_ID_XBM = enum.auto()
+        AV_CODEC_ID_ZEROCODEC = enum.auto()
+        AV_CODEC_ID_MSS1 = enum.auto()
+        AV_CODEC_ID_MSA1 = enum.auto()
+        AV_CODEC_ID_TSCC2 = enum.auto()
+        AV_CODEC_ID_MTS2 = enum.auto()
+        AV_CODEC_ID_CLLC = enum.auto()
+        AV_CODEC_ID_MSS2 = enum.auto()
+        AV_CODEC_ID_VP9 = enum.auto()
+        AV_CODEC_ID_AIC = enum.auto()
+        AV_CODEC_ID_ESCAPE130 = enum.auto()
+        AV_CODEC_ID_G2M = enum.auto()
+        AV_CODEC_ID_WEBP = enum.auto()
+        AV_CODEC_ID_HNM4_VIDEO = enum.auto()
+        AV_CODEC_ID_HEVC = enum.auto()
+        AV_CODEC_ID_FIC = enum.auto()
+        AV_CODEC_ID_ALIAS_PIX = enum.auto()
+        AV_CODEC_ID_BRENDER_PIX = enum.auto()
+        AV_CODEC_ID_PAF_VIDEO = enum.auto()
+        AV_CODEC_ID_EXR = enum.auto()
+        AV_CODEC_ID_VP7 = enum.auto()
+        AV_CODEC_ID_SANM = enum.auto()
+        AV_CODEC_ID_SGIRLE = enum.auto()
+        AV_CODEC_ID_MVC1 = enum.auto()
+        AV_CODEC_ID_MVC2 = enum.auto()
+        AV_CODEC_ID_HQX = enum.auto()
+        AV_CODEC_ID_TDSC = enum.auto()
+        AV_CODEC_ID_HQ_HQA = enum.auto()
+        AV_CODEC_ID_HAP = enum.auto()
+        AV_CODEC_ID_DDS = enum.auto()
+        AV_CODEC_ID_DXV = enum.auto()
+        AV_CODEC_ID_SCREENPRESSO = enum.auto()
+        AV_CODEC_ID_RSCC = enum.auto()
+        AV_CODEC_ID_AVS2 = enum.auto()
+        AV_CODEC_ID_PGX = enum.auto()
+        AV_CODEC_ID_AVS3 = enum.auto()
+        AV_CODEC_ID_MSP2 = enum.auto()
+        AV_CODEC_ID_VVC = enum.auto()
+        AV_CODEC_ID_Y41P = enum.auto()
+        AV_CODEC_ID_AVRP = enum.auto()
+        AV_CODEC_ID_012V = enum.auto()
+        AV_CODEC_ID_AVUI = enum.auto()
+        AV_CODEC_ID_TARGA_Y216 = enum.auto()
+        AV_CODEC_ID_V308 = enum.auto()
+        AV_CODEC_ID_V408 = enum.auto()
+        AV_CODEC_ID_YUV4 = enum.auto()
+        AV_CODEC_ID_AVRN = enum.auto()
+        AV_CODEC_ID_CPIA = enum.auto()
+        AV_CODEC_ID_XFACE = enum.auto()
+        AV_CODEC_ID_SNOW = enum.auto()
+        AV_CODEC_ID_SMVJPEG = enum.auto()
+        AV_CODEC_ID_APNG = enum.auto()
+        AV_CODEC_ID_DAALA = enum.auto()
+        AV_CODEC_ID_CFHD = enum.auto()
+        AV_CODEC_ID_TRUEMOTION2RT = enum.auto()
+        AV_CODEC_ID_M101 = enum.auto()
+        AV_CODEC_ID_MAGICYUV = enum.auto()
+        AV_CODEC_ID_SHEERVIDEO = enum.auto()
+        AV_CODEC_ID_YLC = enum.auto()
+        AV_CODEC_ID_PSD = enum.auto()
+        AV_CODEC_ID_PIXLET = enum.auto()
+        AV_CODEC_ID_SPEEDHQ = enum.auto()
+        AV_CODEC_ID_FMVC = enum.auto()
+        AV_CODEC_ID_SCPR = enum.auto()
+        AV_CODEC_ID_CLEARVIDEO = enum.auto()
+        AV_CODEC_ID_XPM = enum.auto()
+        AV_CODEC_ID_AV1 = enum.auto()
+        AV_CODEC_ID_BITPACKED = enum.auto()
+        AV_CODEC_ID_MSCC = enum.auto()
+        AV_CODEC_ID_SRGC = enum.auto()
+        AV_CODEC_ID_SVG = enum.auto()
+        AV_CODEC_ID_GDV = enum.auto()
+        AV_CODEC_ID_FITS = enum.auto()
+        AV_CODEC_ID_IMM4 = enum.auto()
+        AV_CODEC_ID_PROSUMER = enum.auto()
+        AV_CODEC_ID_MWSC = enum.auto()
+        AV_CODEC_ID_WCMV = enum.auto()
+        AV_CODEC_ID_RASC = enum.auto()
+        AV_CODEC_ID_HYMT = enum.auto()
+        AV_CODEC_ID_ARBC = enum.auto()
+        AV_CODEC_ID_AGM = enum.auto()
+        AV_CODEC_ID_LSCR = enum.auto()
+        AV_CODEC_ID_VP4 = enum.auto()
+        AV_CODEC_ID_IMM5 = enum.auto()
+        AV_CODEC_ID_MVDV = enum.auto()
+        AV_CODEC_ID_MVHA = enum.auto()
+        AV_CODEC_ID_CDTOONS = enum.auto()
+        AV_CODEC_ID_MV30 = enum.auto()
+        AV_CODEC_ID_NOTCHLC = enum.auto()
+        AV_CODEC_ID_PFM = enum.auto()
+        AV_CODEC_ID_MOBICLIP = enum.auto()
+        AV_CODEC_ID_PHOTOCD = enum.auto()
+        AV_CODEC_ID_IPU = enum.auto()
+        AV_CODEC_ID_ARGO = enum.auto()
+        AV_CODEC_ID_CRI = enum.auto()
+        AV_CODEC_ID_SIMBIOSIS_IMX = enum.auto()
+        AV_CODEC_ID_SGA_VIDEO = enum.auto()
+        AV_CODEC_ID_GEM = enum.auto()
+        AV_CODEC_ID_VBN = enum.auto()
+        AV_CODEC_ID_JPEGXL = enum.auto()
+        AV_CODEC_ID_QOI = enum.auto()
+        AV_CODEC_ID_PHM = enum.auto()
+        AV_CODEC_ID_RADIANCE_HDR = enum.auto()
+        AV_CODEC_ID_WBMP = enum.auto()
+        AV_CODEC_ID_MEDIA100 = enum.auto()
+        AV_CODEC_ID_VQC = enum.auto()
+        AV_CODEC_ID_PDV = enum.auto()
+        AV_CODEC_ID_EVC = enum.auto()
+        AV_CODEC_ID_RTV1 = enum.auto()
+        AV_CODEC_ID_VMIX = enum.auto()
+        AV_CODEC_ID_LEAD = enum.auto()
+        AV_CODEC_ID_FIRST_AUDIO = 0x10000 = enum.auto()
+        AV_CODEC_ID_PCM_S16LE = 0x10000 = enum.auto()
+        AV_CODEC_ID_PCM_S16BE = enum.auto()
+        AV_CODEC_ID_PCM_U16LE = enum.auto()
+        AV_CODEC_ID_PCM_U16BE = enum.auto()
+        AV_CODEC_ID_PCM_S8 = enum.auto()
+        AV_CODEC_ID_PCM_U8 = enum.auto()
+        AV_CODEC_ID_PCM_MULAW = enum.auto()
+        AV_CODEC_ID_PCM_ALAW = enum.auto()
+        AV_CODEC_ID_PCM_S32LE = enum.auto()
+        AV_CODEC_ID_PCM_S32BE = enum.auto()
+        AV_CODEC_ID_PCM_U32LE = enum.auto()
+        AV_CODEC_ID_PCM_U32BE = enum.auto()
+        AV_CODEC_ID_PCM_S24LE = enum.auto()
+        AV_CODEC_ID_PCM_S24BE = enum.auto()
+        AV_CODEC_ID_PCM_U24LE = enum.auto()
+        AV_CODEC_ID_PCM_U24BE = enum.auto()
+        AV_CODEC_ID_PCM_S24DAUD = enum.auto()
+        AV_CODEC_ID_PCM_ZORK = enum.auto()
+        AV_CODEC_ID_PCM_S16LE_PLANAR = enum.auto()
+        AV_CODEC_ID_PCM_DVD = enum.auto()
+        AV_CODEC_ID_PCM_F32BE = enum.auto()
+        AV_CODEC_ID_PCM_F32LE = enum.auto()
+        AV_CODEC_ID_PCM_F64BE = enum.auto()
+        AV_CODEC_ID_PCM_F64LE = enum.auto()
+        AV_CODEC_ID_PCM_BLURAY = enum.auto()
+        AV_CODEC_ID_PCM_LXF = enum.auto()
+        AV_CODEC_ID_S302M = enum.auto()
+        AV_CODEC_ID_PCM_S8_PLANAR = enum.auto()
+        AV_CODEC_ID_PCM_S24LE_PLANAR = enum.auto()
+        AV_CODEC_ID_PCM_S32LE_PLANAR = enum.auto()
+        AV_CODEC_ID_PCM_S16BE_PLANAR = enum.auto()
+        AV_CODEC_ID_PCM_S64LE = enum.auto()
+        AV_CODEC_ID_PCM_S64BE = enum.auto()
+        AV_CODEC_ID_PCM_F16LE = enum.auto()
+        AV_CODEC_ID_PCM_F24LE = enum.auto()
+        AV_CODEC_ID_PCM_VIDC = enum.auto()
+        AV_CODEC_ID_PCM_SGA = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_QT = 0x11000
+        AV_CODEC_ID_ADPCM_IMA_WAV = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_DK3 = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_DK4 = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_WS = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_SMJPEG = enum.auto()
+        AV_CODEC_ID_ADPCM_MS = enum.auto()
+        AV_CODEC_ID_ADPCM_4XM = enum.auto()
+        AV_CODEC_ID_ADPCM_XA = enum.auto()
+        AV_CODEC_ID_ADPCM_ADX = enum.auto()
+        AV_CODEC_ID_ADPCM_EA = enum.auto()
+        AV_CODEC_ID_ADPCM_G726 = enum.auto()
+        AV_CODEC_ID_ADPCM_CT = enum.auto()
+        AV_CODEC_ID_ADPCM_SWF = enum.auto()
+        AV_CODEC_ID_ADPCM_YAMAHA = enum.auto()
+        AV_CODEC_ID_ADPCM_SBPRO_4 = enum.auto()
+        AV_CODEC_ID_ADPCM_SBPRO_3 = enum.auto()
+        AV_CODEC_ID_ADPCM_SBPRO_2 = enum.auto()
+        AV_CODEC_ID_ADPCM_THP = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_AMV = enum.auto()
+        AV_CODEC_ID_ADPCM_EA_R1 = enum.auto()
+        AV_CODEC_ID_ADPCM_EA_R3 = enum.auto()
+        AV_CODEC_ID_ADPCM_EA_R2 = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_EA_SEAD = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_EA_EACS = enum.auto()
+        AV_CODEC_ID_ADPCM_EA_XAS = enum.auto()
+        AV_CODEC_ID_ADPCM_EA_MAXIS_XA = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_ISS = enum.auto()
+        AV_CODEC_ID_ADPCM_G722 = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_APC = enum.auto()
+        AV_CODEC_ID_ADPCM_VIMA = enum.auto()
+        AV_CODEC_ID_ADPCM_AFC = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_OKI = enum.auto()
+        AV_CODEC_ID_ADPCM_DTK = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_RAD = enum.auto()
+        AV_CODEC_ID_ADPCM_G726LE = enum.auto()
+        AV_CODEC_ID_ADPCM_THP_LE = enum.auto()
+        AV_CODEC_ID_ADPCM_PSX = enum.auto()
+        AV_CODEC_ID_ADPCM_AICA = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_DAT4 = enum.auto()
+        AV_CODEC_ID_ADPCM_MTAF = enum.auto()
+        AV_CODEC_ID_ADPCM_AGM = enum.auto()
+        AV_CODEC_ID_ADPCM_ARGO = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_SSI = enum.auto()
+        AV_CODEC_ID_ADPCM_ZORK = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_APM = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_ALP = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_MTF = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_CUNNING = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_MOFLEX = enum.auto()
+        AV_CODEC_ID_ADPCM_IMA_ACORN = enum.auto()
+        AV_CODEC_ID_ADPCM_XMD = enum.auto()
+        AV_CODEC_ID_AMR_NB = 0x12000 = enum.auto()
+        AV_CODEC_ID_AMR_WB = enum.auto()
+        AV_CODEC_ID_RA_144 = 0x13000
+        AV_CODEC_ID_RA_288 = enum.auto()
+        AV_CODEC_ID_ROQ_DPCM = 0x14000
+        AV_CODEC_ID_INTERPLAY_DPCM = enum.auto()
+        AV_CODEC_ID_XAN_DPCM = enum.auto()
+        AV_CODEC_ID_SOL_DPCM = enum.auto()
+        AV_CODEC_ID_SDX2_DPCM = enum.auto()
+        AV_CODEC_ID_GREMLIN_DPCM = enum.auto()
+        AV_CODEC_ID_DERF_DPCM = enum.auto()
+        AV_CODEC_ID_WADY_DPCM = enum.auto()
+        AV_CODEC_ID_CBD2_DPCM = enum.auto()
+        AV_CODEC_ID_MP2 = 0x15000
+        AV_CODEC_ID_MP3 = enum.auto()
+        AV_CODEC_ID_AAC = enum.auto()
+        AV_CODEC_ID_AC3 = enum.auto()
+        AV_CODEC_ID_DTS = enum.auto()
+        AV_CODEC_ID_VORBIS = enum.auto()
+        AV_CODEC_ID_DVAUDIO = enum.auto()
+        AV_CODEC_ID_WMAV1 = enum.auto()
+        AV_CODEC_ID_WMAV2 = enum.auto()
+        AV_CODEC_ID_MACE3 = enum.auto()
+        AV_CODEC_ID_MACE6 = enum.auto()
+        AV_CODEC_ID_VMDAUDIO = enum.auto()
+        AV_CODEC_ID_FLAC = enum.auto()
+        AV_CODEC_ID_MP3ADU = enum.auto()
+        AV_CODEC_ID_MP3ON4 = enum.auto()
+        AV_CODEC_ID_SHORTEN = enum.auto()
+        AV_CODEC_ID_ALAC = enum.auto()
+        AV_CODEC_ID_WESTWOOD_SND1 = enum.auto()
+        AV_CODEC_ID_GSM = enum.auto()
+        AV_CODEC_ID_QDM2 = enum.auto()
+        AV_CODEC_ID_COOK = enum.auto()
+        AV_CODEC_ID_TRUESPEECH = enum.auto()
+        AV_CODEC_ID_TTA = enum.auto()
+        AV_CODEC_ID_SMACKAUDIO = enum.auto()
+        AV_CODEC_ID_QCELP = enum.auto()
+        AV_CODEC_ID_WAVPACK = enum.auto()
+        AV_CODEC_ID_DSICINAUDIO = enum.auto()
+        AV_CODEC_ID_IMC = enum.auto()
+        AV_CODEC_ID_MUSEPACK7 = enum.auto()
+        AV_CODEC_ID_MLP = enum.auto()
+        AV_CODEC_ID_GSM_MS = enum.auto()
+        AV_CODEC_ID_ATRAC3 = enum.auto()
+        AV_CODEC_ID_APE = enum.auto()
+        AV_CODEC_ID_NELLYMOSER = enum.auto()
+        AV_CODEC_ID_MUSEPACK8 = enum.auto()
+        AV_CODEC_ID_SPEEX = enum.auto()
+        AV_CODEC_ID_WMAVOICE = enum.auto()
+        AV_CODEC_ID_WMAPRO = enum.auto()
+        AV_CODEC_ID_WMALOSSLESS = enum.auto()
+        AV_CODEC_ID_ATRAC3P = enum.auto()
+        AV_CODEC_ID_EAC3 = enum.auto()
+        AV_CODEC_ID_SIPR = enum.auto()
+        AV_CODEC_ID_MP1 = enum.auto()
+        AV_CODEC_ID_TWINVQ = enum.auto()
+        AV_CODEC_ID_TRUEHD = enum.auto()
+        AV_CODEC_ID_MP4ALS = enum.auto()
+        AV_CODEC_ID_ATRAC1 = enum.auto()
+        AV_CODEC_ID_BINKAUDIO_RDFT = enum.auto()
+        AV_CODEC_ID_BINKAUDIO_DCT = enum.auto()
+        AV_CODEC_ID_AAC_LATM = enum.auto()
+        AV_CODEC_ID_QDMC = enum.auto()
+        AV_CODEC_ID_CELT = enum.auto()
+        AV_CODEC_ID_G723_1 = enum.auto()
+        AV_CODEC_ID_G729 = enum.auto()
+        AV_CODEC_ID_8SVX_EXP = enum.auto()
+        AV_CODEC_ID_8SVX_FIB = enum.auto()
+        AV_CODEC_ID_BMV_AUDIO = enum.auto()
+        AV_CODEC_ID_RALF = enum.auto()
+        AV_CODEC_ID_IAC = enum.auto()
+        AV_CODEC_ID_ILBC = enum.auto()
+        AV_CODEC_ID_OPUS = enum.auto()
+        AV_CODEC_ID_COMFORT_NOISE = enum.auto()
+        AV_CODEC_ID_TAK = enum.auto()
+        AV_CODEC_ID_METASOUND = enum.auto()
+        AV_CODEC_ID_PAF_AUDIO = enum.auto()
+        AV_CODEC_ID_ON2AVC = enum.auto()
+        AV_CODEC_ID_DSS_SP = enum.auto()
+        AV_CODEC_ID_CODEC2 = enum.auto()
+        AV_CODEC_ID_FFWAVESYNTH = enum.auto()
+        AV_CODEC_ID_SONIC = enum.auto()
+        AV_CODEC_ID_SONIC_LS = enum.auto()
+        AV_CODEC_ID_EVRC = enum.auto()
+        AV_CODEC_ID_SMV = enum.auto()
+        AV_CODEC_ID_DSD_LSBF = enum.auto()
+        AV_CODEC_ID_DSD_MSBF = enum.auto()
+        AV_CODEC_ID_DSD_LSBF_PLANAR = enum.auto()
+        AV_CODEC_ID_DSD_MSBF_PLANAR = enum.auto()
+        AV_CODEC_ID_4GV = enum.auto()
+        AV_CODEC_ID_INTERPLAY_ACM = enum.auto()
+        AV_CODEC_ID_XMA1 = enum.auto()
+        AV_CODEC_ID_XMA2 = enum.auto()
+        AV_CODEC_ID_DST = enum.auto()
+        AV_CODEC_ID_ATRAC3AL = enum.auto()
+        AV_CODEC_ID_ATRAC3PAL = enum.auto()
+        AV_CODEC_ID_DOLBY_E = enum.auto()
+        AV_CODEC_ID_APTX = enum.auto()
+        AV_CODEC_ID_APTX_HD = enum.auto()
+        AV_CODEC_ID_SBC = enum.auto()
+        AV_CODEC_ID_ATRAC9 = enum.auto()
+        AV_CODEC_ID_HCOM = enum.auto()
+        AV_CODEC_ID_ACELP_KELVIN = enum.auto()
+        AV_CODEC_ID_MPEGH_3D_AUDIO = enum.auto()
+        AV_CODEC_ID_SIREN = enum.auto()
+        AV_CODEC_ID_HCA = enum.auto()
+        AV_CODEC_ID_FASTAUDIO = enum.auto()
+        AV_CODEC_ID_MSNSIREN = enum.auto()
+        AV_CODEC_ID_DFPWM = enum.auto()
+        AV_CODEC_ID_BONK = enum.auto()
+        AV_CODEC_ID_MISC4 = enum.auto()
+        AV_CODEC_ID_APAC = enum.auto()
+        AV_CODEC_ID_FTR = enum.auto()
+        AV_CODEC_ID_WAVARC = enum.auto()
+        AV_CODEC_ID_RKA = enum.auto()
+        AV_CODEC_ID_AC4 = enum.auto()
+        AV_CODEC_ID_OSQ = enum.auto()
+        AV_CODEC_ID_QOA = enum.auto()
+        AV_CODEC_ID_LC3 = enum.auto()
+        AV_CODEC_ID_FIRST_SUBTITLE = 0x17000
+        AV_CODEC_ID_DVD_SUBTITLE = 0x17000
+        AV_CODEC_ID_DVB_SUBTITLE = enum.auto()
+        AV_CODEC_ID_TEXT = enum.auto()
+        AV_CODEC_ID_XSUB = enum.auto()
+        AV_CODEC_ID_SSA = enum.auto()
+        AV_CODEC_ID_MOV_TEXT = enum.auto()
+        AV_CODEC_ID_HDMV_PGS_SUBTITLE = enum.auto()
+        AV_CODEC_ID_DVB_TELETEXT = enum.auto()
+        AV_CODEC_ID_SRT = enum.auto()
+        AV_CODEC_ID_MICRODVD = enum.auto()
+        AV_CODEC_ID_EIA_608 = enum.auto()
+        AV_CODEC_ID_JACOSUB = enum.auto()
+        AV_CODEC_ID_SAMI = enum.auto()
+        AV_CODEC_ID_REALTEXT = enum.auto()
+        AV_CODEC_ID_STL = enum.auto()
+        AV_CODEC_ID_SUBVIEWER1 = enum.auto()
+        AV_CODEC_ID_SUBVIEWER = enum.auto()
+        AV_CODEC_ID_SUBRIP = enum.auto()
+        AV_CODEC_ID_WEBVTT = enum.auto()
+        AV_CODEC_ID_MPL2 = enum.auto()
+        AV_CODEC_ID_VPLAYER = enum.auto()
+        AV_CODEC_ID_PJS = enum.auto()
+        AV_CODEC_ID_ASS = enum.auto()
+        AV_CODEC_ID_HDMV_TEXT_SUBTITLE = enum.auto()
+        AV_CODEC_ID_TTML = enum.auto()
+        AV_CODEC_ID_ARIB_CAPTION = enum.auto()
+        AV_CODEC_ID_FIRST_UNKNOWN = 0x18000
+        AV_CODEC_ID_TTF = 0x18000
+        AV_CODEC_ID_SCTE_35 = enum.auto()
+        AV_CODEC_ID_EPG = enum.auto()
+        AV_CODEC_ID_BINTEXT = enum.auto()
+        AV_CODEC_ID_XBIN = enum.auto()
+        AV_CODEC_ID_IDF = enum.auto()
+        AV_CODEC_ID_OTF = enum.auto()
+        AV_CODEC_ID_SMPTE_KLV = enum.auto()
+        AV_CODEC_ID_DVD_NAV = enum.auto()
+        AV_CODEC_ID_TIMED_ID3 = enum.auto()
+        AV_CODEC_ID_BIN_DATA = enum.auto()
+        AV_CODEC_ID_SMPTE_2038 = enum.auto()
+        AV_CODEC_ID_LCEVC = enum.auto()
+        AV_CODEC_ID_PROBE = 0x19000 = enum.auto()
+        AV_CODEC_ID_MPEG2TS = 0x20000 = enum.auto()
+        AV_CODEC_ID_MPEG4SYSTEMS = 0x20001 = enum.auto()
+        AV_CODEC_ID_FFMETADATA = 0x21000 = enum.auto()
+        AV_CODEC_ID_WRAPPED_AVFRAME = 0x21001 = enum.auto()
+        AV_CODEC_ID_VNULL = enum.auto()
+        AV_CODEC_ID_ANULL = enum.auto()
 
 
-class AVPixelFormat(CIntEnum):
-    class _enum_(enum.IntEnum):
-        AV_PIX_FMT_NONE = -1
-        AV_PIX_FMT_YUV420P = enum.auto()  # planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
-        AV_PIX_FMT_YUYV422 = enum.auto()  # packed YUV 4:2:2, 16bpp, Y0 Cb Y1 Cr
-        AV_PIX_FMT_RGB24 = enum.auto()  # packed RGB 8:8:8, 24bpp, RGBRGB...
-        AV_PIX_FMT_BGR24 = enum.auto()  # packed RGB 8:8:8, 24bpp, BGRBGR...
-        AV_PIX_FMT_YUV422P = enum.auto()  # planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-        AV_PIX_FMT_YUV444P = enum.auto()  # planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
-        AV_PIX_FMT_YUV410P = enum.auto()  # planar YUV 4:1:0,  9bpp, (1 Cr & Cb sample per 4x4 Y samples)
-        AV_PIX_FMT_YUV411P = enum.auto()  # planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples)
-        AV_PIX_FMT_GRAY8 = enum.auto()  # Y 8bpp
-        AV_PIX_FMT_MONOWHITE = enum.auto()  # Y 1bpp, 0 is white, 1 is black, in each byte pixels are ordered from the msb to the lsb
-        AV_PIX_FMT_MONOBLACK = enum.auto()  # Y 1bpp, 0 is black, 1 is white, in each byte pixels are ordered from the msb to the lsb
-        AV_PIX_FMT_PAL8 = enum.auto()  # 8 bits with AV_PIX_FMT_RGB32 palette
-        AV_PIX_FMT_YUVJ420P = enum.auto()  # planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV420P and setting color_range
-        AV_PIX_FMT_YUVJ422P = enum.auto()  # planar YUV 4:2:2, 16bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV422P and setting color_range
-        AV_PIX_FMT_YUVJ444P = enum.auto()  # planar YUV 4:4:4, 24bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV444P and setting color_range
-        AV_PIX_FMT_UYVY422 = enum.auto()  # packed YUV 4:2:2, 16bpp, Cb Y0 Cr Y1
-        AV_PIX_FMT_UYYVYY411 = enum.auto()  # packed YUV 4:1:1, 12bpp, Cb Y0 Y1 Cr Y2 Y3
-        AV_PIX_FMT_BGR8 = enum.auto()  # packed RGB 3:3:2,  8bpp, (msb)2B 3G 3R(lsb)
-        AV_PIX_FMT_BGR4 = enum.auto()  # packed RGB 1:2:1 bitstream,  4bpp, (msb)1B 2G 1R(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
-        AV_PIX_FMT_BGR4_BYTE = enum.auto()  # packed RGB 1:2:1,  8bpp, (msb)1B 2G 1R(lsb)
-        AV_PIX_FMT_RGB8 = enum.auto()  # packed RGB 3:3:2,  8bpp, (msb)3R 3G 2B(lsb)
-        AV_PIX_FMT_RGB4 = enum.auto()  # packed RGB 1:2:1 bitstream,  4bpp, (msb)1R 2G 1B(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
-        AV_PIX_FMT_RGB4_BYTE = enum.auto()  # packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
-        AV_PIX_FMT_NV12 = enum.auto()  # planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
-        AV_PIX_FMT_NV21 = enum.auto()  # as above, but U and V bytes are swapped
-
-        AV_PIX_FMT_ARGB = enum.auto()  # packed ARGB 8:8:8:8, 32bpp, ARGBARGB...
-        AV_PIX_FMT_RGBA = enum.auto()  # packed RGBA 8:8:8:8, 32bpp, RGBARGBA...
-        AV_PIX_FMT_ABGR = enum.auto()  # packed ABGR 8:8:8:8, 32bpp, ABGRABGR...
-        AV_PIX_FMT_BGRA = enum.auto()  # packed BGRA 8:8:8:8, 32bpp, BGRABGRA...
-
-        AV_PIX_FMT_GRAY16BE = enum.auto()  # Y , 16bpp, big-endian
-        AV_PIX_FMT_GRAY16LE = enum.auto()  # Y , 16bpp, little-endian
-        AV_PIX_FMT_YUV440P = enum.auto()  # planar YUV 4:4:0 (1 Cr & Cb sample per 1x2 Y samples)
-        AV_PIX_FMT_YUVJ440P = enum.auto()  # planar YUV 4:4:0 full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV440P and setting color_range
-        AV_PIX_FMT_YUVA420P = enum.auto()  # planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
-        AV_PIX_FMT_RGB48BE = enum.auto()  # packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as big-endian
-        AV_PIX_FMT_RGB48LE = enum.auto()  # packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
-
-        AV_PIX_FMT_RGB565BE = enum.auto()  # packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), big-endian
-        AV_PIX_FMT_RGB565LE = enum.auto()  # packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), little-endian
-        AV_PIX_FMT_RGB555BE = enum.auto()  # packed RGB 5:5:5, 16bpp, (msb)1X 5R 5G 5B(lsb), big-endian   , X=unused/undefined
-        AV_PIX_FMT_RGB555LE = enum.auto()  # packed RGB 5:5:5, 16bpp, (msb)1X 5R 5G 5B(lsb), little-endian, X=unused/undefined
-
-        AV_PIX_FMT_BGR565BE = enum.auto()  # packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), big-endian
-        AV_PIX_FMT_BGR565LE = enum.auto()  # packed BGR 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), little-endian
-        AV_PIX_FMT_BGR555BE = enum.auto()  # packed BGR 5:5:5, 16bpp, (msb)1X 5B 5G 5R(lsb), big-endian   , X=unused/undefined
-        AV_PIX_FMT_BGR555LE = enum.auto()  # packed BGR 5:5:5, 16bpp, (msb)1X 5B 5G 5R(lsb), little-endian, X=unused/undefined
-        AV_PIX_FMT_VAAPI = enum.auto()
-
-        AV_PIX_FMT_YUV420P16LE = enum.auto()  # planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-        AV_PIX_FMT_YUV420P16BE = enum.auto()  # planar YUV 4:2:0, 24bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-        AV_PIX_FMT_YUV422P16LE = enum.auto()  # planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_YUV422P16BE = enum.auto()  # planar YUV 4:2:2, 32bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-        AV_PIX_FMT_YUV444P16LE = enum.auto()  # planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-        AV_PIX_FMT_YUV444P16BE = enum.auto()  # planar YUV 4:4:4, 48bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-        AV_PIX_FMT_DXVA2_VLD = enum.auto()  # HW decoding through DXVA2, Picture.data[3] contains a LPDIRECT3DSURFACE9 pointer
-
-        AV_PIX_FMT_RGB444LE = enum.auto()  # packed RGB 4:4:4, 16bpp, (msb)4X 4R 4G 4B(lsb), little-endian, X=unused/undefined
-        AV_PIX_FMT_RGB444BE = enum.auto()  # packed RGB 4:4:4, 16bpp, (msb)4X 4R 4G 4B(lsb), big-endian,    X=unused/undefined
-        AV_PIX_FMT_BGR444LE = enum.auto()  # packed BGR 4:4:4, 16bpp, (msb)4X 4B 4G 4R(lsb), little-endian, X=unused/undefined
-        AV_PIX_FMT_BGR444BE = enum.auto()  # packed BGR 4:4:4, 16bpp, (msb)4X 4B 4G 4R(lsb), big-endian,    X=unused/undefined
-        AV_PIX_FMT_YA8 = enum.auto()  # 8 bits gray, 8 bits alpha
-
-        AV_PIX_FMT_BGR48BE = enum.auto()  # packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as big-endian
-        AV_PIX_FMT_BGR48LE = enum.auto()  # packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian
-
-        AV_PIX_FMT_YUV420P9BE = enum.auto()  # planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-        AV_PIX_FMT_YUV420P9LE = enum.auto()  # planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-        AV_PIX_FMT_YUV420P10BE = enum.auto()  # planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-        AV_PIX_FMT_YUV420P10LE = enum.auto()  # planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-        AV_PIX_FMT_YUV422P10BE = enum.auto()  # planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-        AV_PIX_FMT_YUV422P10LE = enum.auto()  # planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_YUV444P9BE = enum.auto()  # planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-        AV_PIX_FMT_YUV444P9LE = enum.auto()  # planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-        AV_PIX_FMT_YUV444P10BE = enum.auto()  # planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-        AV_PIX_FMT_YUV444P10LE = enum.auto()  # planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-        AV_PIX_FMT_YUV422P9BE = enum.auto()  # planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-        AV_PIX_FMT_YUV422P9LE = enum.auto()  # planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_GBRP = enum.auto()  # planar GBR 4:4:4 24bpp
-        AV_PIX_FMT_GBRP9BE = enum.auto()  # planar GBR 4:4:4 27bpp, big-endian
-        AV_PIX_FMT_GBRP9LE = enum.auto()  # planar GBR 4:4:4 27bpp, little-endian
-        AV_PIX_FMT_GBRP10BE = enum.auto()  # planar GBR 4:4:4 30bpp, big-endian
-        AV_PIX_FMT_GBRP10LE = enum.auto()  # planar GBR 4:4:4 30bpp, little-endian
-        AV_PIX_FMT_GBRP16BE = enum.auto()  # planar GBR 4:4:4 48bpp, big-endian
-        AV_PIX_FMT_GBRP16LE = enum.auto()  # planar GBR 4:4:4 48bpp, little-endian
-        AV_PIX_FMT_YUVA422P = enum.auto()  # planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
-        AV_PIX_FMT_YUVA444P = enum.auto()  # planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
-        AV_PIX_FMT_YUVA420P9BE = enum.auto()  # planar YUV 4:2:0 22.5bpp, (1 Cr & Cb sample per 2x2 Y & A samples), big-endian
-        AV_PIX_FMT_YUVA420P9LE = enum.auto()  # planar YUV 4:2:0 22.5bpp, (1 Cr & Cb sample per 2x2 Y & A samples), little-endian
-        AV_PIX_FMT_YUVA422P9BE = enum.auto()  # planar YUV 4:2:2 27bpp, (1 Cr & Cb sample per 2x1 Y & A samples), big-endian
-        AV_PIX_FMT_YUVA422P9LE = enum.auto()  # planar YUV 4:2:2 27bpp, (1 Cr & Cb sample per 2x1 Y & A samples), little-endian
-        AV_PIX_FMT_YUVA444P9BE = enum.auto()  # planar YUV 4:4:4 36bpp, (1 Cr & Cb sample per 1x1 Y & A samples), big-endian
-        AV_PIX_FMT_YUVA444P9LE = enum.auto()  # planar YUV 4:4:4 36bpp, (1 Cr & Cb sample per 1x1 Y & A samples), little-endian
-        AV_PIX_FMT_YUVA420P10BE = enum.auto()  # planar YUV 4:2:0 25bpp, (1 Cr & Cb sample per 2x2 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA420P10LE = enum.auto()  # planar YUV 4:2:0 25bpp, (1 Cr & Cb sample per 2x2 Y & A samples, little-endian)
-        AV_PIX_FMT_YUVA422P10BE = enum.auto()  # planar YUV 4:2:2 30bpp, (1 Cr & Cb sample per 2x1 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA422P10LE = enum.auto()  # planar YUV 4:2:2 30bpp, (1 Cr & Cb sample per 2x1 Y & A samples, little-endian)
-        AV_PIX_FMT_YUVA444P10BE = enum.auto()  # planar YUV 4:4:4 40bpp, (1 Cr & Cb sample per 1x1 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA444P10LE = enum.auto()  # planar YUV 4:4:4 40bpp, (1 Cr & Cb sample per 1x1 Y & A samples, little-endian)
-        AV_PIX_FMT_YUVA420P16BE = enum.auto()  # planar YUV 4:2:0 40bpp, (1 Cr & Cb sample per 2x2 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA420P16LE = enum.auto()  # planar YUV 4:2:0 40bpp, (1 Cr & Cb sample per 2x2 Y & A samples, little-endian)
-        AV_PIX_FMT_YUVA422P16BE = enum.auto()  # planar YUV 4:2:2 48bpp, (1 Cr & Cb sample per 2x1 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA422P16LE = enum.auto()  # planar YUV 4:2:2 48bpp, (1 Cr & Cb sample per 2x1 Y & A samples, little-endian)
-        AV_PIX_FMT_YUVA444P16BE = enum.auto()  # planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, big-endian)
-        AV_PIX_FMT_YUVA444P16LE = enum.auto()  # planar YUV 4:4:4 64bpp, (1 Cr & Cb sample per 1x1 Y & A samples, little-endian)
-
-        AV_PIX_FMT_VDPAU = enum.auto()  # HW acceleration through VDPAU, Picture.data[3] contains a VdpVideoSurface
-
-        AV_PIX_FMT_XYZ12LE = enum.auto()  # packed XYZ 4:4:4, 36 bpp, (msb) 12X, 12Y, 12Z (lsb), the 2-byte value for each X/Y/Z is stored as little-endian, the 4 lower bits are set to 0
-        AV_PIX_FMT_XYZ12BE = enum.auto()  # packed XYZ 4:4:4, 36 bpp, (msb) 12X, 12Y, 12Z (lsb), the 2-byte value for each X/Y/Z is stored as big-endian, the 4 lower bits are set to 0
-        AV_PIX_FMT_NV16 = enum.auto()  # interleaved chroma YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-        AV_PIX_FMT_NV20LE = enum.auto()  # interleaved chroma YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_NV20BE = enum.auto()  # interleaved chroma YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-
-        AV_PIX_FMT_RGBA64BE = enum.auto()  # packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
-        AV_PIX_FMT_RGBA64LE = enum.auto()  # packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
-        AV_PIX_FMT_BGRA64BE = enum.auto()  # packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
-        AV_PIX_FMT_BGRA64LE = enum.auto()  # packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
-
-        AV_PIX_FMT_YVYU422 = enum.auto()  # packed YUV 4:2:2, 16bpp, Y0 Cr Y1 Cb
-
-        AV_PIX_FMT_YA16BE = enum.auto()  # 16 bits gray, 16 bits alpha (big-endian)
-        AV_PIX_FMT_YA16LE = enum.auto()  # 16 bits gray, 16 bits alpha (little-endian)
-
-        AV_PIX_FMT_GBRAP = enum.auto()  # planar GBRA 4:4:4:4 32bpp
-        AV_PIX_FMT_GBRAP16BE = enum.auto()  # planar GBRA 4:4:4:4 64bpp, big-endian
-        AV_PIX_FMT_GBRAP16LE = enum.auto()  # planar GBRA 4:4:4:4 64bpp, little-endian
-        AV_PIX_FMT_QSV = enum.auto()
-        AV_PIX_FMT_MMAL = enum.auto()
-
-        AV_PIX_FMT_D3D11VA_VLD = enum.auto()  # HW decoding through Direct3D11 via old API, Picture.data[3] contains a ID3D11VideoDecoderOutputView pointer
-        AV_PIX_FMT_CUDA = enum.auto()
-
-        AV_PIX_FMT_0RGB = enum.auto()  # packed RGB 8:8:8, 32bpp, XRGBXRGB...   X=unused/undefined
-        AV_PIX_FMT_RGB0 = enum.auto()  # packed RGB 8:8:8, 32bpp, RGBXRGBX...   X=unused/undefined
-        AV_PIX_FMT_0BGR = enum.auto()  # packed BGR 8:8:8, 32bpp, XBGRXBGR...   X=unused/undefined
-        AV_PIX_FMT_BGR0 = enum.auto()  # packed BGR 8:8:8, 32bpp, BGRXBGRX...   X=unused/undefined
-
-        AV_PIX_FMT_YUV420P12BE = enum.auto()  # planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-        AV_PIX_FMT_YUV420P12LE = enum.auto()  # planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-        AV_PIX_FMT_YUV420P14BE = enum.auto()  # planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
-        AV_PIX_FMT_YUV420P14LE = enum.auto()  # planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-        AV_PIX_FMT_YUV422P12BE = enum.auto()  # planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-        AV_PIX_FMT_YUV422P12LE = enum.auto()  # planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_YUV422P14BE = enum.auto()  # planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-        AV_PIX_FMT_YUV422P14LE = enum.auto()  # planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-        AV_PIX_FMT_YUV444P12BE = enum.auto()  # planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-        AV_PIX_FMT_YUV444P12LE = enum.auto()  # planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-        AV_PIX_FMT_YUV444P14BE = enum.auto()  # planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-        AV_PIX_FMT_YUV444P14LE = enum.auto()  # planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-        AV_PIX_FMT_GBRP12BE = enum.auto()  # planar GBR 4:4:4 36bpp, big-endian
-        AV_PIX_FMT_GBRP12LE = enum.auto()  # planar GBR 4:4:4 36bpp, little-endian
-        AV_PIX_FMT_GBRP14BE = enum.auto()  # planar GBR 4:4:4 42bpp, big-endian
-        AV_PIX_FMT_GBRP14LE = enum.auto()  # planar GBR 4:4:4 42bpp, little-endian
-        AV_PIX_FMT_YUVJ411P = enum.auto()  # planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples) full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV411P and setting color_range
-
-        AV_PIX_FMT_BAYER_BGGR8 = enum.auto()  # bayer, BGBG..(odd line), GRGR..(even line), 8-bit samples
-        AV_PIX_FMT_BAYER_RGGB8 = enum.auto()  # bayer, RGRG..(odd line), GBGB..(even line), 8-bit samples
-        AV_PIX_FMT_BAYER_GBRG8 = enum.auto()  # bayer, GBGB..(odd line), RGRG..(even line), 8-bit samples
-        AV_PIX_FMT_BAYER_GRBG8 = enum.auto()  # bayer, GRGR..(odd line), BGBG..(even line), 8-bit samples
-        AV_PIX_FMT_BAYER_BGGR16LE = enum.auto()  # bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, little-endian
-        AV_PIX_FMT_BAYER_BGGR16BE = enum.auto()  # bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, big-endian
-        AV_PIX_FMT_BAYER_RGGB16LE = enum.auto()  # bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, little-endian
-        AV_PIX_FMT_BAYER_RGGB16BE = enum.auto()  # bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, big-endian
-        AV_PIX_FMT_BAYER_GBRG16LE = enum.auto()  # bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, little-endian
-        AV_PIX_FMT_BAYER_GBRG16BE = enum.auto()  # bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, big-endian
-        AV_PIX_FMT_BAYER_GRBG16LE = enum.auto()  # bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, little-endian
-        AV_PIX_FMT_BAYER_GRBG16BE = enum.auto()  # bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, big-endian
-
-        AV_PIX_FMT_YUV440P10LE = enum.auto()  # planar YUV 4:4:0,20bpp, (1 Cr & Cb sample per 1x2 Y samples), little-endian
-        AV_PIX_FMT_YUV440P10BE = enum.auto()  # planar YUV 4:4:0,20bpp, (1 Cr & Cb sample per 1x2 Y samples), big-endian
-        AV_PIX_FMT_YUV440P12LE = enum.auto()  # planar YUV 4:4:0,24bpp, (1 Cr & Cb sample per 1x2 Y samples), little-endian
-        AV_PIX_FMT_YUV440P12BE = enum.auto()  # planar YUV 4:4:0,24bpp, (1 Cr & Cb sample per 1x2 Y samples), big-endian
-        AV_PIX_FMT_AYUV64LE = enum.auto()  # packed AYUV 4:4:4,64bpp (1 Cr & Cb sample per 1x1 Y & A samples), little-endian
-        AV_PIX_FMT_AYUV64BE = enum.auto()  # packed AYUV 4:4:4,64bpp (1 Cr & Cb sample per 1x1 Y & A samples), big-endian
-
-        AV_PIX_FMT_VIDEOTOOLBOX = enum.auto()  # hardware decoding through Videotoolbox
-
-        AV_PIX_FMT_P010LE = enum.auto()  # like NV12, with 10bpp per component, data in the high bits, zeros in the low bits, little-endian
-        AV_PIX_FMT_P010BE = enum.auto()  # like NV12, with 10bpp per component, data in the high bits, zeros in the low bits, big-endian
-
-        AV_PIX_FMT_GBRAP12BE = enum.auto()  # planar GBR 4:4:4:4 48bpp, big-endian
-        AV_PIX_FMT_GBRAP12LE = enum.auto()  # planar GBR 4:4:4:4 48bpp, little-endian
-
-        AV_PIX_FMT_GBRAP10BE = enum.auto()  # planar GBR 4:4:4:4 40bpp, big-endian
-        AV_PIX_FMT_GBRAP10LE = enum.auto()  # planar GBR 4:4:4:4 40bpp, little-endian
-
-        AV_PIX_FMT_MEDIACODEC = enum.auto()  # hardware decoding through MediaCodec
-
-        AV_PIX_FMT_GRAY12BE = enum.auto()  # Y , 12bpp, big-endian
-        AV_PIX_FMT_GRAY12LE = enum.auto()  # Y , 12bpp, little-endian
-        AV_PIX_FMT_GRAY10BE = enum.auto()  # Y , 10bpp, big-endian
-        AV_PIX_FMT_GRAY10LE = enum.auto()  # Y , 10bpp, little-endian
-
-        AV_PIX_FMT_P016LE = enum.auto()  # like NV12, with 16bpp per component, little-endian
-        AV_PIX_FMT_P016BE = enum.auto()  # like NV12, with 16bpp per component, big-endian
-        AV_PIX_FMT_D3D11 = enum.auto()
-
-        AV_PIX_FMT_GRAY9BE = enum.auto()  # Y , 9bpp, big-endian
-        AV_PIX_FMT_GRAY9LE = enum.auto()  # Y , 9bpp, little-endian
-
-        AV_PIX_FMT_GBRPF32BE = enum.auto()  # IEEE-754 single precision planar GBR 4:4:4,     96bpp, big-endian
-        AV_PIX_FMT_GBRPF32LE = enum.auto()  # IEEE-754 single precision planar GBR 4:4:4,     96bpp, little-endian
-        AV_PIX_FMT_GBRAPF32BE = enum.auto()  # IEEE-754 single precision planar GBRA 4:4:4:4, 128bpp, big-endian
-        AV_PIX_FMT_GBRAPF32LE = enum.auto()  # IEEE-754 single precision planar GBRA 4:4:4:4, 128bpp, little-endian
-
-        AV_PIX_FMT_DRM_PRIME = enum.auto()
-        AV_PIX_FMT_OPENCL = enum.auto()
-
-        AV_PIX_FMT_GRAY14BE = enum.auto()  # Y , 14bpp, big-endian
-        AV_PIX_FMT_GRAY14LE = enum.auto()  # Y , 14bpp, little-endian
-
-        AV_PIX_FMT_GRAYF32BE = enum.auto()  # IEEE-754 single precision Y, 32bpp, big-endian
-        AV_PIX_FMT_GRAYF32LE = enum.auto()  # IEEE-754 single precision Y, 32bpp, little-endian
-
-        AV_PIX_FMT_YUVA422P12BE = enum.auto()  # planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), 12b alpha, big-endian
-        AV_PIX_FMT_YUVA422P12LE = enum.auto()  # planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), 12b alpha, little-endian
-        AV_PIX_FMT_YUVA444P12BE = enum.auto()  # planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), 12b alpha, big-endian
-        AV_PIX_FMT_YUVA444P12LE = enum.auto()  # planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), 12b alpha, little-endian
-
-        AV_PIX_FMT_NV24 = enum.auto()  # planar YUV 4:4:4, 24bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
-        AV_PIX_FMT_NV42 = enum.auto()  # as above, but U and V bytes are swapped
-
-        AV_PIX_FMT_VULKAN = enum.auto()
-
-        AV_PIX_FMT_Y210BE = enum.auto()  # packed YUV 4:2:2 like YUYV422, 20bpp, data in the high bits, big-endian
-        AV_PIX_FMT_Y210LE = enum.auto()  # packed YUV 4:2:2 like YUYV422, 20bpp, data in the high bits, little-endian
-
-        AV_PIX_FMT_X2RGB10LE = enum.auto()  # packed RGB 10:10:10, 30bpp, (msb)2X 10R 10G 10B(lsb), little-endian, X=unused/undefined
-        AV_PIX_FMT_X2RGB10BE = enum.auto()  # packed RGB 10:10:10, 30bpp, (msb)2X 10R 10G 10B(lsb), big-endian, X=unused/undefined
-        AV_PIX_FMT_X2BGR10LE = enum.auto()  # packed BGR 10:10:10, 30bpp, (msb)2X 10B 10G 10R(lsb), little-endian, X=unused/undefined
-        AV_PIX_FMT_X2BGR10BE = enum.auto()  # packed BGR 10:10:10, 30bpp, (msb)2X 10B 10G 10R(lsb), big-endian, X=unused/undefined
-
-        AV_PIX_FMT_P210BE = enum.auto()  # interleaved chroma YUV 4:2:2, 20bpp, data in the high bits, big-endian
-        AV_PIX_FMT_P210LE = enum.auto()  # interleaved chroma YUV 4:2:2, 20bpp, data in the high bits, little-endian
-
-        AV_PIX_FMT_P410BE = enum.auto()  # interleaved chroma YUV 4:4:4, 30bpp, data in the high bits, big-endian
-        AV_PIX_FMT_P410LE = enum.auto()  # interleaved chroma YUV 4:4:4, 30bpp, data in the high bits, little-endian
-
-        AV_PIX_FMT_P216BE = enum.auto()  # interleaved chroma YUV 4:2:2, 32bpp, big-endian
-        AV_PIX_FMT_P216LE = enum.auto()  # interleaved chroma YUV 4:2:2, 32bpp, little-endian
-
-        AV_PIX_FMT_P416BE = enum.auto()  # interleaved chroma YUV 4:4:4, 48bpp, big-endian
-        AV_PIX_FMT_P416LE = enum.auto()  # interleaved chroma YUV 4:4:4, 48bpp, little-endian
-
-        AV_PIX_FMT_VUYA = enum.auto()  # packed VUYA 4:4:4, 32bpp, VUYAVUYA...
-
-        AV_PIX_FMT_RGBAF16BE = enum.auto()  # IEEE-754 half precision packed RGBA 16:16:16:16, 64bpp, RGBARGBA..., big-endian
-        AV_PIX_FMT_RGBAF16LE = enum.auto()  # IEEE-754 half precision packed RGBA 16:16:16:16, 64bpp, RGBARGBA..., little-endian
-
-        AV_PIX_FMT_VUYX = enum.auto()  # packed VUYX 4:4:4, 32bpp, Variant of VUYA where alpha channel is left undefined
-
-        AV_PIX_FMT_P012LE = enum.auto()  # like NV12, with 12bpp per component, data in the high bits, zeros in the low bits, little-endian
-        AV_PIX_FMT_P012BE = enum.auto()  # like NV12, with 12bpp per component, data in the high bits, zeros in the low bits, big-endian
-
-        AV_PIX_FMT_Y212BE = enum.auto()  # packed YUV 4:2:2 like YUYV422, 24bpp, data in the high bits, zeros in the low bits, big-endian
-        AV_PIX_FMT_Y212LE = enum.auto()  # packed YUV 4:2:2 like YUYV422, 24bpp, data in the high bits, zeros in the low bits, little-endian
-
-        AV_PIX_FMT_XV30BE = enum.auto()  # packed XVYU 4:4:4, 32bpp, (msb)2X 10V 10Y 10U(lsb), big-endian, variant of Y410 where alpha channel is left undefined
-        AV_PIX_FMT_XV30LE = enum.auto()  # packed XVYU 4:4:4, 32bpp, (msb)2X 10V 10Y 10U(lsb), little-endian, variant of Y410 where alpha channel is left undefined
-
-        AV_PIX_FMT_XV36BE = enum.auto()  # packed XVYU 4:4:4, 48bpp, data in the high bits, zeros in the low bits, big-endian, variant of Y412 where alpha channel is left undefined
-        AV_PIX_FMT_XV36LE = enum.auto()  # packed XVYU 4:4:4, 48bpp, data in the high bits, zeros in the low bits, little-endian, variant of Y412 where alpha channel is left undefined
-
-        AV_PIX_FMT_RGBF32BE = enum.auto()  # IEEE-754 single precision packed RGB 32:32:32, 96bpp, RGBRGB..., big-endian
-        AV_PIX_FMT_RGBF32LE = enum.auto()  # IEEE-754 single precision packed RGB 32:32:32, 96bpp, RGBRGB..., little-endian
-
-        AV_PIX_FMT_RGBAF32BE = enum.auto()  # IEEE-754 single precision packed RGBA 32:32:32:32, 128bpp, RGBARGBA..., big-endian
-        AV_PIX_FMT_RGBAF32LE = enum.auto()  # IEEE-754 single precision packed RGBA 32:32:32:32, 128bpp, RGBARGBA..., little-endian
-
-        AV_PIX_FMT_P212BE = enum.auto()  # interleaved chroma YUV 4:2:2, 24bpp, data in the high bits, big-endian
-        AV_PIX_FMT_P212LE = enum.auto()  # interleaved chroma YUV 4:2:2, 24bpp, data in the high bits, little-endian
-
-        AV_PIX_FMT_P412BE = enum.auto()  # interleaved chroma YUV 4:4:4, 36bpp, data in the high bits, big-endian
-        AV_PIX_FMT_P412LE = enum.auto()  # interleaved chroma YUV 4:4:4, 36bpp, data in the high bits, little-endian
-
-        AV_PIX_FMT_GBRAP14BE = enum.auto()  # planar GBR 4:4:4:4 56bpp, big-endian
-        AV_PIX_FMT_GBRAP14LE = enum.auto()  # planar GBR 4:4:4:4 56bpp, little-endian
-
-        AV_PIX_FMT_D3D12 = enum.auto()
-
-        AV_PIX_FMT_NB = enum.auto()  # number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
-
-
-class AVRational(ctypes.Structure):
+class StructProfile(ctypes.Structure):
     _fields_ = [
-        ('num', ctypes.c_int),
-        ('den', ctypes.c_int),]
+        ('profile', ctypes.c_int),
+        ('name', ctypes.c_char_p),
+    ]
 
 
-class struct_AVCodec(ctypes.Structure):
+class StructCodec(ctypes.Structure):
     _fields_ = [
         ('name', ctypes.c_char_p),
         ('long_name', ctypes.POINTER(ctypes.c_char)),
-        ('type', AvMediaType),
+        ('type', util.EnumMediaType),
         ('id', ctypes.c_int),
         ('capabilities', ctypes.c_int),
         ('max_lowres', ctypes.c_uint8),
-        ('supported_framerates', ctypes.POINTER(AVRational)),
-        ('pix_fmts', ctypes.POINTER(enum_AVPixelFormat)),
+        ('supported_framerates', ctypes.POINTER(util.StructRational)),
+        ('pix_fmts', ctypes.POINTER(util.EnumPixelFormat)),
         ('supported_samplerates', ctypes.POINTER(ctypes.c_int)),
-        ('sample_fmts', ctypes.POINTER(enum_AVSampleFormat)),
-        ('priv_class', ctypes.POINTER(AVClass)),
-        ('profiles', ctypes.POINTER(AVProfile)),
+        ('sample_fmts', ctypes.POINTER(util.EnumSampleFormat)),
+        ('priv_class', ctypes.c_void_p),
+        ('profiles', ctypes.POINTER(StructProfile)),
         ('wrapper_name', ctypes.c_char_p),
-        ('ch_layouts', ctypes.POINTER(AVChannelLayout)),
+        ('ch_layouts', ctypes.POINTER(util.StructChannelLayout)),
     ]
 
-class CWrapper:
-    _functions_ = []
-    _name_ = None
 
-    def __init__(self, name=None):
-        name = name or self._name_
-        self._name = util.find_library(name)
-        if not self._name:
-            raise RuntimeError(f"{name} library can not be found")
-        log.LOGGER.debug(f"loading library {self._name}")
-        self._lib = ctypes.CDLL(self._name)
-        for declaration in self._functions_:
-            self._wrap_function(*declaration)
-
-    def _wrap_function(self, name, args, rettype=None):
-        if getattr(self, name, None):
-            raise RuntimeError(f"function {name} has already been prototyped")
-        ptr = getattr(self._lib, name, None)
-        if not ptr:
-            raise RuntimeError(f"function {name} is not exported from {self._name}")
-        setattr(ptr, "argtypes", args)
-        setattr(ptr, "restype", rettype)
-        setattr(self, name, ptr)
-        log.LOGGER.debug(f"function {name} is wrapped from {self._name}")
-
-
-class Codec(CWrapper):
+class Lib(clib.CLib):
     _name_ = "avcodec"
-    _functions_ = (("avcodec_find_decoder", (ctypes.c_int,)),)
+    _functions_ = (("avcodec_find_decoder", (EnumCodecID,)), ctypes.POINTER(StructCodec))
 
 
 log.setlevel(log.DEBUG)
-c = Codec()
+c = Lib()
 pass
