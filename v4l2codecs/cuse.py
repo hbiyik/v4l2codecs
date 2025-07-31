@@ -22,6 +22,7 @@ import traceback
 from refuse import low
 
 from v4l2codecs import log
+from v4l2codecs import clib
 
 CUSE_UNRESTRICTED_IOCTL = 1 << 0
 
@@ -94,13 +95,35 @@ class Cuse:
 class CCuse(threading.Thread):
     ioctls = {}
 
+    class Lib(clib.CLib):
+        _name_ = "fuse"
+        _functions_ = (("cuse_lowlevel_main", (ctypes.c_uint,
+                                               ctypes.POINTER(ctypes.c_char_p),
+                                               ctypes.POINTER(DevInfo),
+                                               ctypes.POINTER(LowlevelOps),
+                                               ctypes.c_void_p), ctypes.c_int),
+                       ("cuse_lowlevel_teardown", (ctypes.c_void_p,)),
+                       ("fuse_reply_open", (low.fuse_req_t, ctypes.c_void_p)),
+                       ("fuse_reply_err", (low.fuse_req_t, ctypes.c_int)),
+                       ("fuse_reply_none", (low.fuse_req_t,)),
+                       ("fuse_reply_ioctl", (low.fuse_req_t,
+                                             ctypes.c_int,
+                                             ctypes.c_void_p,
+                                             ctypes.c_size_t), ctypes.c_int),
+                       ("fuse_reply_ioctl_retry",(low.fuse_req_t,
+                                                  ctypes.c_void_p,
+                                                  ctypes.c_size_t,
+                                                  ctypes.c_void_p,
+                                                  ctypes.c_size_t), ctypes.c_int),
+                       )
+
     def __init__(self, op, name, major=None, minor=None, ioctls=None, debug=True):
         self.ioctls = ioctls or self.ioctls
         self.op = op
         self.handlers = []
         self._lasthandler = 0
         self.returncode = None
-        self.c_lib = self.prototype()
+        self.c_lib = self.Lib()
 
         # devinfo
         devinfo = [f"DEVNAME={name}".encode()]
@@ -131,31 +154,6 @@ class CCuse(threading.Thread):
         self.join()
         if not self.returncode:
             raise RuntimeError(f"Cuse main returned {self.returncode}")
-
-    def prototype(self):
-        c_lib = ctypes.CDLL(low._libfuse_path)
-
-        c_lib.cuse_lowlevel_main.argtypes = (ctypes.c_uint,
-                                             ctypes.POINTER(ctypes.c_char_p),
-                                             ctypes.POINTER(DevInfo),
-                                             ctypes.POINTER(LowlevelOps),
-                                             ctypes.c_void_p)
-        c_lib.cuse_lowlevel_main.restype = ctypes.c_int
-        c_lib.cuse_lowlevel_teardown.argtypes = (ctypes.c_void_p,)
-        c_lib.fuse_reply_open.argtypes = (low.fuse_req_t, ctypes.c_void_p)
-        c_lib.fuse_reply_err.argtypes = (low.fuse_req_t, ctypes.c_int)
-        c_lib.fuse_reply_none.argtypes = (low.fuse_req_t,)
-        # int fuse_reply_ioctl(fuse_req_t req, int result, const void *buf, size_t size);
-        c_lib.fuse_reply_ioctl.argtypes = (low.fuse_req_t, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
-        c_lib.fuse_reply_ioctl.restype = ctypes.c_int
-        # int fuse_reply_ioctl_retry(fuse_req_t req,
-        #                            const struct iovec *in_iov, size_t in_count,
-        #                            const struct iovec *out_iov, size_t out_count);
-        c_lib.fuse_reply_ioctl_retry.argtypes = (low.fuse_req_t,
-                                                 ctypes.c_void_p, ctypes.c_size_t,
-                                                 ctypes.c_void_p, ctypes.c_size_t)
-        c_lib.fuse_reply_ioctl_retry.restype = ctypes.c_int
-        return c_lib
 
     def run(self):
         self.returncode = self.c_lib.cuse_lowlevel_main(*self._args)
