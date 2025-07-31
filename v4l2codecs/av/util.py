@@ -22,12 +22,12 @@ from v4l2codecs import clib
 
 class EnumMediaType(clib.CIntEnum):
     class _enum_(enum.IntEnum):
-        UNKNOWN = -1 = enum.auto()  # Usually treated as DATA
+        UNKNOWN = -1  # Usually treated as DATA
         VIDEO = enum.auto()
         AUDIO = enum.auto()
-        DATA = enum.auto() = enum.auto()  # Opaque data information usually continuous
+        DATA = enum.auto()  # Opaque data information usually continuous
         SUBTITLE = enum.auto()
-        ATTACHMENT = enum.auto() = enum.auto()  # Opaque data information usually sparse
+        ATTACHMENT = enum.auto()  # Opaque data information usually sparse
         NB = enum.auto()
 
 
@@ -321,7 +321,7 @@ class EnumPixelFormat(clib.CIntEnum):
 
 class EnumSampleFormat(clib.CIntEnum):
     class _enum_(enum.IntEnum):
-        NONE = -1,
+        NONE = -1
         U8 = enum.auto()  # unsigned 8 bits
         S16 = enum.auto()  # signed 16 bits
         S32 = enum.auto()  # signed 32 bits
@@ -341,7 +341,7 @@ class EnumSampleFormat(clib.CIntEnum):
 
 class EnumChannelOrder(clib.CIntEnum):
     class _enum_(enum.IntEnum):
-        UNSPEC = enum.auto()
+        UNSPEC = 0
         NATIVE = enum.auto()
         CUSTOM = enum.auto()
         AMBISONIC = enum.auto()

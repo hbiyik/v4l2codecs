@@ -20,15 +20,26 @@ from ctypes import util
 from v4l2codecs import log
 
 
+def isnullptr(ptr):
+    return ctypes.cast(ptr, ctypes.c_void_p).value is None
+
+
 class CIntEnum(ctypes.c_int):
     _enum_ = None
 
     @property
     def enum(self):
         try:
-            return self._enum_(self)
+            return self._enum_(self.value)
         except ValueError:
             return
+
+    def __str__(self):
+        e = self.enum
+        return str(self.value) if e is None else e.name
+
+    def __repr__(self):
+        return f"{str(self)}({self.value})"
 
 
 class CLib:
