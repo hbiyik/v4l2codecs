@@ -11,6 +11,8 @@
 # Version: #1 SMP PREEMPT_DYNAMIC Debian 6.10.6-1 (2024-08-19)
 
 import enum
+from v4l2codecs import clib
+
 
 from linuxpy.ctypes import (
     POINTER,
@@ -91,251 +93,243 @@ class Capability(enum.IntFlag):
     ASYNCIO = 0x2000000
 
 
-class PixelFormat(enum.IntEnum):
-    RGB332 = v4l2_fourcc("R", "G", "B", "1")  # 8  RGB-3-3-2
-    RGB444 = v4l2_fourcc("R", "4", "4", "4")  # 16  xxxxrrrr ggggbbbb
-    ARGB444 = v4l2_fourcc("A", "R", "1", "2")  # 16  aaaarrrr ggggbbbb
-    XRGB444 = v4l2_fourcc("X", "R", "1", "2")  # 16  xxxxrrrr ggggbbbb
-    RGBA444 = v4l2_fourcc("R", "A", "1", "2")  # 16  rrrrgggg bbbbaaaa
-    RGBX444 = v4l2_fourcc("R", "X", "1", "2")  # 16  rrrrgggg bbbbxxxx
-    ABGR444 = v4l2_fourcc("A", "B", "1", "2")  # 16  aaaabbbb ggggrrrr
-    XBGR444 = v4l2_fourcc("X", "B", "1", "2")  # 16  xxxxbbbb ggggrrrr
-    BGRA444 = v4l2_fourcc("G", "A", "1", "2")  # 16  bbbbgggg rrrraaaa
-    BGRX444 = v4l2_fourcc("B", "X", "1", "2")  # 16  bbbbgggg rrrrxxxx
-    RGB555 = v4l2_fourcc("R", "G", "B", "O")  # 16  RGB-5-5-5
-    ARGB555 = v4l2_fourcc("A", "R", "1", "5")  # 16  ARGB-1-5-5-5
-    XRGB555 = v4l2_fourcc("X", "R", "1", "5")  # 16  XRGB-1-5-5-5
-    RGBA555 = v4l2_fourcc("R", "A", "1", "5")  # 16  RGBA-5-5-5-1
-    RGBX555 = v4l2_fourcc("R", "X", "1", "5")  # 16  RGBX-5-5-5-1
-    ABGR555 = v4l2_fourcc("A", "B", "1", "5")  # 16  ABGR-1-5-5-5
-    XBGR555 = v4l2_fourcc("X", "B", "1", "5")  # 16  XBGR-1-5-5-5
-    BGRA555 = v4l2_fourcc("B", "A", "1", "5")  # 16  BGRA-5-5-5-1
-    BGRX555 = v4l2_fourcc("B", "X", "1", "5")  # 16  BGRX-5-5-5-1
-    RGB565 = v4l2_fourcc("R", "G", "B", "P")  # 16  RGB-5-6-5
-    RGB555X = v4l2_fourcc("R", "G", "B", "Q")  # 16  RGB-5-5-5 BE
-    ARGB555X = v4l2_fourcc_be("A", "R", "1", "5")  # 16  ARGB-5-5-5 BE
-    XRGB555X = v4l2_fourcc_be("X", "R", "1", "5")  # 16  XRGB-5-5-5 BE
-    RGB565X = v4l2_fourcc("R", "G", "B", "R")  # 16  RGB-5-6-5 BE
-    BGR666 = v4l2_fourcc("B", "G", "R", "H")  # 18  BGR-6-6-6
-    BGR24 = v4l2_fourcc("B", "G", "R", "3")  # 24  BGR-8-8-8
-    RGB24 = v4l2_fourcc("R", "G", "B", "3")  # 24  RGB-8-8-8
-    BGR32 = v4l2_fourcc("B", "G", "R", "4")  # 32  BGR-8-8-8-8
-    ABGR32 = v4l2_fourcc("A", "R", "2", "4")  # 32  BGRA-8-8-8-8
-    XBGR32 = v4l2_fourcc("X", "R", "2", "4")  # 32  BGRX-8-8-8-8
-    BGRA32 = v4l2_fourcc("R", "A", "2", "4")  # 32  ABGR-8-8-8-8
-    BGRX32 = v4l2_fourcc("R", "X", "2", "4")  # 32  XBGR-8-8-8-8
-    RGB32 = v4l2_fourcc("R", "G", "B", "4")  # 32  RGB-8-8-8-8
-    RGBA32 = v4l2_fourcc("A", "B", "2", "4")  # 32  RGBA-8-8-8-8
-    RGBX32 = v4l2_fourcc("X", "B", "2", "4")  # 32  RGBX-8-8-8-8
-    ARGB32 = v4l2_fourcc("B", "A", "2", "4")  # 32  ARGB-8-8-8-8
-    XRGB32 = v4l2_fourcc("B", "X", "2", "4")  # 32  XRGB-8-8-8-8
-    RGBX1010102 = v4l2_fourcc("R", "X", "3", "0")  # 32  RGBX-10-10-10-2
-    RGBA1010102 = v4l2_fourcc("R", "A", "3", "0")  # 32  RGBA-10-10-10-2
-    ARGB2101010 = v4l2_fourcc("A", "R", "3", "0")  # 32  ARGB-2-10-10-10
-    BGR48_12 = v4l2_fourcc("B", "3", "1", "2")  # 48  BGR 12-bit per component
-    ABGR64_12 = v4l2_fourcc("B", "4", "1", "2")  # 64  BGRA 12-bit per component
-    GREY = v4l2_fourcc("G", "R", "E", "Y")  # 8  Greyscale
-    Y4 = v4l2_fourcc("Y", "0", "4", " ")  # 4  Greyscale
-    Y6 = v4l2_fourcc("Y", "0", "6", " ")  # 6  Greyscale
-    Y10 = v4l2_fourcc("Y", "1", "0", " ")  # 10  Greyscale
-    Y12 = v4l2_fourcc("Y", "1", "2", " ")  # 12  Greyscale
-    Y012 = v4l2_fourcc("Y", "0", "1", "2")  # 12  Greyscale
-    Y14 = v4l2_fourcc("Y", "1", "4", " ")  # 14  Greyscale
-    Y16 = v4l2_fourcc("Y", "1", "6", " ")  # 16  Greyscale
-    Y16_BE = v4l2_fourcc_be("Y", "1", "6", " ")  # 16  Greyscale BE
-    Y10BPACK = v4l2_fourcc("Y", "1", "0", "B")  # 10  Greyscale bit-packed
-    Y10P = v4l2_fourcc("Y", "1", "0", "P")  # 10  Greyscale, MIPI RAW10 packed
-    IPU3_Y10 = v4l2_fourcc("i", "p", "3", "y")  # IPU3 packed 10-bit greyscale
-    Y12P = v4l2_fourcc("Y", "1", "2", "P")  # 12  Greyscale, MIPI RAW12 packed
-    Y14P = v4l2_fourcc("Y", "1", "4", "P")  # 14  Greyscale, MIPI RAW14 packed
-    PAL8 = v4l2_fourcc("P", "A", "L", "8")  # 8  8-bit palette
-    UV8 = v4l2_fourcc("U", "V", "8", " ")  # 8  UV 4:4
-    YUYV = v4l2_fourcc("Y", "U", "Y", "V")  # 16  YUV 4:2:2
-    YYUV = v4l2_fourcc("Y", "Y", "U", "V")  # 16  YUV 4:2:2
-    YVYU = v4l2_fourcc("Y", "V", "Y", "U")  # 16 YVU 4:2:2
-    UYVY = v4l2_fourcc("U", "Y", "V", "Y")  # 16  YUV 4:2:2
-    VYUY = v4l2_fourcc("V", "Y", "U", "Y")  # 16  YUV 4:2:2
-    Y41P = v4l2_fourcc("Y", "4", "1", "P")  # 12  YUV 4:1:1
-    YUV444 = v4l2_fourcc("Y", "4", "4", "4")  # 16  xxxxyyyy uuuuvvvv
-    YUV555 = v4l2_fourcc("Y", "U", "V", "O")  # 16  YUV-5-5-5
-    YUV565 = v4l2_fourcc("Y", "U", "V", "P")  # 16  YUV-5-6-5
-    YUV24 = v4l2_fourcc("Y", "U", "V", "3")  # 24  YUV-8-8-8
-    YUV32 = v4l2_fourcc("Y", "U", "V", "4")  # 32  YUV-8-8-8-8
-    AYUV32 = v4l2_fourcc("A", "Y", "U", "V")  # 32  AYUV-8-8-8-8
-    XYUV32 = v4l2_fourcc("X", "Y", "U", "V")  # 32  XYUV-8-8-8-8
-    VUYA32 = v4l2_fourcc("V", "U", "Y", "A")  # 32  VUYA-8-8-8-8
-    VUYX32 = v4l2_fourcc("V", "U", "Y", "X")  # 32  VUYX-8-8-8-8
-    YUVA32 = v4l2_fourcc("Y", "U", "V", "A")  # 32  YUVA-8-8-8-8
-    YUVX32 = v4l2_fourcc("Y", "U", "V", "X")  # 32  YUVX-8-8-8-8
-    M420 = v4l2_fourcc("M", "4", "2", "0")  # 12  YUV 4:2:0 2 lines y, 1 line uvcinterleaved
-    YUV48_12 = v4l2_fourcc("Y", "3", "1", "2")  # 48  YUV 4:4:4 12-bit per component
-    Y210 = v4l2_fourcc("Y", "2", "1", "0")  # 32  YUYV 4:2:2
-    Y212 = v4l2_fourcc("Y", "2", "1", "2")  # 32  YUYV 4:2:2
-    Y216 = v4l2_fourcc("Y", "2", "1", "6")  # 32  YUYV 4:2:2
-    NV12 = v4l2_fourcc("N", "V", "1", "2")  # 12  Y/CbCr 4:2:0
-    NV21 = v4l2_fourcc("N", "V", "2", "1")  # 12  Y/CrCb 4:2:0
-    NV16 = v4l2_fourcc("N", "V", "1", "6")  # 16  Y/CbCr 4:2:2
-    NV61 = v4l2_fourcc("N", "V", "6", "1")  # 16  Y/CrCb 4:2:2
-    NV24 = v4l2_fourcc("N", "V", "2", "4")  # 24  Y/CbCr 4:4:4
-    NV42 = v4l2_fourcc("N", "V", "4", "2")  # 24  Y/CrCb 4:4:4
-    P010 = v4l2_fourcc("P", "0", "1", "0")  # 24  Y/CbCr 4:2:0 10-bit per component
-    P012 = v4l2_fourcc("P", "0", "1", "2")  # 24  Y/CbCr 4:2:0 12-bit per component
-    NV12M = v4l2_fourcc("N", "M", "1", "2")  # 12  Y/CbCr 4:2:0
-    NV21M = v4l2_fourcc("N", "M", "2", "1")  # 21  Y/CrCb 4:2:0
-    NV16M = v4l2_fourcc("N", "M", "1", "6")  # 16  Y/CbCr 4:2:2
-    NV61M = v4l2_fourcc("N", "M", "6", "1")  # 16  Y/CrCb 4:2:2
-    P012M = v4l2_fourcc("P", "M", "1", "2")  # 24  Y/CbCr 4:2:0 12-bit per component
-    YUV410 = v4l2_fourcc("Y", "U", "V", "9")  # 9  YUV 4:1:0
-    YVU410 = v4l2_fourcc("Y", "V", "U", "9")  # 9  YVU 4:1:0
-    YUV411P = v4l2_fourcc("4", "1", "1", "P")  # 12  YVU411 planar
-    YUV420 = v4l2_fourcc("Y", "U", "1", "2")  # 12  YUV 4:2:0
-    YVU420 = v4l2_fourcc("Y", "V", "1", "2")  # 12  YVU 4:2:0
-    YUV422P = v4l2_fourcc("4", "2", "2", "P")  # 16  YVU422 planar
-    YUV420M = v4l2_fourcc("Y", "M", "1", "2")  # 12  YUV420 planar
-    YVU420M = v4l2_fourcc("Y", "M", "2", "1")  # 12  YVU420 planar
-    YUV422M = v4l2_fourcc("Y", "M", "1", "6")  # 16  YUV422 planar
-    YVU422M = v4l2_fourcc("Y", "M", "6", "1")  # 16  YVU422 planar
-    YUV444M = v4l2_fourcc("Y", "M", "2", "4")  # 24  YUV444 planar
-    YVU444M = v4l2_fourcc("Y", "M", "4", "2")  # 24  YVU444 planar
-    NV12_4L4 = v4l2_fourcc("V", "T", "1", "2")  # 12  Y/CbCr 4:2:0  4x4 tiles
-    NV12_16L16 = v4l2_fourcc("H", "M", "1", "2")  # 12  Y/CbCr 4:2:0 16x16 tiles
-    NV12_32L32 = v4l2_fourcc("S", "T", "1", "2")  # 12  Y/CbCr 4:2:0 32x32 tiles
-    NV15_4L4 = v4l2_fourcc("V", "T", "1", "5")  # 15 Y/CbCr 4:2:0 10-bit 4x4 tiles
-    P010_4L4 = v4l2_fourcc("T", "0", "1", "0")  # 12  Y/CbCr 4:2:0 10-bit 4x4 macroblocks
-    NV12_8L128 = v4l2_fourcc("A", "T", "1", "2")  # Y/CbCr 4:2:0 8x128 tiles
-    NV12_10BE_8L128 = v4l2_fourcc_be("A", "X", "1", "2")  # Y/CbCr 4:2:0 10-bit 8x128 tiles
-    NV12MT = v4l2_fourcc("T", "M", "1", "2")  # 12  Y/CbCr 4:2:0 64x32 tiles
-    NV12MT_16X16 = v4l2_fourcc("V", "M", "1", "2")  # 12  Y/CbCr 4:2:0 16x16 tiles
-    NV12M_8L128 = v4l2_fourcc("N", "A", "1", "2")  # Y/CbCr 4:2:0 8x128 tiles
-    NV12M_10BE_8L128 = v4l2_fourcc_be("N", "T", "1", "2")  # Y/CbCr 4:2:0 10-bit 8x128 tiles
-    SBGGR8 = v4l2_fourcc("B", "A", "8", "1")  # 8  BGBG.. GRGR..
-    SGBRG8 = v4l2_fourcc("G", "B", "R", "G")  # 8  GBGB.. RGRG..
-    SGRBG8 = v4l2_fourcc("G", "R", "B", "G")  # 8  GRGR.. BGBG..
-    SRGGB8 = v4l2_fourcc("R", "G", "G", "B")  # 8  RGRG.. GBGB..
-    SBGGR10 = v4l2_fourcc("B", "G", "1", "0")  # 10  BGBG.. GRGR..
-    SGBRG10 = v4l2_fourcc("G", "B", "1", "0")  # 10  GBGB.. RGRG..
-    SGRBG10 = v4l2_fourcc("B", "A", "1", "0")  # 10  GRGR.. BGBG..
-    SRGGB10 = v4l2_fourcc("R", "G", "1", "0")  # 10  RGRG.. GBGB..
-    SBGGR10P = v4l2_fourcc("p", "B", "A", "A")
-    SGBRG10P = v4l2_fourcc("p", "G", "A", "A")
-    SGRBG10P = v4l2_fourcc("p", "g", "A", "A")
-    SRGGB10P = v4l2_fourcc("p", "R", "A", "A")
-    SBGGR10ALAW8 = v4l2_fourcc("a", "B", "A", "8")
-    SGBRG10ALAW8 = v4l2_fourcc("a", "G", "A", "8")
-    SGRBG10ALAW8 = v4l2_fourcc("a", "g", "A", "8")
-    SRGGB10ALAW8 = v4l2_fourcc("a", "R", "A", "8")
-    SBGGR10DPCM8 = v4l2_fourcc("b", "B", "A", "8")
-    SGBRG10DPCM8 = v4l2_fourcc("b", "G", "A", "8")
-    SGRBG10DPCM8 = v4l2_fourcc("B", "D", "1", "0")
-    SRGGB10DPCM8 = v4l2_fourcc("b", "R", "A", "8")
-    SBGGR12 = v4l2_fourcc("B", "G", "1", "2")  # 12  BGBG.. GRGR..
-    SGBRG12 = v4l2_fourcc("G", "B", "1", "2")  # 12  GBGB.. RGRG..
-    SGRBG12 = v4l2_fourcc("B", "A", "1", "2")  # 12  GRGR.. BGBG..
-    SRGGB12 = v4l2_fourcc("R", "G", "1", "2")  # 12  RGRG.. GBGB..
-    SBGGR12P = v4l2_fourcc("p", "B", "C", "C")
-    SGBRG12P = v4l2_fourcc("p", "G", "C", "C")
-    SGRBG12P = v4l2_fourcc("p", "g", "C", "C")
-    SRGGB12P = v4l2_fourcc("p", "R", "C", "C")
-    SBGGR14 = v4l2_fourcc("B", "G", "1", "4")  # 14  BGBG.. GRGR..
-    SGBRG14 = v4l2_fourcc("G", "B", "1", "4")  # 14  GBGB.. RGRG..
-    SGRBG14 = v4l2_fourcc("G", "R", "1", "4")  # 14  GRGR.. BGBG..
-    SRGGB14 = v4l2_fourcc("R", "G", "1", "4")  # 14  RGRG.. GBGB..
-    SBGGR14P = v4l2_fourcc("p", "B", "E", "E")
-    SGBRG14P = v4l2_fourcc("p", "G", "E", "E")
-    SGRBG14P = v4l2_fourcc("p", "g", "E", "E")
-    SRGGB14P = v4l2_fourcc("p", "R", "E", "E")
-    SBGGR16 = v4l2_fourcc("B", "Y", "R", "2")  # 16  BGBG.. GRGR..
-    SGBRG16 = v4l2_fourcc("G", "B", "1", "6")  # 16  GBGB.. RGRG..
-    SGRBG16 = v4l2_fourcc("G", "R", "1", "6")  # 16  GRGR.. BGBG..
-    SRGGB16 = v4l2_fourcc("R", "G", "1", "6")  # 16  RGRG.. GBGB..
-    HSV24 = v4l2_fourcc("H", "S", "V", "3")
-    HSV32 = v4l2_fourcc("H", "S", "V", "4")
-    MJPEG = v4l2_fourcc("M", "J", "P", "G")  # Motion-JPEG
-    JPEG = v4l2_fourcc("J", "P", "E", "G")  # JFIF JPEG
-    DV = v4l2_fourcc("d", "v", "s", "d")  # 1394
-    MPEG = v4l2_fourcc("M", "P", "E", "G")  # MPEG-1/2/4 Multiplexed
-    H264 = v4l2_fourcc("H", "2", "6", "4")  # H264 with start codes
-    H264_NO_SC = v4l2_fourcc("A", "V", "C", "1")  # H264 without start codes
-    H264_MVC = v4l2_fourcc("M", "2", "6", "4")  # H264 MVC
-    H263 = v4l2_fourcc("H", "2", "6", "3")  # H263
-    MPEG1 = v4l2_fourcc("M", "P", "G", "1")  # MPEG-1 ES
-    MPEG2 = v4l2_fourcc("M", "P", "G", "2")  # MPEG-2 ES
-    MPEG2_SLICE = v4l2_fourcc("M", "G", "2", "S")  # MPEG-2 parsed slice data
-    MPEG4 = v4l2_fourcc("M", "P", "G", "4")  # MPEG-4 part 2 ES
-    XVID = v4l2_fourcc("X", "V", "I", "D")  # Xvid
-    VC1_ANNEX_G = v4l2_fourcc("V", "C", "1", "G")  # SMPTE 421M Annex G compliant stream
-    VC1_ANNEX_L = v4l2_fourcc("V", "C", "1", "L")  # SMPTE 421M Annex L compliant stream
-    VP8 = v4l2_fourcc("V", "P", "8", "0")  # VP8
-    VP8_FRAME = v4l2_fourcc("V", "P", "8", "F")  # VP8 parsed frame
-    VP9 = v4l2_fourcc("V", "P", "9", "0")  # VP9
-    VP9_FRAME = v4l2_fourcc("V", "P", "9", "F")  # VP9 parsed frame
-    HEVC = v4l2_fourcc("H", "E", "V", "C")  # HEVC aka H.265
-    FWHT = v4l2_fourcc("F", "W", "H", "T")  # Fast Walsh Hadamard Transform (vicodec)
-    FWHT_STATELESS = v4l2_fourcc("S", "F", "W", "H")  # Stateless FWHT (vicodec)
-    H264_SLICE = v4l2_fourcc("S", "2", "6", "4")  # H264 parsed slices
-    HEVC_SLICE = v4l2_fourcc("S", "2", "6", "5")  # HEVC parsed slices
-    AV1_FRAME = v4l2_fourcc("A", "V", "1", "F")  # AV1 parsed frame
-    SPK = v4l2_fourcc("S", "P", "K", "0")  # Sorenson Spark
-    RV30 = v4l2_fourcc("R", "V", "3", "0")  # RealVideo 8
-    RV40 = v4l2_fourcc("R", "V", "4", "0")  # RealVideo 9 & 10
-    CPIA1 = v4l2_fourcc("C", "P", "I", "A")  # cpia1 YUV
-    WNVA = v4l2_fourcc("W", "N", "V", "A")  # Winnov hw compress
-    SN9C10X = v4l2_fourcc("S", "9", "1", "0")  # SN9C10x compression
-    SN9C20X_I420 = v4l2_fourcc("S", "9", "2", "0")  # SN9C20x YUV 4:2:0
-    PWC1 = v4l2_fourcc("P", "W", "C", "1")  # pwc older webcam
-    PWC2 = v4l2_fourcc("P", "W", "C", "2")  # pwc newer webcam
-    ET61X251 = v4l2_fourcc("E", "6", "2", "5")  # ET61X251 compression
-    SPCA501 = v4l2_fourcc("S", "5", "0", "1")  # YUYV per line
-    SPCA505 = v4l2_fourcc("S", "5", "0", "5")  # YYUV per line
-    SPCA508 = v4l2_fourcc("S", "5", "0", "8")  # YUVY per line
-    SPCA561 = v4l2_fourcc("S", "5", "6", "1")  # compressed GBRG bayer
-    PAC207 = v4l2_fourcc("P", "2", "0", "7")  # compressed BGGR bayer
-    MR97310A = v4l2_fourcc("M", "3", "1", "0")  # compressed BGGR bayer
-    JL2005BCD = v4l2_fourcc("J", "L", "2", "0")  # compressed RGGB bayer
-    SN9C2028 = v4l2_fourcc("S", "O", "N", "X")  # compressed GBRG bayer
-    SQ905C = v4l2_fourcc("9", "0", "5", "C")  # compressed RGGB bayer
-    PJPG = v4l2_fourcc("P", "J", "P", "G")  # Pixart 73xx JPEG
-    OV511 = v4l2_fourcc("O", "5", "1", "1")  # ov511 JPEG
-    OV518 = v4l2_fourcc("O", "5", "1", "8")  # ov518 JPEG
-    STV0680 = v4l2_fourcc("S", "6", "8", "0")  # stv0680 bayer
-    TM6000 = v4l2_fourcc("T", "M", "6", "0")  # tm5600/tm60x0
-    CIT_YYVYUY = v4l2_fourcc("C", "I", "T", "V")  # one line of Y then 1 line of VYUY
-    KONICA420 = v4l2_fourcc("K", "O", "N", "I")  # YUV420 planar in blocks of 256 pixels
-    JPGL = v4l2_fourcc("J", "P", "G", "L")  # JPEG-Lite
-    SE401 = v4l2_fourcc("S", "4", "0", "1")  # se401 janggu compressed rgb
-    S5C_UYVY_JPG = v4l2_fourcc("S", "5", "C", "I")  # S5C73M3cinterleaved UYVY/JPEG
-    Y8I = v4l2_fourcc("Y", "8", "I", " ")  # Greyscale 8-bit L/Rcinterleaved
-    Y12I = v4l2_fourcc("Y", "1", "2", "I")  # Greyscale 12-bit L/Rcinterleaved
-    Z16 = v4l2_fourcc("Z", "1", "6", " ")  # Depth data 16-bit
-    MT21C = v4l2_fourcc("M", "T", "2", "1")  # Mediatek compressed block mode
-    MM21 = v4l2_fourcc("M", "M", "2", "1")  # Mediatek 8-bit block mode, two non-contiguous planes
-    MT2110T = v4l2_fourcc("M", "T", "2", "T")  # Mediatek 10-bit block tile mode
-    MT2110R = v4l2_fourcc("M", "T", "2", "R")  # Mediatek 10-bit block raster mode
-    INZI = v4l2_fourcc("I", "N", "Z", "I")  # Intel Planar Greyscale 10-bit and Depth 16-bit
-    CNF4 = v4l2_fourcc("C", "N", "F", "4")  # Intel 4-bit packed depth confidence information
-    HI240 = v4l2_fourcc("H", "I", "2", "4")  # BTTV 8-bit dithered RGB
-    QC08C = v4l2_fourcc("Q", "0", "8", "C")  # Qualcomm 8-bit compressed
-    QC10C = v4l2_fourcc("Q", "1", "0", "C")  # Qualcomm 10-bit compressed
-    AJPG = v4l2_fourcc("A", "J", "P", "G")  # Aspeed JPEG
-    HEXTILE = v4l2_fourcc("H", "X", "T", "L")  # Hextile compressed
-    IPU3_SBGGR10 = v4l2_fourcc("i", "p", "3", "b")  # IPU3 packed 10-bit BGGR bayer
-    IPU3_SGBRG10 = v4l2_fourcc("i", "p", "3", "g")  # IPU3 packed 10-bit GBRG bayer
-    IPU3_SGRBG10 = v4l2_fourcc("i", "p", "3", "G")  # IPU3 packed 10-bit GRBG bayer
-    IPU3_SRGGB10 = v4l2_fourcc("i", "p", "3", "r")  # IPU3 packed 10-bit RGGB bayer
-    PRIV_MAGIC = 0xFEEDCAFE
-    FLAG_PREMUL_ALPHA = 0x1
-    FLAG_SET_CSC = 0x2
-    HM12 = NV12_16L16
-    SUNXI_TILED_NV12 = NV12_32L32
-
-
-class cPixelFormat(cuint):
-    @property
-    def enum(self):
-        try:
-            return PixelFormat(self.value)
-        except ValueError:
-            return None
+class EnumPixelFormat(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        RGB332 = v4l2_fourcc("R", "G", "B", "1")  # 8  RGB-3-3-2
+        RGB444 = v4l2_fourcc("R", "4", "4", "4")  # 16  xxxxrrrr ggggbbbb
+        ARGB444 = v4l2_fourcc("A", "R", "1", "2")  # 16  aaaarrrr ggggbbbb
+        XRGB444 = v4l2_fourcc("X", "R", "1", "2")  # 16  xxxxrrrr ggggbbbb
+        RGBA444 = v4l2_fourcc("R", "A", "1", "2")  # 16  rrrrgggg bbbbaaaa
+        RGBX444 = v4l2_fourcc("R", "X", "1", "2")  # 16  rrrrgggg bbbbxxxx
+        ABGR444 = v4l2_fourcc("A", "B", "1", "2")  # 16  aaaabbbb ggggrrrr
+        XBGR444 = v4l2_fourcc("X", "B", "1", "2")  # 16  xxxxbbbb ggggrrrr
+        BGRA444 = v4l2_fourcc("G", "A", "1", "2")  # 16  bbbbgggg rrrraaaa
+        BGRX444 = v4l2_fourcc("B", "X", "1", "2")  # 16  bbbbgggg rrrrxxxx
+        RGB555 = v4l2_fourcc("R", "G", "B", "O")  # 16  RGB-5-5-5
+        ARGB555 = v4l2_fourcc("A", "R", "1", "5")  # 16  ARGB-1-5-5-5
+        XRGB555 = v4l2_fourcc("X", "R", "1", "5")  # 16  XRGB-1-5-5-5
+        RGBA555 = v4l2_fourcc("R", "A", "1", "5")  # 16  RGBA-5-5-5-1
+        RGBX555 = v4l2_fourcc("R", "X", "1", "5")  # 16  RGBX-5-5-5-1
+        ABGR555 = v4l2_fourcc("A", "B", "1", "5")  # 16  ABGR-1-5-5-5
+        XBGR555 = v4l2_fourcc("X", "B", "1", "5")  # 16  XBGR-1-5-5-5
+        BGRA555 = v4l2_fourcc("B", "A", "1", "5")  # 16  BGRA-5-5-5-1
+        BGRX555 = v4l2_fourcc("B", "X", "1", "5")  # 16  BGRX-5-5-5-1
+        RGB565 = v4l2_fourcc("R", "G", "B", "P")  # 16  RGB-5-6-5
+        RGB555X = v4l2_fourcc("R", "G", "B", "Q")  # 16  RGB-5-5-5 BE
+        ARGB555X = v4l2_fourcc_be("A", "R", "1", "5")  # 16  ARGB-5-5-5 BE
+        XRGB555X = v4l2_fourcc_be("X", "R", "1", "5")  # 16  XRGB-5-5-5 BE
+        RGB565X = v4l2_fourcc("R", "G", "B", "R")  # 16  RGB-5-6-5 BE
+        BGR666 = v4l2_fourcc("B", "G", "R", "H")  # 18  BGR-6-6-6
+        BGR24 = v4l2_fourcc("B", "G", "R", "3")  # 24  BGR-8-8-8
+        RGB24 = v4l2_fourcc("R", "G", "B", "3")  # 24  RGB-8-8-8
+        BGR32 = v4l2_fourcc("B", "G", "R", "4")  # 32  BGR-8-8-8-8
+        ABGR32 = v4l2_fourcc("A", "R", "2", "4")  # 32  BGRA-8-8-8-8
+        XBGR32 = v4l2_fourcc("X", "R", "2", "4")  # 32  BGRX-8-8-8-8
+        BGRA32 = v4l2_fourcc("R", "A", "2", "4")  # 32  ABGR-8-8-8-8
+        BGRX32 = v4l2_fourcc("R", "X", "2", "4")  # 32  XBGR-8-8-8-8
+        RGB32 = v4l2_fourcc("R", "G", "B", "4")  # 32  RGB-8-8-8-8
+        RGBA32 = v4l2_fourcc("A", "B", "2", "4")  # 32  RGBA-8-8-8-8
+        RGBX32 = v4l2_fourcc("X", "B", "2", "4")  # 32  RGBX-8-8-8-8
+        ARGB32 = v4l2_fourcc("B", "A", "2", "4")  # 32  ARGB-8-8-8-8
+        XRGB32 = v4l2_fourcc("B", "X", "2", "4")  # 32  XRGB-8-8-8-8
+        RGBX1010102 = v4l2_fourcc("R", "X", "3", "0")  # 32  RGBX-10-10-10-2
+        RGBA1010102 = v4l2_fourcc("R", "A", "3", "0")  # 32  RGBA-10-10-10-2
+        ARGB2101010 = v4l2_fourcc("A", "R", "3", "0")  # 32  ARGB-2-10-10-10
+        BGR48_12 = v4l2_fourcc("B", "3", "1", "2")  # 48  BGR 12-bit per component
+        ABGR64_12 = v4l2_fourcc("B", "4", "1", "2")  # 64  BGRA 12-bit per component
+        GREY = v4l2_fourcc("G", "R", "E", "Y")  # 8  Greyscale
+        Y4 = v4l2_fourcc("Y", "0", "4", " ")  # 4  Greyscale
+        Y6 = v4l2_fourcc("Y", "0", "6", " ")  # 6  Greyscale
+        Y10 = v4l2_fourcc("Y", "1", "0", " ")  # 10  Greyscale
+        Y12 = v4l2_fourcc("Y", "1", "2", " ")  # 12  Greyscale
+        Y012 = v4l2_fourcc("Y", "0", "1", "2")  # 12  Greyscale
+        Y14 = v4l2_fourcc("Y", "1", "4", " ")  # 14  Greyscale
+        Y16 = v4l2_fourcc("Y", "1", "6", " ")  # 16  Greyscale
+        Y16_BE = v4l2_fourcc_be("Y", "1", "6", " ")  # 16  Greyscale BE
+        Y10BPACK = v4l2_fourcc("Y", "1", "0", "B")  # 10  Greyscale bit-packed
+        Y10P = v4l2_fourcc("Y", "1", "0", "P")  # 10  Greyscale, MIPI RAW10 packed
+        IPU3_Y10 = v4l2_fourcc("i", "p", "3", "y")  # IPU3 packed 10-bit greyscale
+        Y12P = v4l2_fourcc("Y", "1", "2", "P")  # 12  Greyscale, MIPI RAW12 packed
+        Y14P = v4l2_fourcc("Y", "1", "4", "P")  # 14  Greyscale, MIPI RAW14 packed
+        PAL8 = v4l2_fourcc("P", "A", "L", "8")  # 8  8-bit palette
+        UV8 = v4l2_fourcc("U", "V", "8", " ")  # 8  UV 4:4
+        YUYV = v4l2_fourcc("Y", "U", "Y", "V")  # 16  YUV 4:2:2
+        YYUV = v4l2_fourcc("Y", "Y", "U", "V")  # 16  YUV 4:2:2
+        YVYU = v4l2_fourcc("Y", "V", "Y", "U")  # 16 YVU 4:2:2
+        UYVY = v4l2_fourcc("U", "Y", "V", "Y")  # 16  YUV 4:2:2
+        VYUY = v4l2_fourcc("V", "Y", "U", "Y")  # 16  YUV 4:2:2
+        Y41P = v4l2_fourcc("Y", "4", "1", "P")  # 12  YUV 4:1:1
+        YUV444 = v4l2_fourcc("Y", "4", "4", "4")  # 16  xxxxyyyy uuuuvvvv
+        YUV555 = v4l2_fourcc("Y", "U", "V", "O")  # 16  YUV-5-5-5
+        YUV565 = v4l2_fourcc("Y", "U", "V", "P")  # 16  YUV-5-6-5
+        YUV24 = v4l2_fourcc("Y", "U", "V", "3")  # 24  YUV-8-8-8
+        YUV32 = v4l2_fourcc("Y", "U", "V", "4")  # 32  YUV-8-8-8-8
+        AYUV32 = v4l2_fourcc("A", "Y", "U", "V")  # 32  AYUV-8-8-8-8
+        XYUV32 = v4l2_fourcc("X", "Y", "U", "V")  # 32  XYUV-8-8-8-8
+        VUYA32 = v4l2_fourcc("V", "U", "Y", "A")  # 32  VUYA-8-8-8-8
+        VUYX32 = v4l2_fourcc("V", "U", "Y", "X")  # 32  VUYX-8-8-8-8
+        YUVA32 = v4l2_fourcc("Y", "U", "V", "A")  # 32  YUVA-8-8-8-8
+        YUVX32 = v4l2_fourcc("Y", "U", "V", "X")  # 32  YUVX-8-8-8-8
+        M420 = v4l2_fourcc("M", "4", "2", "0")  # 12  YUV 4:2:0 2 lines y, 1 line uvcinterleaved
+        YUV48_12 = v4l2_fourcc("Y", "3", "1", "2")  # 48  YUV 4:4:4 12-bit per component
+        Y210 = v4l2_fourcc("Y", "2", "1", "0")  # 32  YUYV 4:2:2
+        Y212 = v4l2_fourcc("Y", "2", "1", "2")  # 32  YUYV 4:2:2
+        Y216 = v4l2_fourcc("Y", "2", "1", "6")  # 32  YUYV 4:2:2
+        NV12 = v4l2_fourcc("N", "V", "1", "2")  # 12  Y/CbCr 4:2:0
+        NV21 = v4l2_fourcc("N", "V", "2", "1")  # 12  Y/CrCb 4:2:0
+        NV16 = v4l2_fourcc("N", "V", "1", "6")  # 16  Y/CbCr 4:2:2
+        NV61 = v4l2_fourcc("N", "V", "6", "1")  # 16  Y/CrCb 4:2:2
+        NV24 = v4l2_fourcc("N", "V", "2", "4")  # 24  Y/CbCr 4:4:4
+        NV42 = v4l2_fourcc("N", "V", "4", "2")  # 24  Y/CrCb 4:4:4
+        P010 = v4l2_fourcc("P", "0", "1", "0")  # 24  Y/CbCr 4:2:0 10-bit per component
+        P012 = v4l2_fourcc("P", "0", "1", "2")  # 24  Y/CbCr 4:2:0 12-bit per component
+        NV12M = v4l2_fourcc("N", "M", "1", "2")  # 12  Y/CbCr 4:2:0
+        NV21M = v4l2_fourcc("N", "M", "2", "1")  # 21  Y/CrCb 4:2:0
+        NV16M = v4l2_fourcc("N", "M", "1", "6")  # 16  Y/CbCr 4:2:2
+        NV61M = v4l2_fourcc("N", "M", "6", "1")  # 16  Y/CrCb 4:2:2
+        P012M = v4l2_fourcc("P", "M", "1", "2")  # 24  Y/CbCr 4:2:0 12-bit per component
+        YUV410 = v4l2_fourcc("Y", "U", "V", "9")  # 9  YUV 4:1:0
+        YVU410 = v4l2_fourcc("Y", "V", "U", "9")  # 9  YVU 4:1:0
+        YUV411P = v4l2_fourcc("4", "1", "1", "P")  # 12  YVU411 planar
+        YUV420 = v4l2_fourcc("Y", "U", "1", "2")  # 12  YUV 4:2:0
+        YVU420 = v4l2_fourcc("Y", "V", "1", "2")  # 12  YVU 4:2:0
+        YUV422P = v4l2_fourcc("4", "2", "2", "P")  # 16  YVU422 planar
+        YUV420M = v4l2_fourcc("Y", "M", "1", "2")  # 12  YUV420 planar
+        YVU420M = v4l2_fourcc("Y", "M", "2", "1")  # 12  YVU420 planar
+        YUV422M = v4l2_fourcc("Y", "M", "1", "6")  # 16  YUV422 planar
+        YVU422M = v4l2_fourcc("Y", "M", "6", "1")  # 16  YVU422 planar
+        YUV444M = v4l2_fourcc("Y", "M", "2", "4")  # 24  YUV444 planar
+        YVU444M = v4l2_fourcc("Y", "M", "4", "2")  # 24  YVU444 planar
+        NV12_4L4 = v4l2_fourcc("V", "T", "1", "2")  # 12  Y/CbCr 4:2:0  4x4 tiles
+        NV12_16L16 = v4l2_fourcc("H", "M", "1", "2")  # 12  Y/CbCr 4:2:0 16x16 tiles
+        NV12_32L32 = v4l2_fourcc("S", "T", "1", "2")  # 12  Y/CbCr 4:2:0 32x32 tiles
+        NV15_4L4 = v4l2_fourcc("V", "T", "1", "5")  # 15 Y/CbCr 4:2:0 10-bit 4x4 tiles
+        P010_4L4 = v4l2_fourcc("T", "0", "1", "0")  # 12  Y/CbCr 4:2:0 10-bit 4x4 macroblocks
+        NV12_8L128 = v4l2_fourcc("A", "T", "1", "2")  # Y/CbCr 4:2:0 8x128 tiles
+        NV12_10BE_8L128 = v4l2_fourcc_be("A", "X", "1", "2")  # Y/CbCr 4:2:0 10-bit 8x128 tiles
+        NV12MT = v4l2_fourcc("T", "M", "1", "2")  # 12  Y/CbCr 4:2:0 64x32 tiles
+        NV12MT_16X16 = v4l2_fourcc("V", "M", "1", "2")  # 12  Y/CbCr 4:2:0 16x16 tiles
+        NV12M_8L128 = v4l2_fourcc("N", "A", "1", "2")  # Y/CbCr 4:2:0 8x128 tiles
+        NV12M_10BE_8L128 = v4l2_fourcc_be("N", "T", "1", "2")  # Y/CbCr 4:2:0 10-bit 8x128 tiles
+        SBGGR8 = v4l2_fourcc("B", "A", "8", "1")  # 8  BGBG.. GRGR..
+        SGBRG8 = v4l2_fourcc("G", "B", "R", "G")  # 8  GBGB.. RGRG..
+        SGRBG8 = v4l2_fourcc("G", "R", "B", "G")  # 8  GRGR.. BGBG..
+        SRGGB8 = v4l2_fourcc("R", "G", "G", "B")  # 8  RGRG.. GBGB..
+        SBGGR10 = v4l2_fourcc("B", "G", "1", "0")  # 10  BGBG.. GRGR..
+        SGBRG10 = v4l2_fourcc("G", "B", "1", "0")  # 10  GBGB.. RGRG..
+        SGRBG10 = v4l2_fourcc("B", "A", "1", "0")  # 10  GRGR.. BGBG..
+        SRGGB10 = v4l2_fourcc("R", "G", "1", "0")  # 10  RGRG.. GBGB..
+        SBGGR10P = v4l2_fourcc("p", "B", "A", "A")
+        SGBRG10P = v4l2_fourcc("p", "G", "A", "A")
+        SGRBG10P = v4l2_fourcc("p", "g", "A", "A")
+        SRGGB10P = v4l2_fourcc("p", "R", "A", "A")
+        SBGGR10ALAW8 = v4l2_fourcc("a", "B", "A", "8")
+        SGBRG10ALAW8 = v4l2_fourcc("a", "G", "A", "8")
+        SGRBG10ALAW8 = v4l2_fourcc("a", "g", "A", "8")
+        SRGGB10ALAW8 = v4l2_fourcc("a", "R", "A", "8")
+        SBGGR10DPCM8 = v4l2_fourcc("b", "B", "A", "8")
+        SGBRG10DPCM8 = v4l2_fourcc("b", "G", "A", "8")
+        SGRBG10DPCM8 = v4l2_fourcc("B", "D", "1", "0")
+        SRGGB10DPCM8 = v4l2_fourcc("b", "R", "A", "8")
+        SBGGR12 = v4l2_fourcc("B", "G", "1", "2")  # 12  BGBG.. GRGR..
+        SGBRG12 = v4l2_fourcc("G", "B", "1", "2")  # 12  GBGB.. RGRG..
+        SGRBG12 = v4l2_fourcc("B", "A", "1", "2")  # 12  GRGR.. BGBG..
+        SRGGB12 = v4l2_fourcc("R", "G", "1", "2")  # 12  RGRG.. GBGB..
+        SBGGR12P = v4l2_fourcc("p", "B", "C", "C")
+        SGBRG12P = v4l2_fourcc("p", "G", "C", "C")
+        SGRBG12P = v4l2_fourcc("p", "g", "C", "C")
+        SRGGB12P = v4l2_fourcc("p", "R", "C", "C")
+        SBGGR14 = v4l2_fourcc("B", "G", "1", "4")  # 14  BGBG.. GRGR..
+        SGBRG14 = v4l2_fourcc("G", "B", "1", "4")  # 14  GBGB.. RGRG..
+        SGRBG14 = v4l2_fourcc("G", "R", "1", "4")  # 14  GRGR.. BGBG..
+        SRGGB14 = v4l2_fourcc("R", "G", "1", "4")  # 14  RGRG.. GBGB..
+        SBGGR14P = v4l2_fourcc("p", "B", "E", "E")
+        SGBRG14P = v4l2_fourcc("p", "G", "E", "E")
+        SGRBG14P = v4l2_fourcc("p", "g", "E", "E")
+        SRGGB14P = v4l2_fourcc("p", "R", "E", "E")
+        SBGGR16 = v4l2_fourcc("B", "Y", "R", "2")  # 16  BGBG.. GRGR..
+        SGBRG16 = v4l2_fourcc("G", "B", "1", "6")  # 16  GBGB.. RGRG..
+        SGRBG16 = v4l2_fourcc("G", "R", "1", "6")  # 16  GRGR.. BGBG..
+        SRGGB16 = v4l2_fourcc("R", "G", "1", "6")  # 16  RGRG.. GBGB..
+        HSV24 = v4l2_fourcc("H", "S", "V", "3")
+        HSV32 = v4l2_fourcc("H", "S", "V", "4")
+        MJPEG = v4l2_fourcc("M", "J", "P", "G")  # Motion-JPEG
+        JPEG = v4l2_fourcc("J", "P", "E", "G")  # JFIF JPEG
+        DV = v4l2_fourcc("d", "v", "s", "d")  # 1394
+        MPEG = v4l2_fourcc("M", "P", "E", "G")  # MPEG-1/2/4 Multiplexed
+        H264 = v4l2_fourcc("H", "2", "6", "4")  # H264 with start codes
+        H264_NO_SC = v4l2_fourcc("A", "V", "C", "1")  # H264 without start codes
+        H264_MVC = v4l2_fourcc("M", "2", "6", "4")  # H264 MVC
+        H263 = v4l2_fourcc("H", "2", "6", "3")  # H263
+        MPEG1 = v4l2_fourcc("M", "P", "G", "1")  # MPEG-1 ES
+        MPEG2 = v4l2_fourcc("M", "P", "G", "2")  # MPEG-2 ES
+        MPEG2_SLICE = v4l2_fourcc("M", "G", "2", "S")  # MPEG-2 parsed slice data
+        MPEG4 = v4l2_fourcc("M", "P", "G", "4")  # MPEG-4 part 2 ES
+        XVID = v4l2_fourcc("X", "V", "I", "D")  # Xvid
+        VC1_ANNEX_G = v4l2_fourcc("V", "C", "1", "G")  # SMPTE 421M Annex G compliant stream
+        VC1_ANNEX_L = v4l2_fourcc("V", "C", "1", "L")  # SMPTE 421M Annex L compliant stream
+        VP8 = v4l2_fourcc("V", "P", "8", "0")  # VP8
+        VP8_FRAME = v4l2_fourcc("V", "P", "8", "F")  # VP8 parsed frame
+        VP9 = v4l2_fourcc("V", "P", "9", "0")  # VP9
+        VP9_FRAME = v4l2_fourcc("V", "P", "9", "F")  # VP9 parsed frame
+        HEVC = v4l2_fourcc("H", "E", "V", "C")  # HEVC aka H.265
+        FWHT = v4l2_fourcc("F", "W", "H", "T")  # Fast Walsh Hadamard Transform (vicodec)
+        FWHT_STATELESS = v4l2_fourcc("S", "F", "W", "H")  # Stateless FWHT (vicodec)
+        H264_SLICE = v4l2_fourcc("S", "2", "6", "4")  # H264 parsed slices
+        HEVC_SLICE = v4l2_fourcc("S", "2", "6", "5")  # HEVC parsed slices
+        AV1_FRAME = v4l2_fourcc("A", "V", "1", "F")  # AV1 parsed frame
+        SPK = v4l2_fourcc("S", "P", "K", "0")  # Sorenson Spark
+        RV30 = v4l2_fourcc("R", "V", "3", "0")  # RealVideo 8
+        RV40 = v4l2_fourcc("R", "V", "4", "0")  # RealVideo 9 & 10
+        CPIA1 = v4l2_fourcc("C", "P", "I", "A")  # cpia1 YUV
+        WNVA = v4l2_fourcc("W", "N", "V", "A")  # Winnov hw compress
+        SN9C10X = v4l2_fourcc("S", "9", "1", "0")  # SN9C10x compression
+        SN9C20X_I420 = v4l2_fourcc("S", "9", "2", "0")  # SN9C20x YUV 4:2:0
+        PWC1 = v4l2_fourcc("P", "W", "C", "1")  # pwc older webcam
+        PWC2 = v4l2_fourcc("P", "W", "C", "2")  # pwc newer webcam
+        ET61X251 = v4l2_fourcc("E", "6", "2", "5")  # ET61X251 compression
+        SPCA501 = v4l2_fourcc("S", "5", "0", "1")  # YUYV per line
+        SPCA505 = v4l2_fourcc("S", "5", "0", "5")  # YYUV per line
+        SPCA508 = v4l2_fourcc("S", "5", "0", "8")  # YUVY per line
+        SPCA561 = v4l2_fourcc("S", "5", "6", "1")  # compressed GBRG bayer
+        PAC207 = v4l2_fourcc("P", "2", "0", "7")  # compressed BGGR bayer
+        MR97310A = v4l2_fourcc("M", "3", "1", "0")  # compressed BGGR bayer
+        JL2005BCD = v4l2_fourcc("J", "L", "2", "0")  # compressed RGGB bayer
+        SN9C2028 = v4l2_fourcc("S", "O", "N", "X")  # compressed GBRG bayer
+        SQ905C = v4l2_fourcc("9", "0", "5", "C")  # compressed RGGB bayer
+        PJPG = v4l2_fourcc("P", "J", "P", "G")  # Pixart 73xx JPEG
+        OV511 = v4l2_fourcc("O", "5", "1", "1")  # ov511 JPEG
+        OV518 = v4l2_fourcc("O", "5", "1", "8")  # ov518 JPEG
+        STV0680 = v4l2_fourcc("S", "6", "8", "0")  # stv0680 bayer
+        TM6000 = v4l2_fourcc("T", "M", "6", "0")  # tm5600/tm60x0
+        CIT_YYVYUY = v4l2_fourcc("C", "I", "T", "V")  # one line of Y then 1 line of VYUY
+        KONICA420 = v4l2_fourcc("K", "O", "N", "I")  # YUV420 planar in blocks of 256 pixels
+        JPGL = v4l2_fourcc("J", "P", "G", "L")  # JPEG-Lite
+        SE401 = v4l2_fourcc("S", "4", "0", "1")  # se401 janggu compressed rgb
+        S5C_UYVY_JPG = v4l2_fourcc("S", "5", "C", "I")  # S5C73M3cinterleaved UYVY/JPEG
+        Y8I = v4l2_fourcc("Y", "8", "I", " ")  # Greyscale 8-bit L/Rcinterleaved
+        Y12I = v4l2_fourcc("Y", "1", "2", "I")  # Greyscale 12-bit L/Rcinterleaved
+        Z16 = v4l2_fourcc("Z", "1", "6", " ")  # Depth data 16-bit
+        MT21C = v4l2_fourcc("M", "T", "2", "1")  # Mediatek compressed block mode
+        MM21 = v4l2_fourcc("M", "M", "2", "1")  # Mediatek 8-bit block mode, two non-contiguous planes
+        MT2110T = v4l2_fourcc("M", "T", "2", "T")  # Mediatek 10-bit block tile mode
+        MT2110R = v4l2_fourcc("M", "T", "2", "R")  # Mediatek 10-bit block raster mode
+        INZI = v4l2_fourcc("I", "N", "Z", "I")  # Intel Planar Greyscale 10-bit and Depth 16-bit
+        CNF4 = v4l2_fourcc("C", "N", "F", "4")  # Intel 4-bit packed depth confidence information
+        HI240 = v4l2_fourcc("H", "I", "2", "4")  # BTTV 8-bit dithered RGB
+        QC08C = v4l2_fourcc("Q", "0", "8", "C")  # Qualcomm 8-bit compressed
+        QC10C = v4l2_fourcc("Q", "1", "0", "C")  # Qualcomm 10-bit compressed
+        AJPG = v4l2_fourcc("A", "J", "P", "G")  # Aspeed JPEG
+        HEXTILE = v4l2_fourcc("H", "X", "T", "L")  # Hextile compressed
+        IPU3_SBGGR10 = v4l2_fourcc("i", "p", "3", "b")  # IPU3 packed 10-bit BGGR bayer
+        IPU3_SGBRG10 = v4l2_fourcc("i", "p", "3", "g")  # IPU3 packed 10-bit GBRG bayer
+        IPU3_SGRBG10 = v4l2_fourcc("i", "p", "3", "G")  # IPU3 packed 10-bit GRBG bayer
+        IPU3_SRGGB10 = v4l2_fourcc("i", "p", "3", "r")  # IPU3 packed 10-bit RGGB bayer
+        PRIV_MAGIC = 0xFEEDCAFE
+        FLAG_PREMUL_ALPHA = 0x1
+        FLAG_SET_CSC = 0x2
+        HM12 = NV12_16L16
+        SUNXI_TILED_NV12 = NV12_32L32
 
 
 class MetaFormat(enum.IntEnum):
@@ -2852,7 +2846,7 @@ class v4l2_pix_format(Struct):
 v4l2_pix_format._fields_ = [
     ("width", cuint),
     ("height", cuint),
-    ("pixelformat", cPixelFormat),
+    ("pixelformat", EnumPixelFormat),
     ("field", cuint),
     ("bytesperline", cuint),
     ("sizeimage", cuint),
@@ -2874,7 +2868,7 @@ v4l2_fmtdesc._fields_ = [
     ("type", cuint),
     ("flags", cuint),
     ("description", cchar * 32),
-    ("pixelformat", cPixelFormat),
+    ("pixelformat", EnumPixelFormat),
     ("mbus_code", cuint),
     ("reserved", cuint * 3),
 ]
@@ -3058,7 +3052,7 @@ class v4l2_framebuffer(Struct):
     M1._fields_ = [
         ("width", cuint),
         ("height", cuint),
-        ("pixelformat", cPixelFormat),
+        ("pixelformat", EnumPixelFormat),
         ("field", cuint),
         ("bytesperline", cuint),
         ("sizeimage", cuint),
@@ -3695,7 +3689,7 @@ class v4l2_pix_format_mplane(Struct):
 v4l2_pix_format_mplane._fields_ = [
     ("width", cuint),
     ("height", cuint),
-    ("pixelformat", cPixelFormat),
+    ("pixelformat", EnumPixelFormat),
     ("field", cuint),
     ("colorspace", cuint),
     ("plane_fmt", v4l2_plane_pix_format * 8),
@@ -3712,7 +3706,7 @@ class v4l2_sdr_format(Struct):
     _pack_ = True
 
 
-v4l2_sdr_format._fields_ = [("pixelformat", cPixelFormat), ("buffersize", cuint), ("reserved", cchar * 24)]
+v4l2_sdr_format._fields_ = [("pixelformat", EnumPixelFormat), ("buffersize", cuint), ("reserved", cchar * 24)]
 
 
 class v4l2_meta_format(Struct):

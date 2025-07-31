@@ -17,13 +17,13 @@
 import os
 import errno
 
-from v4l2codecs import cuse
+from v4l2codecs.fuse import Cuse
 from v4l2codecs import log
 from v4l2codecs import defs
 from v4l2codecs import v4l2
 
 
-class Device(cuse.Cuse):
+class Device(Cuse):
     ioctls = {v4l2.IOC.QUERYCAP: v4l2.v4l2_capability,
               v4l2.IOC.ENUM_FMT: v4l2.v4l2_fmtdesc,
               v4l2.IOC.TRY_FMT: v4l2.v4l2_format,
@@ -32,8 +32,8 @@ class Device(cuse.Cuse):
               v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers,
               v4l2.IOC.QUERYBUF: v4l2.v4l2_buffer}
 
-    formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.PixelFormat.NV12, 0),
-               (v4l2.BufType.VIDEO_OUTPUT, v4l2.PixelFormat.H264, v4l2.ImageFormatFlag.COMPRESSED)]
+    formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.EnumPixelFormat._enum_.NV12, 0),
+               (v4l2.BufType.VIDEO_OUTPUT, v4l2.EnumPixelFormat._enum_.H264, v4l2.ImageFormatFlag.COMPRESSED)]
 
     def __init__(self):
         self.name = "mpp"

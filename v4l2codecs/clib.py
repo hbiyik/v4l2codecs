@@ -25,7 +25,10 @@ class CIntEnum(ctypes.c_int):
 
     @property
     def enum(self):
-        return self._enum_(self)
+        try:
+            return self._enum_(self)
+        except ValueError:
+            return
 
 
 class CLib:
