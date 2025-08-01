@@ -350,45 +350,240 @@ class EnumChannelOrder(clib.CIntEnum):
 
 class EnumChannel(clib.CIntEnum):
     class _enum_(enum.IntEnum):
-        AV_CHAN_NONE = -1
-        AV_CHAN_FRONT_LEFT = enum.auto()
-        AV_CHAN_FRONT_RIGHT = enum.auto()
-        AV_CHAN_FRONT_CENTER = enum.auto()
-        AV_CHAN_LOW_FREQUENCY = enum.auto()
-        AV_CHAN_BACK_LEFT = enum.auto()
-        AV_CHAN_BACK_RIGHT = enum.auto()
-        AV_CHAN_FRONT_LEFT_OF_CENTER = enum.auto()
-        AV_CHAN_FRONT_RIGHT_OF_CENTER = enum.auto()
-        AV_CHAN_BACK_CENTER = enum.auto()
-        AV_CHAN_SIDE_LEFT = enum.auto()
-        AV_CHAN_SIDE_RIGHT = enum.auto()
-        AV_CHAN_TOP_CENTER = enum.auto()
-        AV_CHAN_TOP_FRONT_LEFT = enum.auto()
-        AV_CHAN_TOP_FRONT_CENTER = enum.auto()
-        AV_CHAN_TOP_FRONT_RIGHT = enum.auto()
-        AV_CHAN_TOP_BACK_LEFT = enum.auto()
-        AV_CHAN_TOP_BACK_CENTER = enum.auto()
-        AV_CHAN_TOP_BACK_RIGHT = enum.auto()
-        AV_CHAN_STEREO_LEFT = 29
-        AV_CHAN_STEREO_RIGHT = enum.auto()
-        AV_CHAN_WIDE_LEFT = enum.auto()
-        AV_CHAN_WIDE_RIGHT = enum.auto()
-        AV_CHAN_SURROUND_DIRECT_LEFT = enum.auto()
-        AV_CHAN_SURROUND_DIRECT_RIGHT = enum.auto()
-        AV_CHAN_LOW_FREQUENCY_2 = enum.auto()
-        AV_CHAN_TOP_SIDE_LEFT = enum.auto()
-        AV_CHAN_TOP_SIDE_RIGHT = enum.auto()
-        AV_CHAN_BOTTOM_FRONT_CENTER = enum.auto()
-        AV_CHAN_BOTTOM_FRONT_LEFT = enum.auto()
-        AV_CHAN_BOTTOM_FRONT_RIGHT = enum.auto()
-        AV_CHAN_SIDE_SURROUND_LEFT = enum.auto()
-        AV_CHAN_SIDE_SURROUND_RIGHT = enum.auto()
-        AV_CHAN_TOP_SURROUND_LEFT = enum.auto()
-        AV_CHAN_TOP_SURROUND_RIGHT = enum.auto()
-        AV_CHAN_UNUSED = 0x200
-        AV_CHAN_UNKNOWN = 0x300
-        AV_CHAN_AMBISONIC_BASE = 0x400
-        AV_CHAN_AMBISONIC_END = 0x7ff
+        NONE = -1
+        FRONT_LEFT = enum.auto()
+        FRONT_RIGHT = enum.auto()
+        FRONT_CENTER = enum.auto()
+        LOW_FREQUENCY = enum.auto()
+        BACK_LEFT = enum.auto()
+        BACK_RIGHT = enum.auto()
+        FRONT_LEFT_OF_CENTER = enum.auto()
+        FRONT_RIGHT_OF_CENTER = enum.auto()
+        BACK_CENTER = enum.auto()
+        SIDE_LEFT = enum.auto()
+        SIDE_RIGHT = enum.auto()
+        TOP_CENTER = enum.auto()
+        TOP_FRONT_LEFT = enum.auto()
+        TOP_FRONT_CENTER = enum.auto()
+        TOP_FRONT_RIGHT = enum.auto()
+        TOP_BACK_LEFT = enum.auto()
+        TOP_BACK_CENTER = enum.auto()
+        TOP_BACK_RIGHT = enum.auto()
+        STEREO_LEFT = 29
+        STEREO_RIGHT = enum.auto()
+        WIDE_LEFT = enum.auto()
+        WIDE_RIGHT = enum.auto()
+        SURROUND_DIRECT_LEFT = enum.auto()
+        SURROUND_DIRECT_RIGHT = enum.auto()
+        LOW_FREQUENCY_2 = enum.auto()
+        TOP_SIDE_LEFT = enum.auto()
+        TOP_SIDE_RIGHT = enum.auto()
+        BOTTOM_FRONT_CENTER = enum.auto()
+        BOTTOM_FRONT_LEFT = enum.auto()
+        BOTTOM_FRONT_RIGHT = enum.auto()
+        SIDE_SURROUND_LEFT = enum.auto()
+        SIDE_SURROUND_RIGHT = enum.auto()
+        TOP_SURROUND_LEFT = enum.auto()
+        TOP_SURROUND_RIGHT = enum.auto()
+        UNUSED = 0x200
+        UNKNOWN = 0x300
+        AMBISONIC_BASE = 0x400
+        AMBISONIC_END = 0x7ff
+
+
+class EnumOptionType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        FLAGS = 1
+        INT = enum.auto()
+        INT64 = enum.auto()
+        DOUBLE = enum.auto()
+        FLOAT = enum.auto()
+        STRING = enum.auto()
+        RATIONAL = enum.auto()
+        BINARY = enum.auto()
+        DICT = enum.auto()
+        UINT64 = enum.auto()
+        CONST = enum.auto()
+        IMAGE_SIZE = enum.auto()
+        PIXEL_FMT = enum.auto()
+        SAMPLE_FMT = enum.auto()
+        VIDEO_RATE = enum.auto()
+        DURATION = enum.auto()
+        COLOR = enum.auto()
+        BOOL = enum.auto()
+        CHLAYOUT = enum.auto()
+        UINT = enum.auto()
+        FLAG_ARRAY = (1 << 16)
+
+
+class EnumClassCategory(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        NA = 0
+        INPUT = enum.auto()
+        OUTPUT = enum.auto()
+        MUXER = enum.auto()
+        DEMUXER = enum.auto()
+        ENCODER = enum.auto()
+        DECODER = enum.auto()
+        FILTER = enum.auto()
+        BITSTREAM_FILTER = enum.auto()
+        SWSCALER = enum.auto()
+        SWRESAMPLER = enum.auto()
+        DEVICE_VIDEO_OUTPUT = 40
+        DEVICE_VIDEO_INPUT = enum.auto()
+        DEVICE_AUDIO_OUTPUT = enum.auto()
+        DEVICE_AUDIO_INPUT = enum.auto()
+        DEVICE_OUTPUT = enum.auto()
+        DEVICE_INPUT = enum.auto()
+        NB = enum.auto()
+
+
+class EnumFrameSideDataType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        PANSCAN = 0
+        A53_CC = enum.auto()
+        STEREO3D = enum.auto()
+        MATRIXENCODING = enum.auto()
+        DOWNMIX_INFO = enum.auto()
+        REPLAYGAIN = enum.auto()
+        DISPLAYMATRIX = enum.auto()
+        AFD = enum.auto()
+        MOTION_VECTORS = enum.auto()
+        SKIP_SAMPLES = enum.auto()
+        AUDIO_SERVICE_TYPE = enum.auto()
+        MASTERING_DISPLAY_METADATA = enum.auto()
+        SPHERICAL = enum.auto()
+        CONTENT_LIGHT_LEVEL = enum.auto()
+        ICC_PROFILE = enum.auto()
+        S12M_TIMECODE = enum.auto()
+        DYNAMIC_HDR_PLUS = enum.auto()
+        REGIONS_OF_INTEREST = enum.auto()
+        VIDEO_ENC_PARAMS = enum.auto()
+        SEI_UNREGISTERED = enum.auto()
+        FILM_GRAIN_PARAMS = enum.auto()
+        DETECTION_BBOXES = enum.auto()
+        DOVI_RPU_BUFFER = enum.auto()
+        DOVI_METADATA = enum.auto()
+        DYNAMIC_HDR_VIVID = enum.auto()
+        AMBIENT_VIEWING_ENVIRONMENT = enum.auto()
+        VIDEO_HINT = enum.auto()
+        LCEVC = enum.auto()
+        VIEW_ID = enum.auto()
+
+
+class EnumActiveFormatDescription(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        SAME = 8
+        D_4_3 = 9
+        D_16_9 = 10
+        D_14_9 = 11
+        D_4_3_SP_14_9 = 13
+        D_16_9_SP_14_9 = 14
+        D_SP_4_3 = 15
+
+
+class EnumSideDataProps(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        GLOBAL = (1 << 0)
+        MULTI = (1 << 1)
+
+
+class EnumColorRange(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        UNSPECIFIED = 0
+        MPEG = 1
+        JPEG = 2
+        NB = enum.auto()
+
+
+class EnumColorPrimaries(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        AVCOL_PRI_RESERVED0 = 0
+        AVCOL_PRI_BT709 = 1
+        AVCOL_PRI_UNSPECIFIED = 2
+        AVCOL_PRI_RESERVED = 3
+        AVCOL_PRI_BT470M = 4
+        AVCOL_PRI_BT470BG = 5
+        AVCOL_PRI_SMPTE170M = 6
+        AVCOL_PRI_SMPTE240M = 7
+        AVCOL_PRI_FILM = 8
+        AVCOL_PRI_BT2020 = 9
+        AVCOL_PRI_SMPTE428 = 10
+        AVCOL_PRI_SMPTE431 = 11
+        AVCOL_PRI_SMPTE432 = 12
+        AVCOL_PRI_EBU3213 = 22
+        AVCOL_PRI_NB = enum.auto()
+
+
+class EnumColorTransferCharacteristic(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        RESERVED0 = 0
+        BT709 = 1
+        UNSPECIFIED = 2
+        RESERVED = 3
+        GAMMA22 = 4
+        GAMMA28 = 5
+        SMPTE170M = 6
+        SMPTE240M = 7
+        LINEAR = 8
+        LOG = 9
+        LOG_SQRT = 10
+        IEC61966_2_4 = 11
+        BT1361_ECG = 12
+        IEC61966_2_1 = 13
+        BT2020_10 = 14
+        BT2020_12 = 15
+        SMPTE2084 = 16
+        SMPTE428 = 17
+        ARIB_STD_B67 = 18
+        NB = enum.auto()
+
+
+class EnumColorSpace(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        RGB = 0
+        BT709 = 1
+        UNSPECIFIED = 2
+        RESERVED = 3
+        FCC = 4
+        BT470BG = 5
+        SMPTE170M = 6
+        SMPTE240M = 7
+        YCGCO = 8
+        BT2020_NCL = 9
+        BT2020_CL = 10
+        SMPTE2085 = 11
+        CHROMA_DERIVED_NCL = 12
+        CHROMA_DERIVED_CL = 13
+        ICTCP = 14
+        IPT_C2 = 15
+        YCGCO_RE = 16
+        YCGCO_RO = 17
+        NB = enum.auto()
+
+
+class EnumChromaLocation(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        UNSPECIFIED = 0
+        LEFT = 1
+        CENTER = 2
+        TOPLEFT = 3
+        TOP = 4
+        BOTTOMLEFT = 5
+        BOTTOM = 6
+        NB = enum.auto()
+
+
+class EnumPictureType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        NONE = 0
+        II = enum.auto()
+        P = enum.auto()
+        B = enum.auto()
+        S = enum.auto()
+        SI = enum.auto()
+        SP = enum.auto()
+        BI = enum.auto()
 
 
 class StructRational(ctypes.Structure):
@@ -417,3 +612,145 @@ class StructChannelLayout(ctypes.Structure):
         ('nb_channels', ctypes.c_int),
         ('u', UnionChannel),
         ('opaque', ctypes.c_void_p),]
+
+
+class StructOptionArrayDef(ctypes.Structure):
+    _fields_ = [
+        ('def', ctypes.c_char_p),
+        ('size_min', ctypes.c_uint),
+        ('size_max', ctypes.c_uint),
+        ('sep', ctypes.c_char)]
+
+
+class UnionOption(ctypes.Union):
+    _fields_ = [
+        ('i64', ctypes.c_int64),
+        ('dbl', ctypes.c_double),
+        ('str', ctypes.c_char_p),
+        ('q', StructRational),
+        ('arr', ctypes.POINTER(StructOptionArrayDef))]
+
+
+class StructOption(ctypes.Structure):
+    _fields_ = [
+        ('name', ctypes.c_char_p),
+        ('help', ctypes.c_char_p),
+        ('offset', ctypes.c_int),
+        ('type', EnumOptionType),
+        ('default_val', UnionOption),
+        ('min', ctypes.c_double),
+        ('max', ctypes.c_double),
+        ('flags', ctypes.c_int),
+        ('unit', ctypes.c_char_p)]
+
+
+class StructOptionRange(ctypes.Structure):
+    _fields_ = [
+        ('str', ctypes.c_char_p),
+        ('value_min', ctypes.c_double),
+        ('value_max', ctypes.c_double),
+        ('component_min', ctypes.c_double),
+        ('component_max', ctypes.c_double),
+        ('is_range', ctypes.c_int)]
+
+
+class StructOptionRanges(ctypes.Structure):
+    _fields_ = [
+        ('range', ctypes.POINTER(ctypes.POINTER(StructOptionRange))),
+        ('nb_ranges', ctypes.c_int),
+        ('nb_components', ctypes.c_int),
+    ]
+
+
+class StructClass(ctypes.Structure):
+    pass
+
+
+StructClass._fields_ = [
+    ('class_name', ctypes.c_char_p),
+    ('item_name', ctypes.CFUNCTYPE(ctypes.c_char_p,
+                                   ctypes.c_void_p)),
+    ('option', ctypes.POINTER(StructOption)),
+    ('version', ctypes.c_int),
+    ('log_level_offset_offset', ctypes.c_int),
+    ('parent_log_context_offset', ctypes.c_int),
+    ('category', EnumClassCategory),
+    ('get_category', ctypes.CFUNCTYPE(EnumClassCategory,
+                                      ctypes.c_void_p)),
+    ('query_ranges', ctypes.CFUNCTYPE(ctypes.c_int,
+                                      ctypes.POINTER(ctypes.POINTER(StructOptionRanges)),
+                                      ctypes.c_void_p,
+                                      ctypes.c_char_p,
+                                      ctypes.c_int)),
+    ('child_next', ctypes.CFUNCTYPE(ctypes.POINTER(ctypes.c_ubyte),
+                                    ctypes.c_void_p,
+                                    ctypes.c_void_p)),
+    ('child_class_iterate', ctypes.CFUNCTYPE(ctypes.POINTER(StructClass),
+                                             ctypes.POINTER(ctypes.c_void_p))),
+]
+
+
+class StructBufferRef(ctypes.Structure):
+    _fields_ = [
+        ('buffer', ctypes.c_void_p),
+        ('data', ctypes.POINTER(ctypes.c_uint8)),
+        ('size', ctypes.c_size_t),
+    ]
+
+
+class StructFrameSideData(ctypes.Structure):
+    _fields_ = [
+        ('type', EnumFrameSideDataType),
+        ('data', ctypes.POINTER(ctypes.c_uint8)),
+        ('size', ctypes.c_size_t),
+        ('metadata', ctypes.c_void_p),
+        ('buf', ctypes.POINTER(StructBufferRef))]
+
+
+class StructFrame(ctypes.Structure):
+    _fields_ = [
+        ('data', ctypes.POINTER(ctypes.c_uint8) * int(8)),
+        ('linesize', ctypes.c_int * int(8)),
+        ('extended_data', ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8))),
+        ('width', ctypes.c_int),
+        ('height', ctypes.c_int),
+        ('nb_samples', ctypes.c_int),
+        ('format', ctypes.c_int),
+        ('key_frame', ctypes.c_int),
+        ('pict_type', EnumPictureType),
+        ('sample_aspect_ratio', StructRational),
+        ('pts', ctypes.c_int64),
+        ('pkt_dts', ctypes.c_int64),
+        ('time_base', StructRational),
+        ('quality', ctypes.c_int),
+        ('opaque', ctypes.POINTER(None)),
+        ('repeat_pict', ctypes.c_int),
+        ('interlaced_frame', ctypes.c_int),
+        ('top_field_first', ctypes.c_int),
+        ('palette_has_changed', ctypes.c_int),
+        ('sample_rate', ctypes.c_int),
+        ('buf', ctypes.POINTER(StructBufferRef) * int(8)),
+        ('extended_buf', ctypes.POINTER(ctypes.POINTER(StructBufferRef))),
+        ('nb_extended_buf', ctypes.c_int),
+        ('side_data', ctypes.POINTER(ctypes.POINTER(StructFrameSideData))),
+        ('nb_side_data', ctypes.c_int),
+        ('flags', ctypes.c_int),
+        ('color_range', EnumColorRange),
+        ('color_primaries', EnumColorPrimaries),
+        ('color_trc', EnumColorTransferCharacteristic),
+        ('colorspace', EnumColorSpace),
+        ('chroma_location', EnumChromaLocation),
+        ('best_effort_timestamp', ctypes.c_int64),
+        ('pkt_pos', ctypes.c_int64),
+        ('metadata', ctypes.c_void_p),
+        ('decode_error_flags', ctypes.c_int),
+        ('pkt_size', ctypes.c_int),
+        ('hw_frames_ctx', ctypes.POINTER(StructBufferRef)),
+        ('opaque_ref', ctypes.POINTER(StructBufferRef)),
+        ('crop_top', ctypes.c_size_t),
+        ('crop_bottom', ctypes.c_size_t),
+        ('crop_left', ctypes.c_size_t),
+        ('crop_right', ctypes.c_size_t),
+        ('private_ref', ctypes.POINTER(StructBufferRef)),
+        ('ch_layout', StructChannelLayout),
+        ('duration', ctypes.c_int64)]

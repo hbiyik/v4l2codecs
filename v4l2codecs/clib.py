@@ -43,26 +43,36 @@ class CIntEnum(ctypes.c_int):
 
 
 class CLib:
-    _functions_ = []
     _name_ = None
+
+    @staticmethod
+    def Signature(functionname, *cargs):
+        def decorator(function):
+            def wrapper(self, *args):
+                cfunction = self._functions.get(functionname)
+                if not cfunction:
+                    cfunction = self._wrap_function(functionname, cargs, function(self, *cargs))
+                    self._functions[functionname] = cfunction
+                return cfunction(*args)
+            return wrapper
+        return decorator
 
     def __init__(self, name=None):
         name = name or self._name_
         self._name = util.find_library(name)
+        self._functions = {}
         if not self._name:
             raise RuntimeError(f"{name} library can not be found")
         log.LOGGER.debug(f"loading library {self._name}")
         self._lib = ctypes.CDLL(self._name)
-        for declaration in self._functions_:
-            self._wrap_function(*declaration)
 
     def _wrap_function(self, name, args, rettype=None):
-        if getattr(self, name, None):
+        if self._functions.get(name):
             raise RuntimeError(f"function {name} has already been prototyped")
         ptr = getattr(self._lib, name, None)
         if not ptr:
             raise RuntimeError(f"function {name} is not exported from {self._name}")
         setattr(ptr, "argtypes", args)
         setattr(ptr, "restype", rettype)
-        setattr(self, name, ptr)
         log.LOGGER.debug(f"function {name} is wrapped from {self._name}")
+        return ptr

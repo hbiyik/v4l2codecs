@@ -555,6 +555,83 @@ class EnumCodecID(clib.CIntEnum):
         ANULL = enum.auto()
 
 
+class EnumFieldOrder(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        UNKNOWN = 0
+        PROGRESSIVE = enum.auto()
+        TT = enum.auto()
+        BB = enum.auto()
+        TB = enum.auto()
+        BT = enum.auto()
+
+
+class EnumDiscard(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        DEFAULT = 0
+        NONREF = 8
+        BIDIR = 16
+        NONINTRA = 24
+        NONKEY = 32
+        ALL = 48
+
+
+class EnumAudioServiceType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        MAIN = 0
+        EFFECTS = 1
+        VISUALLY_IMPAIRED = 2
+        HEARING_IMPAIRED = 3
+        DIALOGUE = 4
+        COMMENTARY = 5
+        EMERGENCY = 6
+        VOICE_OVER = 7
+        KARAOKE = 8
+        NB = enum.auto()
+
+
+class EnumPacketSideDataType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        PALETTE = 0
+        NEW_EXTRADATA = enum.auto()
+        PARAM_CHANGE = enum.auto()
+        H263_MB_INFO = enum.auto()
+        REPLAYGAIN = enum.auto()
+        DISPLAYMATRIX = enum.auto()
+        STEREO3D = enum.auto()
+        AUDIO_SERVICE_TYPE = enum.auto()
+        QUALITY_STATS = enum.auto()
+        FALLBACK_TRACK = enum.auto()
+        CPB_PROPERTIES = enum.auto()
+        SKIP_SAMPLES = enum.auto()
+        JP_DUALMONO = enum.auto()
+        STRINGS_METADATA = enum.auto()
+        SUBTITLE_POSITION = enum.auto()
+        MATROSKA_BLOCKADDITIONAL = enum.auto()
+        WEBVTT_IDENTIFIER = enum.auto()
+        WEBVTT_SETTINGS = enum.auto()
+        METADATA_UPDATE = enum.auto()
+        MPEGTS_STREAM_ID = enum.auto()
+        MASTERING_DISPLAY_METADATA = enum.auto()
+        SPHERICAL = enum.auto()
+        CONTENT_LIGHT_LEVEL = enum.auto()
+        A53_CC = enum.auto()
+        ENCRYPTION_INIT_INFO = enum.auto()
+        ENCRYPTION_INFO = enum.auto()
+        AFD = enum.auto()
+        PRFT = enum.auto()
+        ICC_PROFILE = enum.auto()
+        DOVI_CONF = enum.auto()
+        S12M_TIMECODE = enum.auto()
+        DYNAMIC_HDR10_PLUS = enum.auto()
+        IAMF_MIX_GAIN_PARAM = enum.auto()
+        IAMF_DEMIXING_INFO_PARAM = enum.auto()
+        IAMF_RECON_GAIN_INFO_PARAM = enum.auto()
+        AMBIENT_VIEWING_ENVIRONMENT = enum.auto()
+        FRAME_CROPPING = enum.auto()
+        LCEVC = enum.auto()
+        NB = enum.auto()
+
+
 class StructProfile(ctypes.Structure):
     _fields_ = [
         ('profile', ctypes.c_int),
@@ -581,17 +658,269 @@ class StructCodec(ctypes.Structure):
     ]
 
 
-class Lib(clib.CLib):
+class StructRcOverride(ctypes.Structure):
+    _fields_ = [
+        ('start_frame', ctypes.c_int),
+        ('end_frame', ctypes.c_int),
+        ('qscale', ctypes.c_int),
+        ('quality_factor', ctypes.c_float)]
+
+
+class StructHWAccel(ctypes.Structure):
+    _fields_ = [
+        ('name', ctypes.c_char_p),
+        ('type', util.EnumMediaType),
+        ('id', EnumCodecID),
+        ('pix_fmt', util.EnumPixelFormat),
+        ('capabilities', ctypes.c_int),
+    ]
+
+
+class StructCodecDescriptor(ctypes.Structure):
+    _fields_ = [
+        ('id', EnumCodecID),
+        ('type', util.EnumMediaType),
+        ('name', ctypes.c_char_p),
+        ('long_name', ctypes.c_char_p),
+        ('props', ctypes.c_int),
+        ('mime_types', ctypes.POINTER(ctypes.c_char_p)),
+        ('profiles', ctypes.POINTER(StructProfile)),
+    ]
+
+
+class StructPacketSideData(ctypes.Structure):
+    _fields_ = [
+        ('data', ctypes.POINTER(ctypes.c_uint8)),
+        ('size', ctypes.c_size_t),
+        ('type', EnumPacketSideDataType),
+    ]
+
+
+class StructPacket(ctypes.Structure):
+    _fields_ = [
+        ('buf', ctypes.POINTER(util.StructBufferRef)),
+        ('pts', ctypes.c_int64),
+        ('dts', ctypes.c_int64),
+        ('data', ctypes.POINTER(ctypes.c_uint8)),
+        ('size', ctypes.c_int),
+        ('stream_index', ctypes.c_int),
+        ('flags', ctypes.c_int),
+        ('side_data', ctypes.POINTER(StructPacketSideData)),
+        ('side_data_elems', ctypes.c_int),
+        ('duration', ctypes.c_int64),
+        ('pos', ctypes.c_int64),
+        ('opaque', ctypes.c_void_p),
+        ('opaque_ref', ctypes.POINTER(util.StructBufferRef)),
+        ('time_base', util.StructRational)]
+
+
+class StructContext(ctypes.Structure):
+    pass
+
+
+StructContext_fields_ = [
+    ('av_class', ctypes.POINTER(util.StructClass)),
+    ('log_level_offset', ctypes.c_int),
+    ('codec_type', util.EnumMediaType),
+    ('codec', ctypes.POINTER(StructCodec)),
+    ('codec_id', EnumCodecID),
+    ('codec_tag', ctypes.c_uint),
+    ('priv_data', ctypes.c_void_p),
+    ('internal', ctypes.c_void_p),
+    ('opaque', ctypes.c_void_p),
+    ('bit_rate', ctypes.c_int64),
+    ('flags', ctypes.c_int),
+    ('flags2', ctypes.c_int),
+    ('extradata', ctypes.POINTER(ctypes.c_uint8)),
+    ('extradata_size', ctypes.c_int),
+    ('time_base', util.StructRational),
+    ('pkt_timebase', util.StructRational),
+    ('framerate', util.StructRational),
+    ('ticks_per_frame', ctypes.c_int),
+    ('delay', ctypes.c_int),
+    ('width', ctypes.c_int),
+    ('height', ctypes.c_int),
+    ('coded_width', ctypes.c_int),
+    ('coded_height', ctypes.c_int),
+    ('sample_aspect_ratio', util.StructRational),
+    ('pix_fmt', util.EnumPixelFormat),
+    ('sw_pix_fmt', util.EnumPixelFormat),
+    ('color_primaries', util.EnumColorPrimaries),
+    ('color_trc', util.EnumColorTransferCharacteristic),
+    ('colorspace', util.EnumColorSpace),
+    ('color_range', util.EnumColorRange),
+    ('chroma_sample_location', util.EnumChromaLocation),
+    ('field_order', EnumFieldOrder),
+    ('refs', ctypes.c_int),
+    ('has_b_frames', ctypes.c_int),
+    ('slice_flags', ctypes.c_int),
+    ('draw_horiz_band', ctypes.CFUNCTYPE(None,
+                                         ctypes.POINTER(StructContext),
+                                         ctypes.POINTER(util.StructFrame),
+                                         ctypes.c_int * int(8),
+                                         ctypes.c_int,
+                                         ctypes.c_int,
+                                         ctypes.c_int)),
+    ('get_format', ctypes.CFUNCTYPE(util.EnumPixelFormat,
+                                    ctypes.POINTER(StructCodec),
+                                    ctypes.POINTER(util.EnumPixelFormat))),
+    ('max_b_frames', ctypes.c_int),
+    ('b_quant_factor', ctypes.c_float),
+    ('b_quant_offset', ctypes.c_float),
+    ('i_quant_factor', ctypes.c_float),
+    ('i_quant_offset', ctypes.c_float),
+    ('lumi_masking', ctypes.c_float),
+    ('temporal_cplx_masking', ctypes.c_float),
+    ('spatial_cplx_masking', ctypes.c_float),
+    ('p_masking', ctypes.c_float),
+    ('dark_masking', ctypes.c_float),
+    ('nsse_weight', ctypes.c_int),
+    ('me_cmp', ctypes.c_int),
+    ('me_sub_cmp', ctypes.c_int),
+    ('mb_cmp', ctypes.c_int),
+    ('ildct_cmp', ctypes.c_int),
+    ('dia_size', ctypes.c_int),
+    ('last_predictor_count', ctypes.c_int),
+    ('me_pre_cmp', ctypes.c_int),
+    ('pre_dia_size', ctypes.c_int),
+    ('me_subpel_quality', ctypes.c_int),
+    ('me_range', ctypes.c_int),
+    ('mb_decision', ctypes.c_int),
+    ('intra_matrix', ctypes.POINTER(ctypes.c_uint16)),
+    ('inter_matrix', ctypes.POINTER(ctypes.c_uint16)),
+    ('chroma_intra_matrix', ctypes.POINTER(ctypes.c_uint16)),
+    ('intra_dc_precision', ctypes.c_int),
+    ('mb_lmin', ctypes.c_int),
+    ('mb_lmax', ctypes.c_int),
+    ('bidir_refine', ctypes.c_int),
+    ('keyint_min', ctypes.c_int),
+    ('gop_size', ctypes.c_int),
+    ('mv0_threshold', ctypes.c_int),
+    ('slices', ctypes.c_int),
+    ('sample_rate', ctypes.c_int),
+    ('sample_fmt', util.EnumSampleFormat),
+    ('ch_layout', util.StructChannelLayout),
+    ('frame_size', ctypes.c_int),
+    ('block_align', ctypes.c_int),
+    ('cutoff', ctypes.c_int),
+    ('audio_service_type', EnumAudioServiceType),
+    ('request_sample_fmt', util.EnumSampleFormat),
+    ('initial_padding', ctypes.c_int),
+    ('trailing_padding', ctypes.c_int),
+    ('seek_preroll', ctypes.c_int),
+    ('get_buffer2', ctypes.CFUNCTYPE(ctypes.c_int,
+                                     ctypes.POINTER(StructContext),
+                                     ctypes.POINTER(util.StructFrame),
+                                     ctypes.c_int)),
+    ('bit_rate_tolerance', ctypes.c_int),
+    ('global_quality', ctypes.c_int),
+    ('compression_level', ctypes.c_int),
+    ('qcompress', ctypes.c_float),
+    ('qblur', ctypes.c_float),
+    ('qmin', ctypes.c_int),
+    ('qmax', ctypes.c_int),
+    ('max_qdiff', ctypes.c_int),
+    ('rc_buffer_size', ctypes.c_int),
+    ('rc_override_count', ctypes.c_int),
+    ('rc_override', ctypes.POINTER(StructRcOverride)),
+    ('rc_max_rate', ctypes.c_int64),
+    ('rc_min_rate', ctypes.c_int64),
+    ('rc_max_available_vbv_use', ctypes.c_float),
+    ('rc_min_vbv_overflow_use', ctypes.c_float),
+    ('rc_initial_buffer_occupancy', ctypes.c_int),
+    ('trellis', ctypes.c_int),
+    ('stats_out', ctypes.c_char_p),
+    ('stats_in', ctypes.c_char_p),
+    ('workaround_bugs', ctypes.c_int),
+    ('strict_std_compliance', ctypes.c_int),
+    ('error_concealment', ctypes.c_int),
+    ('debug', ctypes.c_int),
+    ('err_recognition', ctypes.c_int),
+    ('hwaccel', ctypes.POINTER(StructHWAccel)),
+    ('hwaccel_context', ctypes.c_void_p),
+    ('hw_frames_ctx', ctypes.POINTER(util.StructBufferRef)),
+    ('hw_device_ctx', ctypes.POINTER(util.StructBufferRef)),
+    ('hwaccel_flags', ctypes.c_int),
+    ('extra_hw_frames', ctypes.c_int),
+    ('error', ctypes.c_uint64 * int(8)),
+    ('dct_algo', ctypes.c_int),
+    ('idct_algo', ctypes.c_int),
+    ('bits_per_coded_sample', ctypes.c_int),
+    ('bits_per_raw_sample', ctypes.c_int),
+    ('thread_count', ctypes.c_int),
+    ('thread_type', ctypes.c_int),
+    ('active_thread_type', ctypes.c_int),
+    ('execute', ctypes.CFUNCTYPE(ctypes.c_int,
+                                 ctypes.POINTER(StructContext),
+                                 ctypes.CFUNCTYPE(ctypes.c_int,
+                                                  ctypes.POINTER(StructContext),
+                                                  ctypes.c_void_p),
+                                 ctypes.c_void_p,
+                                 ctypes.POINTER(ctypes.c_int),
+                                 ctypes.c_int,
+                                 ctypes.c_int)),
+    ('execute2', ctypes.CFUNCTYPE(ctypes.c_int,
+                                  ctypes.POINTER(StructContext),
+                                  ctypes.CFUNCTYPE(ctypes.c_int,
+                                                   ctypes.POINTER(StructContext),
+                                                   ctypes.c_void_p,
+                                                   ctypes.c_int,
+                                                   ctypes.c_int),
+                                  ctypes.c_void_p,
+                                  ctypes.POINTER(ctypes.c_int),
+                                  ctypes.c_int)),
+    ('profile', ctypes.c_int),
+    ('level', ctypes.c_int),
+    ('properties', ctypes.c_uint),
+    ('skip_loop_filter', EnumDiscard),
+    ('skip_idct', EnumDiscard),
+    ('skip_frame', EnumDiscard),
+    ('skip_alpha', ctypes.c_int),
+    ('skip_top', ctypes.c_int),
+    ('skip_bottom', ctypes.c_int),
+    ('lowres', ctypes.c_int),
+    ('codec_descriptor', ctypes.POINTER(StructCodecDescriptor)),
+    ('sub_charenc', ctypes.c_char_p),
+    ('sub_charenc_mode', ctypes.c_int),
+    ('subtitle_header_size', ctypes.c_int),
+    ('subtitle_header', ctypes.POINTER(ctypes.c_uint8)),
+    ('dump_separator', ctypes.POINTER(ctypes.c_uint8)),
+    ('codec_whitelist', ctypes.c_char_p),
+    ('coded_side_data', ctypes.POINTER(StructPacketSideData)),
+    ('nb_coded_side_data', ctypes.c_int),
+    ('export_side_data', ctypes.c_int),
+    ('max_pixels', ctypes.c_int64),
+    ('apply_cropping', ctypes.c_int),
+    ('discard_damaged_percentage', ctypes.c_int),
+    ('max_samples', ctypes.c_int64),
+    ('get_encode_buffer', ctypes.CFUNCTYPE(ctypes.c_int,
+                                           ctypes.POINTER(StructContext),
+                                           ctypes.POINTER(StructPacket),
+                                           ctypes.c_int)),
+    ('frame_num', ctypes.c_int64),
+    ('side_data_prefer_packet', ctypes.POINTER(ctypes.c_int)),
+    ('nb_side_data_prefer_packet', ctypes.c_uint),
+    ('decoded_side_data', ctypes.POINTER(ctypes.POINTER(util.StructFrameSideData))),
+    ('nb_decoded_side_data', ctypes.c_int)]
+
+
+class Codec(clib.CLib):
     _name_ = "avcodec"
-    _functions_ = (("avcodec_find_decoder", (EnumCodecID,), ctypes.POINTER(StructCodec)),
-                   ("av_codec_iterate", (ctypes.POINTER(ctypes.c_void_p),), ctypes.POINTER(StructCodec)))
+
+    @clib.CLib.Signature("avcodec_find_decoder", EnumCodecID, ctypes.POINTER(StructCodec))
+    def find_decoder(self, enum_codecid, ptr_struct_codec):
+        return
+
+    @clib.CLib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
+    def codec_iterate(self, ptr_ptr_p):
+        return ctypes.POINTER(StructCodec)
 
 
 log.setlevel(log.DEBUG)
-c = Lib()
+c = Codec()
 p = ctypes.pointer(ctypes.c_void_p())
 while True:
-    codec = c.av_codec_iterate(p)
+    codec = c.codec_iterate(p)
     if clib.isnullptr(codec):
         break
     log.LOGGER.info(codec.contents.name.decode())
