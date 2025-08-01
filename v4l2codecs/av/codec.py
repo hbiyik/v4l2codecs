@@ -632,6 +632,17 @@ class EnumPacketSideDataType(clib.CIntEnum):
         NB = enum.auto()
 
 
+class EnumCodecConfig(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        PIX_FORMAT = 0
+        FRAME_RATE = enum.auto()
+        SAMPLE_RATE = enum.auto()
+        SAMPLE_FORMAT = enum.auto()
+        CHANNEL_LAYOUT = enum.auto()
+        COLOR_RANGE = enum.auto()
+        COLOR_SPACE = enum.auto()
+
+
 class StructProfile(ctypes.Structure):
     _fields_ = [
         ('profile', ctypes.c_int),
@@ -676,6 +687,12 @@ class StructHWAccel(ctypes.Structure):
     ]
 
 
+class StructHWConfig(ctypes.Structure):
+    _fields_ = [("pix_fmt", util.EnumPixelFormat),
+                ("methods", ctypes.c_int),
+                ("device_type", util.EnumHWDeviceType)]
+
+
 class StructCodecDescriptor(ctypes.Structure):
     _fields_ = [
         ('id', EnumCodecID),
@@ -712,6 +729,41 @@ class StructPacket(ctypes.Structure):
         ('opaque', ctypes.c_void_p),
         ('opaque_ref', ctypes.POINTER(util.StructBufferRef)),
         ('time_base', util.StructRational)]
+
+
+class StructCodecParameters(ctypes.Structure):
+    _fields_ = [
+        ('codec_type', util.EnumMediaType),
+        ('codec_id', EnumCodecID),
+        ('codec_tag', ctypes.c_uint32),
+        ('extradata', ctypes.POINTER(ctypes.c_uint8)),
+        ('extradata_size', ctypes.c_int),
+        ('coded_side_data', ctypes.POINTER(StructPacketSideData)),
+        ('nb_coded_side_data', ctypes.c_int),
+        ('format', ctypes.c_int),
+        ('bit_rate', ctypes.c_int64),
+        ('bits_per_coded_sample', ctypes.c_int),
+        ('bits_per_raw_sample', ctypes.c_int),
+        ('profile', ctypes.c_int),
+        ('level', ctypes.c_int),
+        ('width', ctypes.c_int),
+        ('height', ctypes.c_int),
+        ('sample_aspect_ratio', util.StructRational),
+        ('framerate', util.StructRational),
+        ('field_order', EnumFieldOrder),
+        ('color_range', util.EnumColorRange),
+        ('color_primaries', util.EnumColorPrimaries),
+        ('color_trc', util.EnumColorTransferCharacteristic),
+        ('color_space', util.EnumColorSpace),
+        ('chroma_location', util.EnumChromaLocation),
+        ('video_delay', ctypes.c_int),
+        ('ch_layout', util.StructChannelLayout),
+        ('sample_rate', ctypes.c_int),
+        ('block_align', ctypes.c_int),
+        ('frame_size', ctypes.c_int),
+        ('initial_padding', ctypes.c_int),
+        ('trailing_padding', ctypes.c_int),
+        ('seek_preroll', ctypes.c_int)]
 
 
 class StructContext(ctypes.Structure):
@@ -907,17 +959,121 @@ StructContext_fields_ = [
 class Codec(clib.CLib):
     _name_ = "avcodec"
 
-    @clib.CLib.Signature("avcodec_find_decoder", EnumCodecID, ctypes.POINTER(StructCodec))
-    def find_decoder(self, enum_codecid, ptr_struct_codec):
+    @clib.CLib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
+    def codec_iterate(self, opaque):
+        return ctypes.POINTER(StructCodec)
+
+    @clib.CLib.Signature("avcodec_find_decoder", EnumCodecID)
+    def find_decoder(self, codecid):
+        return ctypes.POINTER(StructCodec)
+
+    @clib.CLib.Signature("avcodec_find_decoder_by_name", ctypes.c_char_p)
+    def find_decoder_by_name(self, codec_name):
+        return ctypes.POINTER(StructCodec)
+
+    @clib.CLib.Signature("avcodec_find_encoder", EnumCodecID)
+    def find_encoder(self, codecid):
+        return ctypes.POINTER(StructCodec)
+
+    @clib.CLib.Signature("avcodec_find_encoder_by_name", ctypes.c_char_p)
+    def find_encoder_by_name(self, name):
+        return ctypes.POINTER(StructCodec)
+
+    @clib.CLib.Signature("av_codec_is_encoder", ctypes.POINTER(StructCodec))
+    def is_encoder(self, codec):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_codec_is_decoder", ctypes.POINTER(StructCodec))
+    def is_decoder(self, codec):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_codec_get_profile_name", ctypes.POINTER(StructCodec), ctypes.c_int)
+    def get_profile_name(self, codec, profile):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_get_hw_config", ctypes.POINTER(StructCodec), ctypes.c_int)
+    def get_hw_config(self, codec, index):
+        return ctypes.POINTER(StructHWConfig)
+
+    @clib.CLib.Signature("avcodec_version")
+    def version(self):
+        return ctypes.c_uint
+
+    @clib.CLib.Signature("avcodec_configuration")
+    def config(self):
+        return ctypes.c_char_p
+
+    @clib.CLib.Signature("avcodec_license")
+    def license(self):
+        return ctypes.c_char_p
+
+    @clib.CLib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
+    def allow_context3(self, codec):
+        return ctypes.pointer(StructContext)
+
+    @clib.CLib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
+    def free_context(self, context):
         return
 
-    @clib.CLib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
-    def codec_iterate(self, ptr_ptr_p):
-        return ctypes.POINTER(StructCodec)
+    @clib.CLib.Signature("avcodec_get_class")
+    def get_class(self):
+        return ctypes.POINTER(util.StructClass)
+
+    @clib.CLib.Signature("avcodec_parameters_from_context", ctypes.POINTER(StructCodecParameters), ctypes.POINTER(StructContext))
+    def params_from_context(self, par, context):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_parameters_to_context", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodecParameters))
+    def params_to_context(self, context, par):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructContext), ctypes.POINTER(ctypes.c_void_p))
+    def open2(self, context, codec, options):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_default_get_buffer2", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame), ctypes.c_int)
+    def get_buffer2(self, context, frame, flags):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_default_get_encode_buffer", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket), ctypes.c_int)
+    def get_encode_buffer(self, context, packet, flags):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_send_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    def send_packet(self, context, packet):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_receive_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    def receive_packet(self, context, packet):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_send_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    def send_frame(self, context, frame):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_receive_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    def receive_frame(self, context, frame):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_get_hw_frames_parameters",
+                         ctypes.POINTER(StructContext), ctypes.POINTER(util.StructBufferRef),
+                         util.EnumPixelFormat, ctypes.POINTER(ctypes.POINTER(util.StructBufferRef)))
+    def get_hw_frames_parameters(self, context, device_ref, hw_pix_fmt, out_frames_ref):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("avcodec_get_supported_config",
+                         ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), EnumCodecConfig,
+                         ctypes.c_int, ctypes.POINTER(ctypes.c_void_p),
+                         ctypes.POINTER(ctypes.c_int))
+    def get_supported_config(self, context, codec, config, flags, out_configs, out_num_configs):
+        return ctypes.c_int
 
 
 log.setlevel(log.DEBUG)
 c = Codec()
+log.LOGGER.info(c.version())
+log.LOGGER.info(c.config().decode())
+log.LOGGER.info(c.license().decode())
 p = ctypes.pointer(ctypes.c_void_p())
 while True:
     codec = c.codec_iterate(p)

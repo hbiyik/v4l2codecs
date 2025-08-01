@@ -586,6 +586,23 @@ class EnumPictureType(clib.CIntEnum):
         BI = enum.auto()
 
 
+class EnumHWDeviceType(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        NONE = 0
+        VDPAU = enum.auto()
+        CUDA = enum.auto()
+        VAAPI = enum.auto()
+        DXVA2 = enum.auto()
+        QSV = enum.auto()
+        VIDEOTOOLBOX = enum.auto()
+        D3D11VA = enum.auto()
+        DRM = enum.auto()
+        OPENCL = enum.auto()
+        MEDIACODEC = enum.auto()
+        VULKAN = enum.auto()
+        D3D12VA = enum.auto()
+
+
 class StructRational(ctypes.Structure):
     _fields_ = [
         ('num', ctypes.c_int),
