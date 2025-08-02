@@ -643,6 +643,14 @@ class EnumCodecConfig(clib.CIntEnum):
         COLOR_SPACE = enum.auto()
 
 
+class EnumPictureStructure(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        UNKNOWN = 0
+        TOP_FIELD = enum.auto()
+        BOTTOM_FIELD = enum.auto()
+        FRAME = enum.auto()
+
+
 class StructProfile(ctypes.Structure):
     _fields_ = [
         ('profile', ctypes.c_int),
@@ -956,6 +964,72 @@ StructContext_fields_ = [
     ('nb_decoded_side_data', ctypes.c_int)]
 
 
+class StructParser(ctypes.Structure):
+    pass
+
+
+class StructParserContext(ctypes.Structure):
+    pass
+
+
+StructParser._fields_ = [
+    ('codec_ids', ctypes.c_int * int(7)),
+    ('priv_data_size', ctypes.c_int),
+    ('parser_init', ctypes.CFUNCTYPE(ctypes.c_int,
+                                     ctypes.POINTER(StructParserContext))),
+    ('parser_parse', ctypes.CFUNCTYPE(ctypes.c_int,
+                                      ctypes.POINTER(StructParserContext),
+                                      ctypes.POINTER(StructContext),
+                                      ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)),
+                                      ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_uint8),
+                                      ctypes.c_int)),
+    ('parser_close', ctypes.CFUNCTYPE(None,
+                                      ctypes.POINTER(StructParserContext))),
+    ('split', ctypes.CFUNCTYPE(ctypes.c_int,
+                               ctypes.POINTER(StructContext),
+                               ctypes.POINTER(ctypes.c_uint8),
+                               ctypes.c_int))]
+
+
+StructParserContext._fields_ = [
+    ('priv_data', ctypes.c_void_p),
+    ('parser', ctypes.POINTER(StructParser)),
+    ('frame_offset', ctypes.c_int64),
+    ('cur_offset', ctypes.c_int64),
+    ('next_frame_offset', ctypes.c_int64),
+    ('pict_type', ctypes.c_int),
+    ('repeat_pict', ctypes.c_int),
+    ('pts', ctypes.c_int64),
+    ('dts', ctypes.c_int64),
+    ('last_pts', ctypes.c_int64),
+    ('last_dts', ctypes.c_int64),
+    ('fetch_timestamp', ctypes.c_int),
+    ('cur_frame_start_index', ctypes.c_int),
+    ('cur_frame_offset', ctypes.c_int64 * int(4)),
+    ('cur_frame_pts', ctypes.c_int64 * int(4)),
+    ('cur_frame_dts', ctypes.c_int64 * int(4)),
+    ('flags', ctypes.c_int),
+    ('offset', ctypes.c_int64),
+    ('cur_frame_end', ctypes.c_int64 * int(4)),
+    ('key_frame', ctypes.c_int),
+    ('dts_synctypes.c_point', ctypes.c_int),
+    ('dts_ref_dts_delta', ctypes.c_int),
+    ('pts_dts_delta', ctypes.c_int),
+    ('cur_frame_pos', ctypes.c_int64 * int(4)),
+    ('pos', ctypes.c_int64),
+    ('last_pos', ctypes.c_int64),
+    ('duration', ctypes.c_int),
+    ('field_order', EnumFieldOrder),
+    ('picture_structure', EnumPictureStructure),
+    ('output_picture_number', ctypes.c_int),
+    ('width', ctypes.c_int),
+    ('height', ctypes.c_int),
+    ('coded_width', ctypes.c_int),
+    ('coded_height', ctypes.c_int),
+    ('format', ctypes.c_int)]
+
+
 class Codec(clib.CLib):
     _name_ = "avcodec"
 
@@ -1008,7 +1082,7 @@ class Codec(clib.CLib):
         return ctypes.c_char_p
 
     @clib.CLib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
-    def allow_context3(self, codec):
+    def alloc_context3(self, codec):
         return ctypes.pointer(StructContext)
 
     @clib.CLib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
@@ -1067,6 +1141,64 @@ class Codec(clib.CLib):
                          ctypes.POINTER(ctypes.c_int))
     def get_supported_config(self, context, codec, config, flags, out_configs, out_num_configs):
         return ctypes.c_int
+
+    @clib.CLib.Signature("av_packet_alloc")
+    def packet_alloc(self):
+        return ctypes.POINTER(StructPacket)
+
+    @clib.CLib.Signature("av_packet_clone", ctypes.POINTER(StructPacket))
+    def packet_clone(self, src):
+        return ctypes.POINTER(StructPacket)
+
+    @clib.CLib.Signature("av_packet_clone", ctypes.POINTER(ctypes.POINTER(StructPacket)))
+    def packet_free(self, pkt):
+        return
+
+    @clib.CLib.Signature("av_new_packet", ctypes.POINTER(ctypes.POINTER(StructPacket)), ctypes.c_int)
+    def packet_new(self, pkt, size):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_packet_from_data",
+                         ctypes.POINTER(ctypes.POINTER(StructPacket)),
+                         ctypes.POINTER(ctypes.c_uint8),
+                         ctypes.c_int)
+    def packet_from_data(self, pkt, data, size):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_packet_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    def packet_ref(self, dst, src):
+        return ctypes.POINTER(StructPacket)
+
+    @clib.CLib.Signature("av_packet_unref", ctypes.POINTER(StructPacket))
+    def packet_unref(self, pkt):
+        return ctypes.POINTER(StructPacket)
+
+    @clib.CLib.Signature("av_packet_move_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    def packet_move_ref(self, dst, src):
+        return ctypes.POINTER(StructPacket)
+
+    @clib.CLib.Signature("av_parser_iterate", ctypes.POINTER(ctypes.c_void_p))
+    def parser_iterate(self, opaque):
+        return ctypes.POINTER(StructParser)
+
+    @clib.CLib.Signature("av_parser_init", EnumCodecID)
+    def parser_init(self, codecid):
+        return ctypes.POINTER(StructParserContext)
+
+    @clib.CLib.Signature("av_parser_parse2",
+                         ctypes.POINTER(StructParserContext),
+                         ctypes.POINTER(StructContext),
+                         ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.c_int,
+                         ctypes.POINTER(ctypes.c_uint8), ctypes.c_int,
+                         ctypes.c_int64, ctypes.c_int64,
+                         ctypes.c_uint64
+                         )
+    def parser_parse2(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
+        return ctypes.POINTER(StructParserContext)
+
+    @clib.CLib.Signature("av_parser_close", ctypes.POINTER(StructParserContext))
+    def parser_close(self, s):
+        return
 
 
 log.setlevel(log.DEBUG)
