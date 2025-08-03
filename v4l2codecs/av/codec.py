@@ -727,7 +727,7 @@ class StructPacket(ctypes.Structure):
         ('pts', ctypes.c_int64),
         ('dts', ctypes.c_int64),
         ('data', ctypes.POINTER(ctypes.c_uint8)),
-        ('size', ctypes.c_int),
+        ('size', clib.c_int),
         ('stream_index', ctypes.c_int),
         ('flags', ctypes.c_int),
         ('side_data', ctypes.POINTER(StructPacketSideData)),

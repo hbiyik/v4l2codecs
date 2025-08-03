@@ -20,6 +20,34 @@ from ctypes import util
 from v4l2codecs import log
 
 
+# wrapper union class so that ctypes will be kept as ctypes when used in Struct
+# otherwise they are converted to pythonic types (ie: struct.c_int -> sctruct.int)
+class UnionWrapper(ctypes.Union):
+    _base_type_ = None
+
+    @staticmethod
+    def type(ctype):
+        def wrapper(cls):
+            cls._base_type_ = ctype
+            cls._fields_ = [("value", ctype)]
+            return cls
+        return wrapper
+
+    @property
+    def ref(self):
+        return ctypes.cast(ctypes.byref(self), ctypes.POINTER(self._base_type_))
+
+
+@UnionWrapper.type(ctypes.c_int)
+class c_int(UnionWrapper):
+    pass
+
+
+@UnionWrapper.type(ctypes.c_uint)
+class c_uint(UnionWrapper):
+    pass
+
+
 def ptr_address(ptr):
     return ctypes.cast(ptr, ctypes.c_void_p).value
 
@@ -54,6 +82,9 @@ class CLib:
                     cfunction = self._wrap_function(functionname, cargs, function(self, *cargs))
                     self._functions[functionname] = cfunction
                 return cfunction(*args)
+
+            wrapper.functionname = functionname
+            wrapper.cargs = cargs
             return wrapper
         return decorator
 
@@ -66,12 +97,22 @@ class CLib:
         log.LOGGER.debug(f"loading library {self._name}")
         self._lib = ctypes.CDLL(self._name)
 
+    def functype(self, callback):
+        cargs = callback.__closure__[0].cell_contents
+        retval = callback.__closure__[1].cell_contents(self, *cargs)
+        # TODO: if the return value is a pointer, it should be
+        # reffed as void_p, ctypes does not handle return types
+        functionname = callback.__closure__[2].cell_contents
+        ptr = self._wrap_function(functionname, cargs, retval)
+        return ctypes.CFUNCTYPE(retval, *cargs)(ptr)
+
     def _wrap_function(self, name, args, rettype=None):
         if self._functions.get(name):
             raise RuntimeError(f"function {name} has already been prototyped")
         ptr = getattr(self._lib, name, None)
         if not ptr:
             raise RuntimeError(f"function {name} is not exported from {self._name}")
+        rettype = rettype or ctypes.c_void_p
         setattr(ptr, "argtypes", args)
         setattr(ptr, "restype", rettype)
         log.LOGGER.debug(f"function {name} is wrapped from {self._name}")

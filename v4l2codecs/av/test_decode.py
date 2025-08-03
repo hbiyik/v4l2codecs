@@ -21,12 +21,18 @@ from v4l2codecs import log
 from v4l2codecs import clib
 
 CODECID = av.codec.EnumCodecID(av.codec.EnumCodecID._enum_.H264.value)
+LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.DEBUG.value)
 PATH = sys.argv[1]
 CHUNK = 4096
 
 log.LOGGER.setLevel(log.DEBUG)
 
 avcodec = av.codec.Codec()
+avutil = av.util.Util()
+
+cb = avutil.functype(avutil.log_default_callback)
+avutil.set_log_callback(cb)
+avutil.set_log_level(LOGLEVEL)
 
 codec = avcodec.find_decoder(CODECID)
 if not clib.ptr_address(codec):
@@ -60,7 +66,7 @@ while True:
     data = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
     ret = avcodec.parser_parse2(parser, ctx,
                                 ctypes.byref(pkt.contents.data),
-                                ctypes.cast(ctypes.byref(pkt.contents, av.codec.StructPacket.size.offset), ctypes.POINTER(ctypes.c_int)),
+                                pkt.contents.size.ref,
                                 data, datalen,
                                 av.util.NOPTS, av.util.NOPTS,
                                 0)

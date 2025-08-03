@@ -23,6 +23,19 @@ from v4l2codecs import clib
 NOPTS = ctypes.c_int64(0x8000000000000000)
 
 
+class EnumLogLevel(clib.CIntEnum):
+    class _enum_(enum.IntEnum):
+        QUIET = -8
+        PANIC = 0
+        FATAL = 8
+        ERROR = 16
+        WARNING = 24
+        INFO = 32
+        VERBOSE = 40
+        DEBUG = 48
+        TRACE = 56
+
+
 class EnumMediaType(clib.CIntEnum):
     class _enum_(enum.IntEnum):
         UNKNOWN = -1  # Usually treated as DATA
@@ -774,3 +787,30 @@ class StructFrame(ctypes.Structure):
         ('private_ref', ctypes.POINTER(StructBufferRef)),
         ('ch_layout', StructChannelLayout),
         ('duration', ctypes.c_int64)]
+
+
+class Util(clib.CLib):
+    _name_ = "avutil"
+
+    @clib.CLib.Signature("av_log_get_level")
+    def get_log_level(self):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_log_set_level", ctypes.c_int)
+    def set_log_level(self, level):
+        return
+
+    @clib.CLib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(ctypes.c_void_p,
+                                                                 ctypes.c_void_p,
+                                                                 ctypes.c_int,
+                                                                 ctypes.c_char_p,
+                                                                 ctypes.c_void_p))
+    def set_log_callback(self, callback):
+        return
+
+    @clib.CLib.Signature("av_log_default_callback", ctypes.c_void_p,
+                                                    ctypes.c_int,
+                                                    ctypes.c_char_p,
+                                                    ctypes.c_void_p)
+    def log_default_callback(self, ptr, level, fmt, vl):
+        return ctypes.c_void_p
