@@ -20,8 +20,8 @@ from ctypes import util
 from v4l2codecs import log
 
 
-def isnullptr(ptr):
-    return ctypes.cast(ptr, ctypes.c_void_p).value is None
+def ptr_address(ptr):
+    return ctypes.cast(ptr, ctypes.c_void_p).value
 
 
 class CIntEnum(ctypes.c_int):

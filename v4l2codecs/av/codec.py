@@ -778,7 +778,7 @@ class StructContext(ctypes.Structure):
     pass
 
 
-StructContext_fields_ = [
+StructContext._fields_ = [
     ('av_class', ctypes.POINTER(util.StructClass)),
     ('log_level_offset', ctypes.c_int),
     ('codec_type', util.EnumMediaType),
@@ -1083,7 +1083,7 @@ class Codec(clib.CLib):
 
     @clib.CLib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
     def alloc_context3(self, codec):
-        return ctypes.pointer(StructContext)
+        return ctypes.POINTER(StructContext)
 
     @clib.CLib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
     def free_context(self, context):
@@ -1101,7 +1101,7 @@ class Codec(clib.CLib):
     def params_to_context(self, context, par):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructContext), ctypes.POINTER(ctypes.c_void_p))
+    @clib.CLib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), ctypes.POINTER(ctypes.c_void_p))
     def open2(self, context, codec, options):
         return ctypes.c_int
 
@@ -1167,15 +1167,15 @@ class Codec(clib.CLib):
 
     @clib.CLib.Signature("av_packet_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
     def packet_ref(self, dst, src):
-        return ctypes.POINTER(StructPacket)
+        return ctypes.c_int
 
     @clib.CLib.Signature("av_packet_unref", ctypes.POINTER(StructPacket))
     def packet_unref(self, pkt):
-        return ctypes.POINTER(StructPacket)
+        return
 
     @clib.CLib.Signature("av_packet_move_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
     def packet_move_ref(self, dst, src):
-        return ctypes.POINTER(StructPacket)
+        return
 
     @clib.CLib.Signature("av_parser_iterate", ctypes.POINTER(ctypes.c_void_p))
     def parser_iterate(self, opaque):
@@ -1188,19 +1188,50 @@ class Codec(clib.CLib):
     @clib.CLib.Signature("av_parser_parse2",
                          ctypes.POINTER(StructParserContext),
                          ctypes.POINTER(StructContext),
-                         ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.c_int,
+                         ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_int),
                          ctypes.POINTER(ctypes.c_uint8), ctypes.c_int,
                          ctypes.c_int64, ctypes.c_int64,
                          ctypes.c_uint64
                          )
     def parser_parse2(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
-        return ctypes.POINTER(StructParserContext)
+        return ctypes.c_int
 
     @clib.CLib.Signature("av_parser_close", ctypes.POINTER(StructParserContext))
     def parser_close(self, s):
         return
 
+    @clib.CLib.Signature("av_frame_alloc")
+    def frame_alloc(self):
+        return ctypes.POINTER(util.StructFrame)
 
+    @clib.CLib.Signature("av_frame_free", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    def frame_free(self):
+        return
+
+    @clib.CLib.Signature("av_frame_clone", ctypes.POINTER(util.StructFrame))
+    def frame_clone(self, src):
+        return ctypes.POINTER(util.StructFrame)
+
+    @clib.CLib.Signature("av_frame_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
+                         ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    def frame_ref(self, dst, src):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_frame_unref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    def frame_unref(self, frame):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_frame_move_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
+                         ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    def frame_move_ref(self, dst, src):
+        return ctypes.c_int
+
+    @clib.CLib.Signature("av_frame_get_buffer", ctypes.POINTER(ctypes.POINTER(util.StructFrame)), ctypes.c_int)
+    def frame_get_buffer(self, frame, align):
+        return ctypes.c_int
+
+
+"""
 log.setlevel(log.DEBUG)
 c = Codec()
 log.LOGGER.info(c.version())
@@ -1212,3 +1243,4 @@ while True:
     if clib.isnullptr(codec):
         break
     log.LOGGER.info(codec.contents.name.decode())
+"""

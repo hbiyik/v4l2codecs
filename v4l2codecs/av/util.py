@@ -20,6 +20,9 @@ import enum
 from v4l2codecs import clib
 
 
+NOPTS = ctypes.c_int64(0x8000000000000000)
+
+
 class EnumMediaType(clib.CIntEnum):
     class _enum_(enum.IntEnum):
         UNKNOWN = -1  # Usually treated as DATA
