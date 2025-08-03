@@ -31,7 +31,7 @@ avutil = av.util.Util()
 
 
 def loghandler(ptr, level, fmt, vl):
-    ptr = ctypes.c_void_p(ptr)
+    ctx = ctypes.POINTER(av.util.StructClass).from_address(ptr)
     vl = ctypes.c_void_p(vl)
     libc = clib.Clib()
     levels = {av.util.EnumLogLevel._enum_.QUIET: logging.NOTSET,
@@ -45,9 +45,16 @@ def loghandler(ptr, level, fmt, vl):
               av.util.EnumLogLevel._enum_.TRACE: logging.DEBUG,
               }
     level = levels.get(level, logging.DEBUG)
-    msg = b"0" * len(fmt) * 20
+    msg = b"0" * len(fmt) * 2
     libc._lib.vsnprintf(msg, len(msg), fmt, vl)
-    log.LOGGER.log(level, msg.decode())
+    record = log.LOGGER.makeRecord(log.LOGGER.name,
+                                   level,
+                                   "ffmpeg",
+                                   0,
+                                   msg.decode(),
+                                   [], [],
+                                   func=ctx.contents.class_name.decode())
+    log.LOGGER.handle(record)
     pass
 
 
@@ -68,6 +75,8 @@ if not clib.ptr_address(codec):
 ctx = avcodec.alloc_context3(codec)
 if not clib.ptr_address(ctx):
     raise RuntimeError("Can not alloc context")
+
+avutil.log(ctx, LOGLEVEL, b"test")
 
 pkt = avcodec.packet_alloc()
 if not clib.ptr_address(pkt):
