@@ -70,7 +70,7 @@ class CIntEnum(ctypes.c_int):
         return f"{str(self)}({self.value})"
 
 
-class CLib:
+class Lib:
     _name_ = None
 
     @staticmethod
@@ -100,8 +100,8 @@ class CLib:
     def functype(self, callback):
         cargs = callback.__closure__[0].cell_contents
         retval = callback.__closure__[1].cell_contents(self, *cargs)
-        # TODO: if the return value is a pointer, it should be
-        # reffed as void_p, ctypes does not handle return types
+        if not hasattr(retval, "_type_") or not isinstance(retval._type_, str) or not retval._type_ != "P":
+            retval = ctypes.c_void_p
         functionname = callback.__closure__[2].cell_contents
         ptr = self._wrap_function(functionname, cargs, retval)
         return ctypes.CFUNCTYPE(retval, *cargs)(ptr)
@@ -117,3 +117,7 @@ class CLib:
         setattr(ptr, "restype", rettype)
         log.LOGGER.debug(f"function {name} is wrapped from {self._name}")
         return ptr
+
+
+class Clib(Lib):
+    _name_ = "c"

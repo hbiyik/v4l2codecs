@@ -79,7 +79,7 @@ class LowlevelOps(ctypes.Structure):
 class CCuse(threading.Thread):
     ioctls = {}
 
-    class Lib(clib.CLib):
+    class Lib(clib.Lib):
         _name_ = "fuse"
         _functions_ = (("cuse_lowlevel_main", (ctypes.c_uint,
                                                ctypes.POINTER(ctypes.c_char_p),

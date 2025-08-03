@@ -789,18 +789,28 @@ class StructFrame(ctypes.Structure):
         ('duration', ctypes.c_int64)]
 
 
-class Util(clib.CLib):
+class StructBPrint(ctypes.Structure):
+    _fields_ = [
+        ('str', ctypes.c_char_p),
+        ('len', ctypes.c_uint),
+        ('size', ctypes.c_uint),
+        ('size_max', ctypes.c_uint),
+        ('reserved_internal_buffer', ctypes.c_char * int(1)),
+    ]
+
+
+class Util(clib.Lib):
     _name_ = "avutil"
 
-    @clib.CLib.Signature("av_log_get_level")
+    @clib.Lib.Signature("av_log_get_level")
     def get_log_level(self):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_log_set_level", ctypes.c_int)
+    @clib.Lib.Signature("av_log_set_level", ctypes.c_int)
     def set_log_level(self, level):
         return
 
-    @clib.CLib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(ctypes.c_void_p,
+    @clib.Lib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(ctypes.c_void_p,
                                                                  ctypes.c_void_p,
                                                                  ctypes.c_int,
                                                                  ctypes.c_char_p,
@@ -808,9 +818,17 @@ class Util(clib.CLib):
     def set_log_callback(self, callback):
         return
 
-    @clib.CLib.Signature("av_log_default_callback", ctypes.c_void_p,
+    @clib.Lib.Signature("av_log_default_callback", ctypes.c_void_p,
                                                     ctypes.c_int,
                                                     ctypes.c_char_p,
                                                     ctypes.c_void_p)
     def log_default_callback(self, ptr, level, fmt, vl):
         return ctypes.c_void_p
+
+    @clib.Lib.Signature("av_log", ctypes.c_void_p, ctypes.c_int, ctypes.c_char_p)
+    def log(self, ctx, level, fmt, *args):
+        return
+
+    @clib.Lib.Signature("av_vbprintf", ctypes.POINTER(StructBPrint), ctypes.c_char_p)
+    def vbprintf(self, buf, fmt, *args):
+        return

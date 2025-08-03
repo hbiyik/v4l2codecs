@@ -16,24 +16,51 @@
 """
 import sys
 import ctypes
+import logging
 from v4l2codecs import av
 from v4l2codecs import log
 from v4l2codecs import clib
 
 CODECID = av.codec.EnumCodecID(av.codec.EnumCodecID._enum_.H264.value)
-LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.DEBUG.value)
+LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.TRACE.value)
 PATH = sys.argv[1]
 CHUNK = 4096
 
-log.LOGGER.setLevel(log.DEBUG)
 
-avcodec = av.codec.Codec()
 avutil = av.util.Util()
 
-cb = avutil.functype(avutil.log_default_callback)
-avutil.set_log_callback(cb)
-avutil.set_log_level(LOGLEVEL)
 
+def loghandler(ptr, level, fmt, vl):
+    ptr = ctypes.c_void_p(ptr)
+    vl = ctypes.c_void_p(vl)
+    libc = clib.Clib()
+    levels = {av.util.EnumLogLevel._enum_.QUIET: logging.NOTSET,
+              av.util.EnumLogLevel._enum_.PANIC: logging.CRITICAL,
+              av.util.EnumLogLevel._enum_.FATAL: logging.FATAL,
+              av.util.EnumLogLevel._enum_.ERROR: logging.ERROR,
+              av.util.EnumLogLevel._enum_.WARNING: logging.WARNING,
+              av.util.EnumLogLevel._enum_.INFO: logging.INFO,
+              av.util.EnumLogLevel._enum_.VERBOSE: logging.DEBUG,
+              av.util.EnumLogLevel._enum_.DEBUG: logging.DEBUG,
+              av.util.EnumLogLevel._enum_.TRACE: logging.DEBUG,
+              }
+    level = levels.get(level, logging.DEBUG)
+    msg = b"0" * len(fmt) * 20
+    libc._lib.vsnprintf(msg, len(msg), fmt, vl)
+    log.LOGGER.log(level, msg.decode())
+    pass
+
+
+cb = ctypes.CFUNCTYPE(ctypes.c_void_p,
+                      ctypes.c_void_p,
+                      ctypes.c_int,
+                      ctypes.c_char_p,
+                      ctypes.c_void_p)(loghandler)
+log.LOGGER.setLevel(log.DEBUG)
+avutil.set_log_level(LOGLEVEL)
+avutil.set_log_callback(cb)
+
+avcodec = av.codec.Codec()
 codec = avcodec.find_decoder(CODECID)
 if not clib.ptr_address(codec):
     raise RuntimeError("Can not find codec")

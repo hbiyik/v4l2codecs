@@ -1030,162 +1030,162 @@ StructParserContext._fields_ = [
     ('format', ctypes.c_int)]
 
 
-class Codec(clib.CLib):
+class Codec(clib.Lib):
     _name_ = "avcodec"
 
-    @clib.CLib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
     def codec_iterate(self, opaque):
         return ctypes.POINTER(StructCodec)
 
-    @clib.CLib.Signature("avcodec_find_decoder", EnumCodecID)
+    @clib.Lib.Signature("avcodec_find_decoder", EnumCodecID)
     def find_decoder(self, codecid):
         return ctypes.POINTER(StructCodec)
 
-    @clib.CLib.Signature("avcodec_find_decoder_by_name", ctypes.c_char_p)
+    @clib.Lib.Signature("avcodec_find_decoder_by_name", ctypes.c_char_p)
     def find_decoder_by_name(self, codec_name):
         return ctypes.POINTER(StructCodec)
 
-    @clib.CLib.Signature("avcodec_find_encoder", EnumCodecID)
+    @clib.Lib.Signature("avcodec_find_encoder", EnumCodecID)
     def find_encoder(self, codecid):
         return ctypes.POINTER(StructCodec)
 
-    @clib.CLib.Signature("avcodec_find_encoder_by_name", ctypes.c_char_p)
+    @clib.Lib.Signature("avcodec_find_encoder_by_name", ctypes.c_char_p)
     def find_encoder_by_name(self, name):
         return ctypes.POINTER(StructCodec)
 
-    @clib.CLib.Signature("av_codec_is_encoder", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("av_codec_is_encoder", ctypes.POINTER(StructCodec))
     def is_encoder(self, codec):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_codec_is_decoder", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("av_codec_is_decoder", ctypes.POINTER(StructCodec))
     def is_decoder(self, codec):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_codec_get_profile_name", ctypes.POINTER(StructCodec), ctypes.c_int)
+    @clib.Lib.Signature("av_codec_get_profile_name", ctypes.POINTER(StructCodec), ctypes.c_int)
     def get_profile_name(self, codec, profile):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_get_hw_config", ctypes.POINTER(StructCodec), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_get_hw_config", ctypes.POINTER(StructCodec), ctypes.c_int)
     def get_hw_config(self, codec, index):
         return ctypes.POINTER(StructHWConfig)
 
-    @clib.CLib.Signature("avcodec_version")
+    @clib.Lib.Signature("avcodec_version")
     def version(self):
         return ctypes.c_uint
 
-    @clib.CLib.Signature("avcodec_configuration")
+    @clib.Lib.Signature("avcodec_configuration")
     def config(self):
         return ctypes.c_char_p
 
-    @clib.CLib.Signature("avcodec_license")
+    @clib.Lib.Signature("avcodec_license")
     def license(self):
         return ctypes.c_char_p
 
-    @clib.CLib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
     def alloc_context3(self, codec):
         return ctypes.POINTER(StructContext)
 
-    @clib.CLib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
+    @clib.Lib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
     def free_context(self, context):
         return
 
-    @clib.CLib.Signature("avcodec_get_class")
+    @clib.Lib.Signature("avcodec_get_class")
     def get_class(self):
         return ctypes.POINTER(util.StructClass)
 
-    @clib.CLib.Signature("avcodec_parameters_from_context", ctypes.POINTER(StructCodecParameters), ctypes.POINTER(StructContext))
+    @clib.Lib.Signature("avcodec_parameters_from_context", ctypes.POINTER(StructCodecParameters), ctypes.POINTER(StructContext))
     def params_from_context(self, par, context):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_parameters_to_context", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodecParameters))
+    @clib.Lib.Signature("avcodec_parameters_to_context", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodecParameters))
     def params_to_context(self, context, par):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), ctypes.POINTER(ctypes.c_void_p))
     def open2(self, context, codec, options):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_default_get_buffer2", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_default_get_buffer2", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame), ctypes.c_int)
     def get_buffer2(self, context, frame, flags):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_default_get_encode_buffer", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_default_get_encode_buffer", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket), ctypes.c_int)
     def get_encode_buffer(self, context, packet, flags):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_send_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("avcodec_send_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
     def send_packet(self, context, packet):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_receive_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("avcodec_receive_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
     def receive_packet(self, context, packet):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_send_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("avcodec_send_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
     def send_frame(self, context, frame):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_receive_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("avcodec_receive_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
     def receive_frame(self, context, frame):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_get_hw_frames_parameters",
+    @clib.Lib.Signature("avcodec_get_hw_frames_parameters",
                          ctypes.POINTER(StructContext), ctypes.POINTER(util.StructBufferRef),
                          util.EnumPixelFormat, ctypes.POINTER(ctypes.POINTER(util.StructBufferRef)))
     def get_hw_frames_parameters(self, context, device_ref, hw_pix_fmt, out_frames_ref):
         return ctypes.c_int
 
-    @clib.CLib.Signature("avcodec_get_supported_config",
+    @clib.Lib.Signature("avcodec_get_supported_config",
                          ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), EnumCodecConfig,
                          ctypes.c_int, ctypes.POINTER(ctypes.c_void_p),
                          ctypes.POINTER(ctypes.c_int))
     def get_supported_config(self, context, codec, config, flags, out_configs, out_num_configs):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_packet_alloc")
+    @clib.Lib.Signature("av_packet_alloc")
     def packet_alloc(self):
         return ctypes.POINTER(StructPacket)
 
-    @clib.CLib.Signature("av_packet_clone", ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_clone", ctypes.POINTER(StructPacket))
     def packet_clone(self, src):
         return ctypes.POINTER(StructPacket)
 
-    @clib.CLib.Signature("av_packet_clone", ctypes.POINTER(ctypes.POINTER(StructPacket)))
+    @clib.Lib.Signature("av_packet_clone", ctypes.POINTER(ctypes.POINTER(StructPacket)))
     def packet_free(self, pkt):
         return
 
-    @clib.CLib.Signature("av_new_packet", ctypes.POINTER(ctypes.POINTER(StructPacket)), ctypes.c_int)
+    @clib.Lib.Signature("av_new_packet", ctypes.POINTER(ctypes.POINTER(StructPacket)), ctypes.c_int)
     def packet_new(self, pkt, size):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_packet_from_data",
+    @clib.Lib.Signature("av_packet_from_data",
                          ctypes.POINTER(ctypes.POINTER(StructPacket)),
                          ctypes.POINTER(ctypes.c_uint8),
                          ctypes.c_int)
     def packet_from_data(self, pkt, data, size):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_packet_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
     def packet_ref(self, dst, src):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_packet_unref", ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_unref", ctypes.POINTER(StructPacket))
     def packet_unref(self, pkt):
         return
 
-    @clib.CLib.Signature("av_packet_move_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_move_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
     def packet_move_ref(self, dst, src):
         return
 
-    @clib.CLib.Signature("av_parser_iterate", ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("av_parser_iterate", ctypes.POINTER(ctypes.c_void_p))
     def parser_iterate(self, opaque):
         return ctypes.POINTER(StructParser)
 
-    @clib.CLib.Signature("av_parser_init", EnumCodecID)
+    @clib.Lib.Signature("av_parser_init", EnumCodecID)
     def parser_init(self, codecid):
         return ctypes.POINTER(StructParserContext)
 
-    @clib.CLib.Signature("av_parser_parse2",
+    @clib.Lib.Signature("av_parser_parse2",
                          ctypes.POINTER(StructParserContext),
                          ctypes.POINTER(StructContext),
                          ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_int),
@@ -1196,37 +1196,37 @@ class Codec(clib.CLib):
     def parser_parse2(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_parser_close", ctypes.POINTER(StructParserContext))
+    @clib.Lib.Signature("av_parser_close", ctypes.POINTER(StructParserContext))
     def parser_close(self, s):
         return
 
-    @clib.CLib.Signature("av_frame_alloc")
+    @clib.Lib.Signature("av_frame_alloc")
     def frame_alloc(self):
         return ctypes.POINTER(util.StructFrame)
 
-    @clib.CLib.Signature("av_frame_free", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_free", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
     def frame_free(self):
         return
 
-    @clib.CLib.Signature("av_frame_clone", ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("av_frame_clone", ctypes.POINTER(util.StructFrame))
     def frame_clone(self, src):
         return ctypes.POINTER(util.StructFrame)
 
-    @clib.CLib.Signature("av_frame_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
+    @clib.Lib.Signature("av_frame_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
                          ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
     def frame_ref(self, dst, src):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_frame_unref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_unref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
     def frame_unref(self, frame):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_frame_move_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
+    @clib.Lib.Signature("av_frame_move_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
                          ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
     def frame_move_ref(self, dst, src):
         return ctypes.c_int
 
-    @clib.CLib.Signature("av_frame_get_buffer", ctypes.POINTER(ctypes.POINTER(util.StructFrame)), ctypes.c_int)
+    @clib.Lib.Signature("av_frame_get_buffer", ctypes.POINTER(ctypes.POINTER(util.StructFrame)), ctypes.c_int)
     def frame_get_buffer(self, frame, align):
         return ctypes.c_int
 
