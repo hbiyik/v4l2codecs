@@ -18,75 +18,7 @@ import ctypes
 from ctypes import util
 
 from v4l2codecs import log
-
-
-# wrapper union class so that ctypes will be kept as ctypes when used in Struct
-# otherwise they are converted to pythonic types (ie: struct.c_int -> sctruct.int)
-class UnionWrapper(ctypes.Union):
-    _base_type_ = None
-
-    @staticmethod
-    def type(ctype):
-        def wrapper(cls):
-            cls._base_type_ = ctype
-            cls._fields_ = [("value", ctype)]
-            return cls
-        return wrapper
-
-    @property
-    def ref(self):
-        return ctypes.cast(ctypes.byref(self), ctypes.POINTER(self._base_type_))
-
-
-@UnionWrapper.type(ctypes.c_int)
-class c_int(UnionWrapper):
-    pass
-
-
-@UnionWrapper.type(ctypes.c_uint)
-class c_uint(UnionWrapper):
-    pass
-
-
-class _POINTER(ctypes._Pointer):
-    @property
-    def address(self):
-        return ctypes.cast(self, ctypes.c_void_p).value
-
-    @address.setter
-    def address(self, addr):
-        # change the pointers existing address
-        ctypes.memmove(ctypes.byref(self),
-                       ctypes.byref(ctypes.c_void_p(addr)),
-                       ctypes.sizeof(self))
-
-
-def POINTER(typ):
-    ptyp = ctypes.POINTER(typ)
-    ptyp.address = _POINTER.address
-    return ptyp
-
-
-def ptr_address(ptr):
-    return ctypes.cast(ptr, ctypes.c_void_p).value
-
-
-class CIntEnum(ctypes.c_int):
-    _enum_ = None
-
-    @property
-    def enum(self):
-        try:
-            return self._enum_(self.value)
-        except ValueError:
-            return
-
-    def __str__(self):
-        e = self.enum
-        return str(self.value) if e is None else e.name
-
-    def __repr__(self):
-        return f"{str(self)}({self.value})"
+from v4l2codecs.clib import wrapper
 
 
 class Lib:
@@ -120,7 +52,7 @@ class Lib:
         cargs = callback.__closure__[0].cell_contents
         retval = callback.__closure__[1].cell_contents(self, *cargs)
         if not hasattr(retval, "_type_") or not isinstance(retval._type_, str) or not retval._type_ != "P":
-            retval = ctypes.c_void_p
+            retval = wrapper.c_void_p
         functionname = callback.__closure__[2].cell_contents
         ptr = self._wrap_function(functionname, cargs, retval)
         return ctypes.CFUNCTYPE(retval, *cargs)(ptr)
@@ -131,7 +63,7 @@ class Lib:
         ptr = getattr(self._lib, name, None)
         if not ptr:
             raise RuntimeError(f"function {name} is not exported from {self._name}")
-        rettype = rettype or ctypes.c_void_p
+        rettype = rettype or wrapper.c_void_p
         setattr(ptr, "argtypes", args)
         setattr(ptr, "restype", rettype)
         log.LOGGER.debug(f"function {name} is wrapped from {self._name}")

@@ -19,11 +19,11 @@ import enum
 
 from v4l2codecs import clib
 
+NOPTS = clib.c_int64(0x8000000000000000)
 
-NOPTS = ctypes.c_int64(0x8000000000000000)
 
+class EnumLogLevel(clib.c_intenum):
 
-class EnumLogLevel(clib.CIntEnum):
     class _enum_(enum.IntEnum):
         QUIET = -8
         PANIC = 0
@@ -36,7 +36,8 @@ class EnumLogLevel(clib.CIntEnum):
         TRACE = 56
 
 
-class EnumMediaType(clib.CIntEnum):
+class EnumMediaType(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         UNKNOWN = -1  # Usually treated as DATA
         VIDEO = enum.auto()
@@ -47,7 +48,8 @@ class EnumMediaType(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumPixelFormat(clib.CIntEnum):
+class EnumPixelFormat(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NONE = -1
         YUV420P = enum.auto()  # planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
@@ -335,7 +337,8 @@ class EnumPixelFormat(clib.CIntEnum):
         NB = enum.auto()  # number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
 
 
-class EnumSampleFormat(clib.CIntEnum):
+class EnumSampleFormat(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NONE = -1
         U8 = enum.auto()  # unsigned 8 bits
@@ -355,7 +358,8 @@ class EnumSampleFormat(clib.CIntEnum):
         NB = enum.auto()  # Number of sample formats. DO NOT USE if linking dynamically
 
 
-class EnumChannelOrder(clib.CIntEnum):
+class EnumChannelOrder(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         UNSPEC = 0
         NATIVE = enum.auto()
@@ -364,7 +368,8 @@ class EnumChannelOrder(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumChannel(clib.CIntEnum):
+class EnumChannel(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NONE = -1
         FRONT_LEFT = enum.auto()
@@ -407,7 +412,8 @@ class EnumChannel(clib.CIntEnum):
         AMBISONIC_END = 0x7ff
 
 
-class EnumOptionType(clib.CIntEnum):
+class EnumOptionType(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         FLAGS = 1
         INT = enum.auto()
@@ -432,7 +438,8 @@ class EnumOptionType(clib.CIntEnum):
         FLAG_ARRAY = (1 << 16)
 
 
-class EnumClassCategory(clib.CIntEnum):
+class EnumClassCategory(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NA = 0
         INPUT = enum.auto()
@@ -454,7 +461,8 @@ class EnumClassCategory(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumFrameSideDataType(clib.CIntEnum):
+class EnumFrameSideDataType(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         PANSCAN = 0
         A53_CC = enum.auto()
@@ -487,7 +495,8 @@ class EnumFrameSideDataType(clib.CIntEnum):
         VIEW_ID = enum.auto()
 
 
-class EnumActiveFormatDescription(clib.CIntEnum):
+class EnumActiveFormatDescription(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         SAME = 8
         D_4_3 = 9
@@ -498,13 +507,15 @@ class EnumActiveFormatDescription(clib.CIntEnum):
         D_SP_4_3 = 15
 
 
-class EnumSideDataProps(clib.CIntEnum):
+class EnumSideDataProps(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         GLOBAL = (1 << 0)
         MULTI = (1 << 1)
 
 
-class EnumColorRange(clib.CIntEnum):
+class EnumColorRange(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         UNSPECIFIED = 0
         MPEG = 1
@@ -512,7 +523,8 @@ class EnumColorRange(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumColorPrimaries(clib.CIntEnum):
+class EnumColorPrimaries(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         AVCOL_PRI_RESERVED0 = 0
         AVCOL_PRI_BT709 = 1
@@ -531,7 +543,8 @@ class EnumColorPrimaries(clib.CIntEnum):
         AVCOL_PRI_NB = enum.auto()
 
 
-class EnumColorTransferCharacteristic(clib.CIntEnum):
+class EnumColorTransferCharacteristic(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         RESERVED0 = 0
         BT709 = 1
@@ -555,7 +568,8 @@ class EnumColorTransferCharacteristic(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumColorSpace(clib.CIntEnum):
+class EnumColorSpace(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         RGB = 0
         BT709 = 1
@@ -578,7 +592,8 @@ class EnumColorSpace(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumChromaLocation(clib.CIntEnum):
+class EnumChromaLocation(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         UNSPECIFIED = 0
         LEFT = 1
@@ -590,7 +605,8 @@ class EnumChromaLocation(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumPictureType(clib.CIntEnum):
+class EnumPictureType(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NONE = 0
         II = enum.auto()
@@ -602,7 +618,8 @@ class EnumPictureType(clib.CIntEnum):
         BI = enum.auto()
 
 
-class EnumHWDeviceType(clib.CIntEnum):
+class EnumHWDeviceType(clib.c_intenum):
+
     class _enum_(enum.IntEnum):
         NONE = 0
         VDPAU = enum.auto()
@@ -619,183 +636,183 @@ class EnumHWDeviceType(clib.CIntEnum):
         D3D12VA = enum.auto()
 
 
-class StructRational(ctypes.Structure):
+class StructRational(clib.Structure):
     _fields_ = [
-        ('num', ctypes.c_int),
-        ('den', ctypes.c_int),]
+        ('num', clib.c_int),
+        ('den', clib.c_int), ]
 
 
-class StructChannelCustom(ctypes.Structure):
+class StructChannelCustom(clib.Structure):
     _fields_ = [
         ('id', EnumChannel),
-        ('name', ctypes.c_char * int(16)),
-        ('opaque', ctypes.c_void_p),]
+        ('name', clib.c_char * int(16)),
+        ('opaque', clib.c_void_p), ]
 
 
 class UnionChannel(ctypes.Union):
     _fields_ = [
-        ('mask', ctypes.c_uint64),
-        ('map', ctypes.POINTER(StructChannelCustom)),
+        ('mask', clib.c_uint64),
+        ('map', clib.POINTER(StructChannelCustom)),
     ]
 
 
-class StructChannelLayout(ctypes.Structure):
+class StructChannelLayout(clib.Structure):
     _fields_ = [
         ('order', EnumChannelOrder),
-        ('nb_channels', ctypes.c_int),
+        ('nb_channels', clib.c_int),
         ('u', UnionChannel),
-        ('opaque', ctypes.c_void_p),]
+        ('opaque', clib.c_void_p), ]
 
 
-class StructOptionArrayDef(ctypes.Structure):
+class StructOptionArrayDef(clib.Structure):
     _fields_ = [
-        ('def', ctypes.c_char_p),
-        ('size_min', ctypes.c_uint),
-        ('size_max', ctypes.c_uint),
-        ('sep', ctypes.c_char)]
+        ('def', clib.c_char_p),
+        ('size_min', clib.c_uint),
+        ('size_max', clib.c_uint),
+        ('sep', clib.c_char)]
 
 
 class UnionOption(ctypes.Union):
     _fields_ = [
-        ('i64', ctypes.c_int64),
-        ('dbl', ctypes.c_double),
-        ('str', ctypes.c_char_p),
+        ('i64', clib.c_int64),
+        ('dbl', clib.c_double),
+        ('str', clib.c_char_p),
         ('q', StructRational),
-        ('arr', ctypes.POINTER(StructOptionArrayDef))]
+        ('arr', clib.POINTER(StructOptionArrayDef))]
 
 
-class StructOption(ctypes.Structure):
+class StructOption(clib.Structure):
     _fields_ = [
-        ('name', ctypes.c_char_p),
-        ('help', ctypes.c_char_p),
-        ('offset', ctypes.c_int),
+        ('name', clib.c_char_p),
+        ('help', clib.c_char_p),
+        ('offset', clib.c_int),
         ('type', EnumOptionType),
         ('default_val', UnionOption),
-        ('min', ctypes.c_double),
-        ('max', ctypes.c_double),
-        ('flags', ctypes.c_int),
-        ('unit', ctypes.c_char_p)]
+        ('min', clib.c_double),
+        ('max', clib.c_double),
+        ('flags', clib.c_int),
+        ('unit', clib.c_char_p)]
 
 
-class StructOptionRange(ctypes.Structure):
+class StructOptionRange(clib.Structure):
     _fields_ = [
-        ('str', ctypes.c_char_p),
-        ('value_min', ctypes.c_double),
-        ('value_max', ctypes.c_double),
-        ('component_min', ctypes.c_double),
-        ('component_max', ctypes.c_double),
-        ('is_range', ctypes.c_int)]
+        ('str', clib.c_char_p),
+        ('value_min', clib.c_double),
+        ('value_max', clib.c_double),
+        ('component_min', clib.c_double),
+        ('component_max', clib.c_double),
+        ('is_range', clib.c_int)]
 
 
-class StructOptionRanges(ctypes.Structure):
+class StructOptionRanges(clib.Structure):
     _fields_ = [
-        ('range', ctypes.POINTER(ctypes.POINTER(StructOptionRange))),
-        ('nb_ranges', ctypes.c_int),
-        ('nb_components', ctypes.c_int),
+        ('range', clib.POINTER(clib.POINTER(StructOptionRange))),
+        ('nb_ranges', clib.c_int),
+        ('nb_components', clib.c_int),
     ]
 
 
-class StructClass(ctypes.Structure):
+class StructClass(clib.Structure):
     pass
 
 
 StructClass._fields_ = [
-    ('class_name', ctypes.c_char_p),
-    ('item_name', ctypes.CFUNCTYPE(ctypes.c_char_p,
-                                   ctypes.c_void_p)),
-    ('option', ctypes.POINTER(StructOption)),
-    ('version', ctypes.c_int),
-    ('log_level_offset_offset', ctypes.c_int),
-    ('parent_log_context_offset', ctypes.c_int),
+    ('class_name', clib.c_char_p),
+    ('item_name', ctypes.CFUNCTYPE(clib.c_char_p,
+                                   clib.c_void_p)),
+    ('option', clib.POINTER(StructOption)),
+    ('version', clib.c_int),
+    ('log_level_offset_offset', clib.c_int),
+    ('parent_log_context_offset', clib.c_int),
     ('category', EnumClassCategory),
     ('get_category', ctypes.CFUNCTYPE(EnumClassCategory,
-                                      ctypes.c_void_p)),
-    ('query_ranges', ctypes.CFUNCTYPE(ctypes.c_int,
-                                      ctypes.POINTER(ctypes.POINTER(StructOptionRanges)),
-                                      ctypes.c_void_p,
-                                      ctypes.c_char_p,
-                                      ctypes.c_int)),
-    ('child_next', ctypes.CFUNCTYPE(ctypes.POINTER(ctypes.c_ubyte),
-                                    ctypes.c_void_p,
-                                    ctypes.c_void_p)),
-    ('child_class_iterate', ctypes.CFUNCTYPE(ctypes.POINTER(StructClass),
-                                             ctypes.POINTER(ctypes.c_void_p))),
+                                      clib.c_void_p)),
+    ('query_ranges', ctypes.CFUNCTYPE(clib.c_int,
+                                      clib.POINTER(clib.POINTER(StructOptionRanges)),
+                                      clib.c_void_p,
+                                      clib.c_char_p,
+                                      clib.c_int)),
+    ('child_next', ctypes.CFUNCTYPE(clib.POINTER(clib.c_ubyte),
+                                    clib.c_void_p,
+                                    clib.c_void_p)),
+    ('child_class_iterate', ctypes.CFUNCTYPE(clib.POINTER(StructClass),
+                                             clib.POINTER(clib.c_void_p))),
 ]
 
 
-class StructBufferRef(ctypes.Structure):
+class StructBufferRef(clib.Structure):
     _fields_ = [
-        ('buffer', ctypes.c_void_p),
-        ('data', ctypes.POINTER(ctypes.c_uint8)),
-        ('size', ctypes.c_size_t),
+        ('buffer', clib.c_void_p),
+        ('data', clib.POINTER(clib.c_uint8)),
+        ('size', clib.c_size_t),
     ]
 
 
-class StructFrameSideData(ctypes.Structure):
+class StructFrameSideData(clib.Structure):
     _fields_ = [
         ('type', EnumFrameSideDataType),
-        ('data', ctypes.POINTER(ctypes.c_uint8)),
-        ('size', ctypes.c_size_t),
-        ('metadata', ctypes.c_void_p),
-        ('buf', ctypes.POINTER(StructBufferRef))]
+        ('data', clib.POINTER(clib.c_uint8)),
+        ('size', clib.c_size_t),
+        ('metadata', clib.c_void_p),
+        ('buf', clib.POINTER(StructBufferRef))]
 
 
-class StructFrame(ctypes.Structure):
+class StructFrame(clib.Structure):
     _fields_ = [
-        ('data', ctypes.POINTER(ctypes.c_uint8) * int(8)),
-        ('linesize', ctypes.c_int * int(8)),
-        ('extended_data', ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8))),
-        ('width', ctypes.c_int),
-        ('height', ctypes.c_int),
-        ('nb_samples', ctypes.c_int),
-        ('format', ctypes.c_int),
-        ('key_frame', ctypes.c_int),
+        ('data', clib.POINTER(clib.c_uint8) * int(8)),
+        ('linesize', clib.c_int * int(8)),
+        ('extended_data', clib.POINTER(clib.POINTER(clib.c_uint8))),
+        ('width', clib.c_int),
+        ('height', clib.c_int),
+        ('nb_samples', clib.c_int),
+        ('format', clib.c_int),
+        ('key_frame', clib.c_int),
         ('pict_type', EnumPictureType),
         ('sample_aspect_ratio', StructRational),
-        ('pts', ctypes.c_int64),
-        ('pkt_dts', ctypes.c_int64),
+        ('pts', clib.c_int64),
+        ('pkt_dts', clib.c_int64),
         ('time_base', StructRational),
-        ('quality', ctypes.c_int),
-        ('opaque', ctypes.POINTER(None)),
-        ('repeat_pict', ctypes.c_int),
-        ('interlaced_frame', ctypes.c_int),
-        ('top_field_first', ctypes.c_int),
-        ('palette_has_changed', ctypes.c_int),
-        ('sample_rate', ctypes.c_int),
-        ('buf', ctypes.POINTER(StructBufferRef) * int(8)),
-        ('extended_buf', ctypes.POINTER(ctypes.POINTER(StructBufferRef))),
-        ('nb_extended_buf', ctypes.c_int),
-        ('side_data', ctypes.POINTER(ctypes.POINTER(StructFrameSideData))),
-        ('nb_side_data', ctypes.c_int),
-        ('flags', ctypes.c_int),
+        ('quality', clib.c_int),
+        ('opaque', clib.POINTER(None)),
+        ('repeat_pict', clib.c_int),
+        ('interlaced_frame', clib.c_int),
+        ('top_field_first', clib.c_int),
+        ('palette_has_changed', clib.c_int),
+        ('sample_rate', clib.c_int),
+        ('buf', clib.POINTER(StructBufferRef) * int(8)),
+        ('extended_buf', clib.POINTER(clib.POINTER(StructBufferRef))),
+        ('nb_extended_buf', clib.c_int),
+        ('side_data', clib.POINTER(clib.POINTER(StructFrameSideData))),
+        ('nb_side_data', clib.c_int),
+        ('flags', clib.c_int),
         ('color_range', EnumColorRange),
         ('color_primaries', EnumColorPrimaries),
         ('color_trc', EnumColorTransferCharacteristic),
         ('colorspace', EnumColorSpace),
         ('chroma_location', EnumChromaLocation),
-        ('best_effort_timestamp', ctypes.c_int64),
-        ('pkt_pos', ctypes.c_int64),
-        ('metadata', ctypes.c_void_p),
-        ('decode_error_flags', ctypes.c_int),
-        ('pkt_size', ctypes.c_int),
-        ('hw_frames_ctx', ctypes.POINTER(StructBufferRef)),
-        ('opaque_ref', ctypes.POINTER(StructBufferRef)),
-        ('crop_top', ctypes.c_size_t),
-        ('crop_bottom', ctypes.c_size_t),
-        ('crop_left', ctypes.c_size_t),
-        ('crop_right', ctypes.c_size_t),
-        ('private_ref', ctypes.POINTER(StructBufferRef)),
+        ('best_effort_timestamp', clib.c_int64),
+        ('pkt_pos', clib.c_int64),
+        ('metadata', clib.c_void_p),
+        ('decode_error_flags', clib.c_int),
+        ('pkt_size', clib.c_int),
+        ('hw_frames_ctx', clib.POINTER(StructBufferRef)),
+        ('opaque_ref', clib.POINTER(StructBufferRef)),
+        ('crop_top', clib.c_size_t),
+        ('crop_bottom', clib.c_size_t),
+        ('crop_left', clib.c_size_t),
+        ('crop_right', clib.c_size_t),
+        ('private_ref', clib.POINTER(StructBufferRef)),
         ('ch_layout', StructChannelLayout),
-        ('duration', ctypes.c_int64)]
+        ('duration', clib.c_int64)]
 
 
-class StructBPrint(ctypes.Structure):
+class StructBPrint(clib.Structure):
     _fields_ = [
-        ('str', ctypes.c_char_p),
-        ('len', ctypes.c_uint),
-        ('size', ctypes.c_uint),
-        ('size_max', ctypes.c_uint),
-        ('reserved_internal_buffer', ctypes.c_char * int(1)),
+        ('str', clib.c_char_p),
+        ('len', clib.c_uint),
+        ('size', clib.c_uint),
+        ('size_max', clib.c_uint),
+        ('reserved_internal_buffer', clib.c_char * int(1)),
     ]
 
 
@@ -804,31 +821,31 @@ class Util(clib.Lib):
 
     @clib.Lib.Signature("av_log_get_level")
     def get_log_level(self):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_log_set_level", ctypes.c_int)
+    @clib.Lib.Signature("av_log_set_level", clib.c_int)
     def set_log_level(self, level):
         return
 
-    @clib.Lib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(ctypes.c_void_p,
-                                                                 ctypes.c_void_p,
-                                                                 ctypes.c_int,
-                                                                 ctypes.c_char_p,
-                                                                 ctypes.c_void_p))
+    @clib.Lib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(clib.c_void_p,
+                                                                 clib.c_void_p,
+                                                                 clib.c_int,
+                                                                 clib.c_char_p,
+                                                                 clib.c_void_p))
     def set_log_callback(self, callback):
         return
 
-    @clib.Lib.Signature("av_log_default_callback", ctypes.c_void_p,
-                                                    ctypes.c_int,
-                                                    ctypes.c_char_p,
-                                                    ctypes.c_void_p)
+    @clib.Lib.Signature("av_log_default_callback", clib.c_void_p,
+                                                    clib.c_int,
+                                                    clib.c_char_p,
+                                                    clib.c_void_p)
     def log_default_callback(self, ptr, level, fmt, vl):
-        return ctypes.c_void_p
+        return clib.c_void_p
 
-    @clib.Lib.Signature("av_log", ctypes.c_void_p, ctypes.c_int, ctypes.c_char_p)
+    @clib.Lib.Signature("av_log", clib.c_void_p, clib.c_int, clib.c_char_p)
     def log(self, ctx, level, fmt, *args):
         return
 
-    @clib.Lib.Signature("av_vbprintf", ctypes.POINTER(StructBPrint), ctypes.c_char_p)
+    @clib.Lib.Signature("av_vbprintf", clib.POINTER(StructBPrint), clib.c_char_p)
     def vbprintf(self, buf, fmt, *args):
         return

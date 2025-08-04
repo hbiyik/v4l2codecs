@@ -14,16 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import ctypes
 import enum
+import ctypes
 
-from v4l2codecs import log
 from v4l2codecs import clib
 
 from v4l2codecs.av import util
 
 
-class EnumCodecID(clib.CIntEnum):
+class EnumCodecID(clib.c_intenum):
     class _enum_(enum.IntEnum):
         NONE = 0
         MPEG1VIDEO = enum.auto()
@@ -555,7 +554,7 @@ class EnumCodecID(clib.CIntEnum):
         ANULL = enum.auto()
 
 
-class EnumFieldOrder(clib.CIntEnum):
+class EnumFieldOrder(clib.c_intenum):
     class _enum_(enum.IntEnum):
         UNKNOWN = 0
         PROGRESSIVE = enum.auto()
@@ -565,7 +564,7 @@ class EnumFieldOrder(clib.CIntEnum):
         BT = enum.auto()
 
 
-class EnumDiscard(clib.CIntEnum):
+class EnumDiscard(clib.c_intenum):
     class _enum_(enum.IntEnum):
         DEFAULT = 0
         NONREF = 8
@@ -575,7 +574,7 @@ class EnumDiscard(clib.CIntEnum):
         ALL = 48
 
 
-class EnumAudioServiceType(clib.CIntEnum):
+class EnumAudioServiceType(clib.c_intenum):
     class _enum_(enum.IntEnum):
         MAIN = 0
         EFFECTS = 1
@@ -589,7 +588,7 @@ class EnumAudioServiceType(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumPacketSideDataType(clib.CIntEnum):
+class EnumPacketSideDataType(clib.c_intenum):
     class _enum_(enum.IntEnum):
         PALETTE = 0
         NEW_EXTRADATA = enum.auto()
@@ -632,7 +631,7 @@ class EnumPacketSideDataType(clib.CIntEnum):
         NB = enum.auto()
 
 
-class EnumCodecConfig(clib.CIntEnum):
+class EnumCodecConfig(clib.c_intenum):
     class _enum_(enum.IntEnum):
         PIX_FORMAT = 0
         FRAME_RATE = enum.auto()
@@ -643,7 +642,7 @@ class EnumCodecConfig(clib.CIntEnum):
         COLOR_SPACE = enum.auto()
 
 
-class EnumPictureStructure(clib.CIntEnum):
+class EnumPictureStructure(clib.c_intenum):
     class _enum_(enum.IntEnum):
         UNKNOWN = 0
         TOP_FIELD = enum.auto()
@@ -651,111 +650,111 @@ class EnumPictureStructure(clib.CIntEnum):
         FRAME = enum.auto()
 
 
-class StructProfile(ctypes.Structure):
+class StructProfile(clib.Structure):
     _fields_ = [
-        ('profile', ctypes.c_int),
-        ('name', ctypes.c_char_p),
+        ('profile', clib.c_int),
+        ('name', clib.c_char_p),
     ]
 
 
-class StructCodec(ctypes.Structure):
+class StructCodec(clib.Structure):
     _fields_ = [
-        ('name', ctypes.c_char_p),
-        ('long_name', ctypes.c_char_p),
+        ('name', clib.c_char_p),
+        ('long_name', clib.c_char_p),
         ('type', util.EnumMediaType),
         ('id', EnumCodecID),
-        ('capabilities', ctypes.c_int),
-        ('max_lowres', ctypes.c_uint8),
-        ('supported_framerates', ctypes.POINTER(util.StructRational)),
-        ('pix_fmts', ctypes.POINTER(util.EnumPixelFormat)),
-        ('supported_samplerates', ctypes.POINTER(ctypes.c_int)),
-        ('sample_fmts', ctypes.POINTER(util.EnumSampleFormat)),
-        ('priv_class', ctypes.c_void_p),
-        ('profiles', ctypes.POINTER(StructProfile)),
-        ('wrapper_name', ctypes.c_char_p),
-        ('ch_layouts', ctypes.POINTER(util.StructChannelLayout)),
+        ('capabilities', clib.c_int),
+        ('max_lowres', clib.c_uint8),
+        ('supported_framerates', clib.POINTER(util.StructRational)),
+        ('pix_fmts', clib.POINTER(util.EnumPixelFormat)),
+        ('supported_samplerates', clib.POINTER(clib.c_int)),
+        ('sample_fmts', clib.POINTER(util.EnumSampleFormat)),
+        ('priv_class', clib.c_void_p),
+        ('profiles', clib.POINTER(StructProfile)),
+        ('wrapper_name', clib.c_char_p),
+        ('ch_layouts', clib.POINTER(util.StructChannelLayout)),
     ]
 
 
-class StructRcOverride(ctypes.Structure):
+class StructRcOverride(clib.Structure):
     _fields_ = [
-        ('start_frame', ctypes.c_int),
-        ('end_frame', ctypes.c_int),
-        ('qscale', ctypes.c_int),
-        ('quality_factor', ctypes.c_float)]
+        ('start_frame', clib.c_int),
+        ('end_frame', clib.c_int),
+        ('qscale', clib.c_int),
+        ('quality_factor', clib.c_float)]
 
 
-class StructHWAccel(ctypes.Structure):
+class StructHWAccel(clib.Structure):
     _fields_ = [
-        ('name', ctypes.c_char_p),
+        ('name', clib.c_char_p),
         ('type', util.EnumMediaType),
         ('id', EnumCodecID),
         ('pix_fmt', util.EnumPixelFormat),
-        ('capabilities', ctypes.c_int),
+        ('capabilities', clib.c_int),
     ]
 
 
-class StructHWConfig(ctypes.Structure):
+class StructHWConfig(clib.Structure):
     _fields_ = [("pix_fmt", util.EnumPixelFormat),
-                ("methods", ctypes.c_int),
+                ("methods", clib.c_int),
                 ("device_type", util.EnumHWDeviceType)]
 
 
-class StructCodecDescriptor(ctypes.Structure):
+class StructCodecDescriptor(clib.Structure):
     _fields_ = [
         ('id', EnumCodecID),
         ('type', util.EnumMediaType),
-        ('name', ctypes.c_char_p),
-        ('long_name', ctypes.c_char_p),
-        ('props', ctypes.c_int),
-        ('mime_types', ctypes.POINTER(ctypes.c_char_p)),
-        ('profiles', ctypes.POINTER(StructProfile)),
+        ('name', clib.c_char_p),
+        ('long_name', clib.c_char_p),
+        ('props', clib.c_int),
+        ('mime_types', clib.POINTER(clib.c_char_p)),
+        ('profiles', clib.POINTER(StructProfile)),
     ]
 
 
-class StructPacketSideData(ctypes.Structure):
+class StructPacketSideData(clib.Structure):
     _fields_ = [
-        ('data', ctypes.POINTER(ctypes.c_uint8)),
-        ('size', ctypes.c_size_t),
+        ('data', clib.POINTER(clib.c_uint8)),
+        ('size', clib.c_size_t),
         ('type', EnumPacketSideDataType),
     ]
 
 
-class StructPacket(ctypes.Structure):
+class StructPacket(clib.Structure):
     _fields_ = [
-        ('buf', ctypes.POINTER(util.StructBufferRef)),
-        ('pts', ctypes.c_int64),
-        ('dts', ctypes.c_int64),
-        ('data', ctypes.POINTER(ctypes.c_uint8)),
+        ('buf', clib.POINTER(util.StructBufferRef)),
+        ('pts', clib.c_int64),
+        ('dts', clib.c_int64),
+        ('data', clib.POINTER(clib.c_uint8)),
         ('size', clib.c_int),
-        ('stream_index', ctypes.c_int),
-        ('flags', ctypes.c_int),
-        ('side_data', ctypes.POINTER(StructPacketSideData)),
-        ('side_data_elems', ctypes.c_int),
-        ('duration', ctypes.c_int64),
-        ('pos', ctypes.c_int64),
-        ('opaque', ctypes.c_void_p),
-        ('opaque_ref', ctypes.POINTER(util.StructBufferRef)),
+        ('stream_index', clib.c_int),
+        ('flags', clib.c_int),
+        ('side_data', clib.POINTER(StructPacketSideData)),
+        ('side_data_elems', clib.c_int),
+        ('duration', clib.c_int64),
+        ('pos', clib.c_int64),
+        ('opaque', clib.c_void_p),
+        ('opaque_ref', clib.POINTER(util.StructBufferRef)),
         ('time_base', util.StructRational)]
 
 
-class StructCodecParameters(ctypes.Structure):
+class StructCodecParameters(clib.Structure):
     _fields_ = [
         ('codec_type', util.EnumMediaType),
         ('codec_id', EnumCodecID),
-        ('codec_tag', ctypes.c_uint32),
-        ('extradata', ctypes.POINTER(ctypes.c_uint8)),
-        ('extradata_size', ctypes.c_int),
-        ('coded_side_data', ctypes.POINTER(StructPacketSideData)),
-        ('nb_coded_side_data', ctypes.c_int),
-        ('format', ctypes.c_int),
-        ('bit_rate', ctypes.c_int64),
-        ('bits_per_coded_sample', ctypes.c_int),
-        ('bits_per_raw_sample', ctypes.c_int),
-        ('profile', ctypes.c_int),
-        ('level', ctypes.c_int),
-        ('width', ctypes.c_int),
-        ('height', ctypes.c_int),
+        ('codec_tag', clib.c_uint32),
+        ('extradata', clib.POINTER(clib.c_uint8)),
+        ('extradata_size', clib.c_int),
+        ('coded_side_data', clib.POINTER(StructPacketSideData)),
+        ('nb_coded_side_data', clib.c_int),
+        ('format', clib.c_int),
+        ('bit_rate', clib.c_int64),
+        ('bits_per_coded_sample', clib.c_int),
+        ('bits_per_raw_sample', clib.c_int),
+        ('profile', clib.c_int),
+        ('level', clib.c_int),
+        ('width', clib.c_int),
+        ('height', clib.c_int),
         ('sample_aspect_ratio', util.StructRational),
         ('framerate', util.StructRational),
         ('field_order', EnumFieldOrder),
@@ -764,44 +763,44 @@ class StructCodecParameters(ctypes.Structure):
         ('color_trc', util.EnumColorTransferCharacteristic),
         ('color_space', util.EnumColorSpace),
         ('chroma_location', util.EnumChromaLocation),
-        ('video_delay', ctypes.c_int),
+        ('video_delay', clib.c_int),
         ('ch_layout', util.StructChannelLayout),
-        ('sample_rate', ctypes.c_int),
-        ('block_align', ctypes.c_int),
-        ('frame_size', ctypes.c_int),
-        ('initial_padding', ctypes.c_int),
-        ('trailing_padding', ctypes.c_int),
-        ('seek_preroll', ctypes.c_int)]
+        ('sample_rate', clib.c_int),
+        ('block_align', clib.c_int),
+        ('frame_size', clib.c_int),
+        ('initial_padding', clib.c_int),
+        ('trailing_padding', clib.c_int),
+        ('seek_preroll', clib.c_int)]
 
 
-class StructContext(ctypes.Structure):
+class StructContext(clib.Structure):
     pass
 
 
 StructContext._fields_ = [
-    ('av_class', ctypes.POINTER(util.StructClass)),
-    ('log_level_offset', ctypes.c_int),
+    ('av_class', clib.POINTER(util.StructClass)),
+    ('log_level_offset', clib.c_int),
     ('codec_type', util.EnumMediaType),
-    ('codec', ctypes.POINTER(StructCodec)),
+    ('codec', clib.POINTER(StructCodec)),
     ('codec_id', EnumCodecID),
-    ('codec_tag', ctypes.c_uint),
-    ('priv_data', ctypes.c_void_p),
-    ('internal', ctypes.c_void_p),
-    ('opaque', ctypes.c_void_p),
-    ('bit_rate', ctypes.c_int64),
-    ('flags', ctypes.c_int),
-    ('flags2', ctypes.c_int),
-    ('extradata', ctypes.POINTER(ctypes.c_uint8)),
-    ('extradata_size', ctypes.c_int),
+    ('codec_tag', clib.c_uint),
+    ('priv_data', clib.c_void_p),
+    ('internal', clib.c_void_p),
+    ('opaque', clib.c_void_p),
+    ('bit_rate', clib.c_int64),
+    ('flags', clib.c_int),
+    ('flags2', clib.c_int),
+    ('extradata', clib.POINTER(clib.c_uint8)),
+    ('extradata_size', clib.c_int),
     ('time_base', util.StructRational),
     ('pkt_timebase', util.StructRational),
     ('framerate', util.StructRational),
-    ('ticks_per_frame', ctypes.c_int),
-    ('delay', ctypes.c_int),
-    ('width', ctypes.c_int),
-    ('height', ctypes.c_int),
-    ('coded_width', ctypes.c_int),
-    ('coded_height', ctypes.c_int),
+    ('ticks_per_frame', clib.c_int),
+    ('delay', clib.c_int),
+    ('width', clib.c_int),
+    ('height', clib.c_int),
+    ('coded_width', clib.c_int),
+    ('coded_height', clib.c_int),
     ('sample_aspect_ratio', util.StructRational),
     ('pix_fmt', util.EnumPixelFormat),
     ('sw_pix_fmt', util.EnumPixelFormat),
@@ -811,424 +810,426 @@ StructContext._fields_ = [
     ('color_range', util.EnumColorRange),
     ('chroma_sample_location', util.EnumChromaLocation),
     ('field_order', EnumFieldOrder),
-    ('refs', ctypes.c_int),
-    ('has_b_frames', ctypes.c_int),
-    ('slice_flags', ctypes.c_int),
+    ('refs', clib.c_int),
+    ('has_b_frames', clib.c_int),
+    ('slice_flags', clib.c_int),
     ('draw_horiz_band', ctypes.CFUNCTYPE(None,
-                                         ctypes.POINTER(StructContext),
-                                         ctypes.POINTER(util.StructFrame),
-                                         ctypes.c_int * int(8),
-                                         ctypes.c_int,
-                                         ctypes.c_int,
-                                         ctypes.c_int)),
+                                         clib.POINTER(StructContext),
+                                         clib.POINTER(util.StructFrame),
+                                         clib.c_int * int(8),
+                                         clib.c_int,
+                                         clib.c_int,
+                                         clib.c_int)),
     ('get_format', ctypes.CFUNCTYPE(util.EnumPixelFormat,
-                                    ctypes.POINTER(StructCodec),
-                                    ctypes.POINTER(util.EnumPixelFormat))),
-    ('max_b_frames', ctypes.c_int),
-    ('b_quant_factor', ctypes.c_float),
-    ('b_quant_offset', ctypes.c_float),
-    ('i_quant_factor', ctypes.c_float),
-    ('i_quant_offset', ctypes.c_float),
-    ('lumi_masking', ctypes.c_float),
-    ('temporal_cplx_masking', ctypes.c_float),
-    ('spatial_cplx_masking', ctypes.c_float),
-    ('p_masking', ctypes.c_float),
-    ('dark_masking', ctypes.c_float),
-    ('nsse_weight', ctypes.c_int),
-    ('me_cmp', ctypes.c_int),
-    ('me_sub_cmp', ctypes.c_int),
-    ('mb_cmp', ctypes.c_int),
-    ('ildct_cmp', ctypes.c_int),
-    ('dia_size', ctypes.c_int),
-    ('last_predictor_count', ctypes.c_int),
-    ('me_pre_cmp', ctypes.c_int),
-    ('pre_dia_size', ctypes.c_int),
-    ('me_subpel_quality', ctypes.c_int),
-    ('me_range', ctypes.c_int),
-    ('mb_decision', ctypes.c_int),
-    ('intra_matrix', ctypes.POINTER(ctypes.c_uint16)),
-    ('inter_matrix', ctypes.POINTER(ctypes.c_uint16)),
-    ('chroma_intra_matrix', ctypes.POINTER(ctypes.c_uint16)),
-    ('intra_dc_precision', ctypes.c_int),
-    ('mb_lmin', ctypes.c_int),
-    ('mb_lmax', ctypes.c_int),
-    ('bidir_refine', ctypes.c_int),
-    ('keyint_min', ctypes.c_int),
-    ('gop_size', ctypes.c_int),
-    ('mv0_threshold', ctypes.c_int),
-    ('slices', ctypes.c_int),
-    ('sample_rate', ctypes.c_int),
+                                    clib.POINTER(StructCodec),
+                                    clib.POINTER(util.EnumPixelFormat))),
+    ('max_b_frames', clib.c_int),
+    ('b_quant_factor', clib.c_float),
+    ('b_quant_offset', clib.c_float),
+    ('i_quant_factor', clib.c_float),
+    ('i_quant_offset', clib.c_float),
+    ('lumi_masking', clib.c_float),
+    ('temporal_cplx_masking', clib.c_float),
+    ('spatial_cplx_masking', clib.c_float),
+    ('p_masking', clib.c_float),
+    ('dark_masking', clib.c_float),
+    ('nsse_weight', clib.c_int),
+    ('me_cmp', clib.c_int),
+    ('me_sub_cmp', clib.c_int),
+    ('mb_cmp', clib.c_int),
+    ('ildct_cmp', clib.c_int),
+    ('dia_size', clib.c_int),
+    ('last_predictor_count', clib.c_int),
+    ('me_pre_cmp', clib.c_int),
+    ('pre_dia_size', clib.c_int),
+    ('me_subpel_quality', clib.c_int),
+    ('me_range', clib.c_int),
+    ('mb_decision', clib.c_int),
+    ('intra_matrix', clib.POINTER(clib.c_uint16)),
+    ('inter_matrix', clib.POINTER(clib.c_uint16)),
+    ('chroma_intra_matrix', clib.POINTER(clib.c_uint16)),
+    ('intra_dc_precision', clib.c_int),
+    ('mb_lmin', clib.c_int),
+    ('mb_lmax', clib.c_int),
+    ('bidir_refine', clib.c_int),
+    ('keyint_min', clib.c_int),
+    ('gop_size', clib.c_int),
+    ('mv0_threshold', clib.c_int),
+    ('slices', clib.c_int),
+    ('sample_rate', clib.c_int),
     ('sample_fmt', util.EnumSampleFormat),
     ('ch_layout', util.StructChannelLayout),
-    ('frame_size', ctypes.c_int),
-    ('block_align', ctypes.c_int),
-    ('cutoff', ctypes.c_int),
+    ('frame_size', clib.c_int),
+    ('block_align', clib.c_int),
+    ('cutoff', clib.c_int),
     ('audio_service_type', EnumAudioServiceType),
     ('request_sample_fmt', util.EnumSampleFormat),
-    ('initial_padding', ctypes.c_int),
-    ('trailing_padding', ctypes.c_int),
-    ('seek_preroll', ctypes.c_int),
-    ('get_buffer2', ctypes.CFUNCTYPE(ctypes.c_int,
-                                     ctypes.POINTER(StructContext),
-                                     ctypes.POINTER(util.StructFrame),
-                                     ctypes.c_int)),
-    ('bit_rate_tolerance', ctypes.c_int),
-    ('global_quality', ctypes.c_int),
-    ('compression_level', ctypes.c_int),
-    ('qcompress', ctypes.c_float),
-    ('qblur', ctypes.c_float),
-    ('qmin', ctypes.c_int),
-    ('qmax', ctypes.c_int),
-    ('max_qdiff', ctypes.c_int),
-    ('rc_buffer_size', ctypes.c_int),
-    ('rc_override_count', ctypes.c_int),
-    ('rc_override', ctypes.POINTER(StructRcOverride)),
-    ('rc_max_rate', ctypes.c_int64),
-    ('rc_min_rate', ctypes.c_int64),
-    ('rc_max_available_vbv_use', ctypes.c_float),
-    ('rc_min_vbv_overflow_use', ctypes.c_float),
-    ('rc_initial_buffer_occupancy', ctypes.c_int),
-    ('trellis', ctypes.c_int),
-    ('stats_out', ctypes.c_char_p),
-    ('stats_in', ctypes.c_char_p),
-    ('workaround_bugs', ctypes.c_int),
-    ('strict_std_compliance', ctypes.c_int),
-    ('error_concealment', ctypes.c_int),
-    ('debug', ctypes.c_int),
-    ('err_recognition', ctypes.c_int),
-    ('hwaccel', ctypes.POINTER(StructHWAccel)),
-    ('hwaccel_context', ctypes.c_void_p),
-    ('hw_frames_ctx', ctypes.POINTER(util.StructBufferRef)),
-    ('hw_device_ctx', ctypes.POINTER(util.StructBufferRef)),
-    ('hwaccel_flags', ctypes.c_int),
-    ('extra_hw_frames', ctypes.c_int),
-    ('error', ctypes.c_uint64 * int(8)),
-    ('dct_algo', ctypes.c_int),
-    ('idct_algo', ctypes.c_int),
-    ('bits_per_coded_sample', ctypes.c_int),
-    ('bits_per_raw_sample', ctypes.c_int),
-    ('thread_count', ctypes.c_int),
-    ('thread_type', ctypes.c_int),
-    ('active_thread_type', ctypes.c_int),
-    ('execute', ctypes.CFUNCTYPE(ctypes.c_int,
-                                 ctypes.POINTER(StructContext),
-                                 ctypes.CFUNCTYPE(ctypes.c_int,
-                                                  ctypes.POINTER(StructContext),
-                                                  ctypes.c_void_p),
-                                 ctypes.c_void_p,
-                                 ctypes.POINTER(ctypes.c_int),
-                                 ctypes.c_int,
-                                 ctypes.c_int)),
-    ('execute2', ctypes.CFUNCTYPE(ctypes.c_int,
-                                  ctypes.POINTER(StructContext),
-                                  ctypes.CFUNCTYPE(ctypes.c_int,
-                                                   ctypes.POINTER(StructContext),
-                                                   ctypes.c_void_p,
-                                                   ctypes.c_int,
-                                                   ctypes.c_int),
-                                  ctypes.c_void_p,
-                                  ctypes.POINTER(ctypes.c_int),
-                                  ctypes.c_int)),
-    ('profile', ctypes.c_int),
-    ('level', ctypes.c_int),
-    ('properties', ctypes.c_uint),
+    ('initial_padding', clib.c_int),
+    ('trailing_padding', clib.c_int),
+    ('seek_preroll', clib.c_int),
+    ('get_buffer2', ctypes.CFUNCTYPE(clib.c_int,
+                                     clib.POINTER(StructContext),
+                                     clib.POINTER(util.StructFrame),
+                                     clib.c_int)),
+    ('bit_rate_tolerance', clib.c_int),
+    ('global_quality', clib.c_int),
+    ('compression_level', clib.c_int),
+    ('qcompress', clib.c_float),
+    ('qblur', clib.c_float),
+    ('qmin', clib.c_int),
+    ('qmax', clib.c_int),
+    ('max_qdiff', clib.c_int),
+    ('rc_buffer_size', clib.c_int),
+    ('rc_override_count', clib.c_int),
+    ('rc_override', clib.POINTER(StructRcOverride)),
+    ('rc_max_rate', clib.c_int64),
+    ('rc_min_rate', clib.c_int64),
+    ('rc_max_available_vbv_use', clib.c_float),
+    ('rc_min_vbv_overflow_use', clib.c_float),
+    ('rc_initial_buffer_occupancy', clib.c_int),
+    ('trellis', clib.c_int),
+    ('stats_out', clib.c_char_p),
+    ('stats_in', clib.c_char_p),
+    ('workaround_bugs', clib.c_int),
+    ('strict_std_compliance', clib.c_int),
+    ('error_concealment', clib.c_int),
+    ('debug', clib.c_int),
+    ('err_recognition', clib.c_int),
+    ('hwaccel', clib.POINTER(StructHWAccel)),
+    ('hwaccel_context', clib.c_void_p),
+    ('hw_frames_ctx', clib.POINTER(util.StructBufferRef)),
+    ('hw_device_ctx', clib.POINTER(util.StructBufferRef)),
+    ('hwaccel_flags', clib.c_int),
+    ('extra_hw_frames', clib.c_int),
+    ('error', clib.c_uint64 * int(8)),
+    ('dct_algo', clib.c_int),
+    ('idct_algo', clib.c_int),
+    ('bits_per_coded_sample', clib.c_int),
+    ('bits_per_raw_sample', clib.c_int),
+    ('thread_count', clib.c_int),
+    ('thread_type', clib.c_int),
+    ('active_thread_type', clib.c_int),
+    ('execute', ctypes.CFUNCTYPE(clib.c_int,
+                                 clib.POINTER(StructContext),
+                                 ctypes.CFUNCTYPE(clib.c_int,
+                                                  clib.POINTER(StructContext),
+                                                  clib.c_void_p),
+                                 clib.c_void_p,
+                                 clib.POINTER(clib.c_int),
+                                 clib.c_int,
+                                 clib.c_int)),
+    ('execute2', ctypes.CFUNCTYPE(clib.c_int,
+                                  clib.POINTER(StructContext),
+                                  ctypes.CFUNCTYPE(clib.c_int,
+                                                   clib.POINTER(StructContext),
+                                                   clib.c_void_p,
+                                                   clib.c_int,
+                                                   clib.c_int),
+                                  clib.c_void_p,
+                                  clib.POINTER(clib.c_int),
+                                  clib.c_int)),
+    ('profile', clib.c_int),
+    ('level', clib.c_int),
+    ('properties', clib.c_uint),
     ('skip_loop_filter', EnumDiscard),
     ('skip_idct', EnumDiscard),
     ('skip_frame', EnumDiscard),
-    ('skip_alpha', ctypes.c_int),
-    ('skip_top', ctypes.c_int),
-    ('skip_bottom', ctypes.c_int),
-    ('lowres', ctypes.c_int),
-    ('codec_descriptor', ctypes.POINTER(StructCodecDescriptor)),
-    ('sub_charenc', ctypes.c_char_p),
-    ('sub_charenc_mode', ctypes.c_int),
-    ('subtitle_header_size', ctypes.c_int),
-    ('subtitle_header', ctypes.POINTER(ctypes.c_uint8)),
-    ('dump_separator', ctypes.POINTER(ctypes.c_uint8)),
-    ('codec_whitelist', ctypes.c_char_p),
-    ('coded_side_data', ctypes.POINTER(StructPacketSideData)),
-    ('nb_coded_side_data', ctypes.c_int),
-    ('export_side_data', ctypes.c_int),
-    ('max_pixels', ctypes.c_int64),
-    ('apply_cropping', ctypes.c_int),
-    ('discard_damaged_percentage', ctypes.c_int),
-    ('max_samples', ctypes.c_int64),
-    ('get_encode_buffer', ctypes.CFUNCTYPE(ctypes.c_int,
-                                           ctypes.POINTER(StructContext),
-                                           ctypes.POINTER(StructPacket),
-                                           ctypes.c_int)),
-    ('frame_num', ctypes.c_int64),
-    ('side_data_prefer_packet', ctypes.POINTER(ctypes.c_int)),
-    ('nb_side_data_prefer_packet', ctypes.c_uint),
-    ('decoded_side_data', ctypes.POINTER(ctypes.POINTER(util.StructFrameSideData))),
-    ('nb_decoded_side_data', ctypes.c_int)]
+    ('skip_alpha', clib.c_int),
+    ('skip_top', clib.c_int),
+    ('skip_bottom', clib.c_int),
+    ('lowres', clib.c_int),
+    ('codec_descriptor', clib.POINTER(StructCodecDescriptor)),
+    ('sub_charenc', clib.c_char_p),
+    ('sub_charenc_mode', clib.c_int),
+    ('subtitle_header_size', clib.c_int),
+    ('subtitle_header', clib.POINTER(clib.c_uint8)),
+    ('dump_separator', clib.POINTER(clib.c_uint8)),
+    ('codec_whitelist', clib.c_char_p),
+    ('coded_side_data', clib.POINTER(StructPacketSideData)),
+    ('nb_coded_side_data', clib.c_int),
+    ('export_side_data', clib.c_int),
+    ('max_pixels', clib.c_int64),
+    ('apply_cropping', clib.c_int),
+    ('discard_damaged_percentage', clib.c_int),
+    ('max_samples', clib.c_int64),
+    ('get_encode_buffer', ctypes.CFUNCTYPE(clib.c_int,
+                                           clib.POINTER(StructContext),
+                                           clib.POINTER(StructPacket),
+                                           clib.c_int)),
+    ('frame_num', clib.c_int64),
+    ('side_data_prefer_packet', clib.POINTER(clib.c_int)),
+    ('nb_side_data_prefer_packet', clib.c_uint),
+    ('decoded_side_data', clib.POINTER(clib.POINTER(util.StructFrameSideData))),
+    ('nb_decoded_side_data', clib.c_int)]
 
 
-class StructParser(ctypes.Structure):
+class StructParser(clib.Structure):
     pass
 
 
-class StructParserContext(ctypes.Structure):
+class StructParserContext(clib.Structure):
     pass
 
 
 StructParser._fields_ = [
-    ('codec_ids', ctypes.c_int * int(7)),
-    ('priv_data_size', ctypes.c_int),
-    ('parser_init', ctypes.CFUNCTYPE(ctypes.c_int,
-                                     ctypes.POINTER(StructParserContext))),
-    ('parser_parse', ctypes.CFUNCTYPE(ctypes.c_int,
-                                      ctypes.POINTER(StructParserContext),
-                                      ctypes.POINTER(StructContext),
-                                      ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)),
-                                      ctypes.POINTER(ctypes.c_int),
-                                      ctypes.POINTER(ctypes.c_uint8),
-                                      ctypes.c_int)),
+    ('codec_ids', clib.c_int * int(7)),
+    ('priv_data_size', clib.c_int),
+    ('parser_init', ctypes.CFUNCTYPE(clib.c_int,
+                                     clib.POINTER(StructParserContext))),
+    ('parser_parse', ctypes.CFUNCTYPE(clib.c_int,
+                                      clib.POINTER(StructParserContext),
+                                      clib.POINTER(StructContext),
+                                      clib.POINTER(clib.POINTER(clib.c_uint8)),
+                                      clib.POINTER(clib.c_int),
+                                      clib.POINTER(clib.c_uint8),
+                                      clib.c_int)),
     ('parser_close', ctypes.CFUNCTYPE(None,
-                                      ctypes.POINTER(StructParserContext))),
-    ('split', ctypes.CFUNCTYPE(ctypes.c_int,
-                               ctypes.POINTER(StructContext),
-                               ctypes.POINTER(ctypes.c_uint8),
-                               ctypes.c_int))]
+                                      clib.POINTER(StructParserContext))),
+    ('split', ctypes.CFUNCTYPE(clib.c_int,
+                               clib.POINTER(StructContext),
+                               clib.POINTER(clib.c_uint8),
+                               clib.c_int))]
 
 
 StructParserContext._fields_ = [
-    ('priv_data', ctypes.c_void_p),
-    ('parser', ctypes.POINTER(StructParser)),
-    ('frame_offset', ctypes.c_int64),
-    ('cur_offset', ctypes.c_int64),
-    ('next_frame_offset', ctypes.c_int64),
-    ('pict_type', ctypes.c_int),
-    ('repeat_pict', ctypes.c_int),
-    ('pts', ctypes.c_int64),
-    ('dts', ctypes.c_int64),
-    ('last_pts', ctypes.c_int64),
-    ('last_dts', ctypes.c_int64),
-    ('fetch_timestamp', ctypes.c_int),
-    ('cur_frame_start_index', ctypes.c_int),
-    ('cur_frame_offset', ctypes.c_int64 * int(4)),
-    ('cur_frame_pts', ctypes.c_int64 * int(4)),
-    ('cur_frame_dts', ctypes.c_int64 * int(4)),
-    ('flags', ctypes.c_int),
-    ('offset', ctypes.c_int64),
-    ('cur_frame_end', ctypes.c_int64 * int(4)),
-    ('key_frame', ctypes.c_int),
-    ('dts_synctypes.c_point', ctypes.c_int),
-    ('dts_ref_dts_delta', ctypes.c_int),
-    ('pts_dts_delta', ctypes.c_int),
-    ('cur_frame_pos', ctypes.c_int64 * int(4)),
-    ('pos', ctypes.c_int64),
-    ('last_pos', ctypes.c_int64),
-    ('duration', ctypes.c_int),
+    ('priv_data', clib.c_void_p),
+    ('parser', clib.POINTER(StructParser)),
+    ('frame_offset', clib.c_int64),
+    ('cur_offset', clib.c_int64),
+    ('next_frame_offset', clib.c_int64),
+    ('pict_type', clib.c_int),
+    ('repeat_pict', clib.c_int),
+    ('pts', clib.c_int64),
+    ('dts', clib.c_int64),
+    ('last_pts', clib.c_int64),
+    ('last_dts', clib.c_int64),
+    ('fetch_timestamp', clib.c_int),
+    ('cur_frame_start_index', clib.c_int),
+    ('cur_frame_offset', clib.c_int64 * int(4)),
+    ('cur_frame_pts', clib.c_int64 * int(4)),
+    ('cur_frame_dts', clib.c_int64 * int(4)),
+    ('flags', clib.c_int),
+    ('offset', clib.c_int64),
+    ('cur_frame_end', clib.c_int64 * int(4)),
+    ('key_frame', clib.c_int),
+    ('dts_synclib.c_point', clib.c_int),
+    ('dts_ref_dts_delta', clib.c_int),
+    ('pts_dts_delta', clib.c_int),
+    ('cur_frame_pos', clib.c_int64 * int(4)),
+    ('pos', clib.c_int64),
+    ('last_pos', clib.c_int64),
+    ('duration', clib.c_int),
     ('field_order', EnumFieldOrder),
     ('picture_structure', EnumPictureStructure),
-    ('output_picture_number', ctypes.c_int),
-    ('width', ctypes.c_int),
-    ('height', ctypes.c_int),
-    ('coded_width', ctypes.c_int),
-    ('coded_height', ctypes.c_int),
-    ('format', ctypes.c_int)]
+    ('output_picture_number', clib.c_int),
+    ('width', clib.c_int),
+    ('height', clib.c_int),
+    ('coded_width', clib.c_int),
+    ('coded_height', clib.c_int),
+    ('format', clib.c_int)]
 
 
 class Codec(clib.Lib):
     _name_ = "avcodec"
 
-    @clib.Lib.Signature("av_codec_iterate", ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("av_codec_iterate", clib.POINTER(clib.c_void_p))
     def codec_iterate(self, opaque):
-        return ctypes.POINTER(StructCodec)
+        return clib.POINTER(StructCodec)
 
     @clib.Lib.Signature("avcodec_find_decoder", EnumCodecID)
     def find_decoder(self, codecid):
-        return ctypes.POINTER(StructCodec)
+        return clib.POINTER(StructCodec)
 
-    @clib.Lib.Signature("avcodec_find_decoder_by_name", ctypes.c_char_p)
+    @clib.Lib.Signature("avcodec_find_decoder_by_name", clib.c_char_p)
     def find_decoder_by_name(self, codec_name):
-        return ctypes.POINTER(StructCodec)
+        return clib.POINTER(StructCodec)
 
     @clib.Lib.Signature("avcodec_find_encoder", EnumCodecID)
     def find_encoder(self, codecid):
-        return ctypes.POINTER(StructCodec)
+        return clib.POINTER(StructCodec)
 
-    @clib.Lib.Signature("avcodec_find_encoder_by_name", ctypes.c_char_p)
+    @clib.Lib.Signature("avcodec_find_encoder_by_name", clib.c_char_p)
     def find_encoder_by_name(self, name):
-        return ctypes.POINTER(StructCodec)
+        return clib.POINTER(StructCodec)
 
-    @clib.Lib.Signature("av_codec_is_encoder", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("av_codec_is_encoder", clib.POINTER(StructCodec))
     def is_encoder(self, codec):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_codec_is_decoder", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("av_codec_is_decoder", clib.POINTER(StructCodec))
     def is_decoder(self, codec):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_codec_get_profile_name", ctypes.POINTER(StructCodec), ctypes.c_int)
+    @clib.Lib.Signature("av_codec_get_profile_name", clib.POINTER(StructCodec), clib.c_int)
     def get_profile_name(self, codec, profile):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_get_hw_config", ctypes.POINTER(StructCodec), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_get_hw_config", clib.POINTER(StructCodec), clib.c_int)
     def get_hw_config(self, codec, index):
-        return ctypes.POINTER(StructHWConfig)
+        return clib.POINTER(StructHWConfig)
 
     @clib.Lib.Signature("avcodec_version")
     def version(self):
-        return ctypes.c_uint
+        return clib.c_uint
 
     @clib.Lib.Signature("avcodec_configuration")
     def config(self):
-        return ctypes.c_char_p
+        return clib.c_char_p
 
     @clib.Lib.Signature("avcodec_license")
     def license(self):
-        return ctypes.c_char_p
+        return clib.c_char_p
 
-    @clib.Lib.Signature("avcodec_alloc_context3", ctypes.POINTER(StructCodec))
+    @clib.Lib.Signature("avcodec_alloc_context3", clib.POINTER(StructCodec))
     def alloc_context3(self, codec):
-        return ctypes.POINTER(StructContext)
+        return clib.POINTER(StructContext)
 
-    @clib.Lib.Signature("avcodec_free_context", ctypes.POINTER(ctypes.POINTER(StructContext)))
+    @clib.Lib.Signature("avcodec_free_context", clib.POINTER(clib.POINTER(StructContext)))
     def free_context(self, context):
         return
 
     @clib.Lib.Signature("avcodec_get_class")
     def get_class(self):
-        return ctypes.POINTER(util.StructClass)
+        return clib.POINTER(util.StructClass)
 
-    @clib.Lib.Signature("avcodec_parameters_from_context", ctypes.POINTER(StructCodecParameters), ctypes.POINTER(StructContext))
+    @clib.Lib.Signature("avcodec_parameters_from_context", clib.POINTER(StructCodecParameters), clib.POINTER(StructContext))
     def params_from_context(self, par, context):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_parameters_to_context", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodecParameters))
+    @clib.Lib.Signature("avcodec_parameters_to_context", clib.POINTER(StructContext), clib.POINTER(StructCodecParameters))
     def params_to_context(self, context, par):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_open2", ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("avcodec_open2", clib.POINTER(StructContext), clib.POINTER(StructCodec), clib.POINTER(clib.c_void_p))
     def open2(self, context, codec, options):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_default_get_buffer2", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_default_get_buffer2", clib.POINTER(StructContext), clib.POINTER(util.StructFrame), clib.c_int)
     def get_buffer2(self, context, frame, flags):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_default_get_encode_buffer", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket), ctypes.c_int)
+    @clib.Lib.Signature("avcodec_default_get_encode_buffer", clib.POINTER(StructContext), clib.POINTER(StructPacket), clib.c_int)
     def get_encode_buffer(self, context, packet, flags):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_send_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("avcodec_send_packet", clib.POINTER(StructContext), clib.POINTER(StructPacket))
     def send_packet(self, context, packet):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_receive_packet", ctypes.POINTER(StructContext), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("avcodec_receive_packet", clib.POINTER(StructContext), clib.POINTER(StructPacket))
     def receive_packet(self, context, packet):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_send_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("avcodec_send_frame", clib.POINTER(StructContext), clib.POINTER(util.StructFrame))
     def send_frame(self, context, frame):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("avcodec_receive_frame", ctypes.POINTER(StructContext), ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("avcodec_receive_frame", clib.POINTER(StructContext), clib.POINTER(util.StructFrame))
     def receive_frame(self, context, frame):
-        return ctypes.c_int
+        return clib.c_int
 
     @clib.Lib.Signature("avcodec_get_hw_frames_parameters",
-                         ctypes.POINTER(StructContext), ctypes.POINTER(util.StructBufferRef),
-                         util.EnumPixelFormat, ctypes.POINTER(ctypes.POINTER(util.StructBufferRef)))
+                         clib.POINTER(StructContext), clib.POINTER(util.StructBufferRef),
+                         util.EnumPixelFormat, clib.POINTER(clib.POINTER(util.StructBufferRef)))
     def get_hw_frames_parameters(self, context, device_ref, hw_pix_fmt, out_frames_ref):
-        return ctypes.c_int
+        return clib.c_int
 
     @clib.Lib.Signature("avcodec_get_supported_config",
-                         ctypes.POINTER(StructContext), ctypes.POINTER(StructCodec), EnumCodecConfig,
-                         ctypes.c_int, ctypes.POINTER(ctypes.c_void_p),
-                         ctypes.POINTER(ctypes.c_int))
+                         clib.POINTER(StructContext), clib.POINTER(StructCodec), EnumCodecConfig,
+                         clib.c_int, clib.POINTER(clib.c_void_p),
+                         clib.POINTER(clib.c_int))
     def get_supported_config(self, context, codec, config, flags, out_configs, out_num_configs):
-        return ctypes.c_int
+        return clib.c_int
 
     @clib.Lib.Signature("av_packet_alloc")
     def packet_alloc(self):
-        return ctypes.POINTER(StructPacket)
+        return clib.POINTER(StructPacket)
 
-    @clib.Lib.Signature("av_packet_clone", ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_clone", clib.POINTER(StructPacket))
     def packet_clone(self, src):
-        return ctypes.POINTER(StructPacket)
+        return clib.POINTER(StructPacket)
 
-    @clib.Lib.Signature("av_packet_clone", ctypes.POINTER(ctypes.POINTER(StructPacket)))
+    @clib.Lib.Signature("av_packet_clone", clib.POINTER(clib.POINTER(StructPacket)))
     def packet_free(self, pkt):
         return
 
-    @clib.Lib.Signature("av_new_packet", ctypes.POINTER(ctypes.POINTER(StructPacket)), ctypes.c_int)
+    @clib.Lib.Signature("av_new_packet", clib.POINTER(clib.POINTER(StructPacket)), clib.c_int)
     def packet_new(self, pkt, size):
-        return ctypes.c_int
+        return clib.c_int
 
     @clib.Lib.Signature("av_packet_from_data",
-                         ctypes.POINTER(ctypes.POINTER(StructPacket)),
-                         ctypes.POINTER(ctypes.c_uint8),
-                         ctypes.c_int)
+                         clib.POINTER(clib.POINTER(StructPacket)),
+                         clib.POINTER(clib.c_uint8),
+                         clib.c_int)
     def packet_from_data(self, pkt, data, size):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_packet_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_ref", clib.POINTER(StructPacket), clib.POINTER(StructPacket))
     def packet_ref(self, dst, src):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_packet_unref", ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_unref", clib.POINTER(StructPacket))
     def packet_unref(self, pkt):
         return
 
-    @clib.Lib.Signature("av_packet_move_ref", ctypes.POINTER(StructPacket), ctypes.POINTER(StructPacket))
+    @clib.Lib.Signature("av_packet_move_ref", clib.POINTER(StructPacket), clib.POINTER(StructPacket))
     def packet_move_ref(self, dst, src):
         return
 
-    @clib.Lib.Signature("av_parser_iterate", ctypes.POINTER(ctypes.c_void_p))
+    @clib.Lib.Signature("av_parser_iterate", clib.POINTER(clib.c_void_p))
     def parser_iterate(self, opaque):
-        return ctypes.POINTER(StructParser)
+        return clib.POINTER(StructParser)
 
     @clib.Lib.Signature("av_parser_init", EnumCodecID)
     def parser_init(self, codecid):
-        return ctypes.POINTER(StructParserContext)
+        return clib.POINTER(StructParserContext)
 
     @clib.Lib.Signature("av_parser_parse2",
-                         ctypes.POINTER(StructParserContext),
-                         ctypes.POINTER(StructContext),
-                         ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_int),
-                         ctypes.POINTER(ctypes.c_uint8), ctypes.c_int,
-                         ctypes.c_int64, ctypes.c_int64,
-                         ctypes.c_uint64
+                         clib.POINTER(StructParserContext),
+                         clib.POINTER(StructContext),
+                         clib.POINTER(clib.POINTER(clib.c_uint8)),
+                         clib.POINTER(clib.c_int),
+                         clib.POINTER(clib.c_uint8),
+                         clib.c_int,
+                         clib.c_int64, clib.c_int64,
+                         clib.c_uint64
                          )
     def parser_parse2(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_parser_close", ctypes.POINTER(StructParserContext))
+    @clib.Lib.Signature("av_parser_close", clib.POINTER(StructParserContext))
     def parser_close(self, s):
         return
 
     @clib.Lib.Signature("av_frame_alloc")
     def frame_alloc(self):
-        return ctypes.POINTER(util.StructFrame)
+        return clib.POINTER(util.StructFrame)
 
-    @clib.Lib.Signature("av_frame_free", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_free", clib.POINTER(clib.POINTER(util.StructFrame)))
     def frame_free(self):
         return
 
-    @clib.Lib.Signature("av_frame_clone", ctypes.POINTER(util.StructFrame))
+    @clib.Lib.Signature("av_frame_clone", clib.POINTER(util.StructFrame))
     def frame_clone(self, src):
-        return ctypes.POINTER(util.StructFrame)
+        return clib.POINTER(util.StructFrame)
 
-    @clib.Lib.Signature("av_frame_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
-                         ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_ref", clib.POINTER(clib.POINTER(util.StructFrame)),
+                         clib.POINTER(clib.POINTER(util.StructFrame)))
     def frame_ref(self, dst, src):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_frame_unref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_unref", clib.POINTER(clib.POINTER(util.StructFrame)))
     def frame_unref(self, frame):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_frame_move_ref", ctypes.POINTER(ctypes.POINTER(util.StructFrame)),
-                         ctypes.POINTER(ctypes.POINTER(util.StructFrame)))
+    @clib.Lib.Signature("av_frame_move_ref", clib.POINTER(clib.POINTER(util.StructFrame)),
+                         clib.POINTER(clib.POINTER(util.StructFrame)))
     def frame_move_ref(self, dst, src):
-        return ctypes.c_int
+        return clib.c_int
 
-    @clib.Lib.Signature("av_frame_get_buffer", ctypes.POINTER(ctypes.POINTER(util.StructFrame)), ctypes.c_int)
+    @clib.Lib.Signature("av_frame_get_buffer", clib.POINTER(clib.POINTER(util.StructFrame)), clib.c_int)
     def frame_get_buffer(self, frame, align):
-        return ctypes.c_int
+        return clib.c_int
 
 
 """
@@ -1237,7 +1238,7 @@ c = Codec()
 log.LOGGER.info(c.version())
 log.LOGGER.info(c.config().decode())
 log.LOGGER.info(c.license().decode())
-p = ctypes.pointer(ctypes.c_void_p())
+p = clib.pointer(clib.c_void_p())
 while True:
     codec = c.codec_iterate(p)
     if clib.isnullptr(codec):

@@ -15,11 +15,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import ctypes
 import logging
+from v4l2codecs import clib
 from v4l2codecs import av
 from v4l2codecs import log
-from v4l2codecs import clib
+import ctypes
+
 
 CODECID = av.codec.EnumCodecID(av.codec.EnumCodecID._enum_.H264.value)
 LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.TRACE.value)
@@ -31,8 +32,8 @@ avutil = av.util.Util()
 
 
 def loghandler(ptr, level, fmt, vl):
-    ctx = ctypes.POINTER(av.util.StructClass).from_address(ptr)
-    vl = ctypes.c_void_p(vl)
+    ctx = clib.POINTER(av.util.StructClass).from_address(ptr.address)
+    vl = clib.c_void_p(vl.address)
     libc = clib.Clib()
     levels = {av.util.EnumLogLevel._enum_.QUIET: logging.NOTSET,
               av.util.EnumLogLevel._enum_.PANIC: logging.CRITICAL,
@@ -44,53 +45,53 @@ def loghandler(ptr, level, fmt, vl):
               av.util.EnumLogLevel._enum_.DEBUG: logging.DEBUG,
               av.util.EnumLogLevel._enum_.TRACE: logging.DEBUG,
               }
-    level = levels.get(level, logging.DEBUG)
-    msg = b"\0" * len(fmt) * 2
-    libc._lib.vsnprintf(msg, len(msg), fmt, vl)
+    level = levels.get(level.value, logging.DEBUG)
+    msg = b"\0" * len(fmt.value) * 2
+    libc._lib.vsnprintf(clib.c_char_p(msg), len(msg), fmt, vl)
     record = log.LOGGER.makeRecord(log.LOGGER.name,
                                    level,
                                    "ffmpeg",
                                    0,
                                    msg.decode(),
                                    [], [],
-                                   func=ctx.contents.class_name.decode())
+                                   func=ctx.contents.class_name.value.decode())
     log.LOGGER.handle(record)
     pass
 
 
-cb = ctypes.CFUNCTYPE(ctypes.c_void_p,
-                      ctypes.c_void_p,
-                      ctypes.c_int,
-                      ctypes.c_char_p,
-                      ctypes.c_void_p)(loghandler)
+cb = ctypes.CFUNCTYPE(clib.c_void_p,
+                      clib.c_void_p,
+                      clib.c_int,
+                      clib.c_char_p,
+                      clib.c_void_p)(loghandler)
 log.LOGGER.setLevel(log.DEBUG)
 avutil.set_log_level(LOGLEVEL)
 avutil.set_log_callback(cb)
 
 avcodec = av.codec.Codec()
 codec = avcodec.find_decoder(CODECID)
-if not clib.ptr_address(codec):
+if not codec.address:
     raise RuntimeError("Can not find codec")
 
 ctx = avcodec.alloc_context3(codec)
-if not clib.ptr_address(ctx):
+if not ctx.address:
     raise RuntimeError("Can not alloc context")
 
 avutil.log(ctx, LOGLEVEL, b"test")
 
 pkt = avcodec.packet_alloc()
-if not clib.ptr_address(pkt):
+if not pkt.address:
     raise RuntimeError("Can not alloc packet")
 
 frame = avcodec.frame_alloc()
-if not clib.ptr_address(frame):
+if not frame.address:
     raise RuntimeError("Can not alloc frame")
 
 parser = avcodec.parser_init(codec.contents.id)
-if not clib.ptr_address(parser):
+if not parser.address:
     raise RuntimeError("Can not alloc parser")
 
-if(avcodec.open2(ctx, codec, None)):
+if(avcodec.open2(ctx, codec, None).value):
     raise RuntimeError("Can not open codec")
 
 f = open(PATH, "rb")
@@ -100,18 +101,18 @@ while True:
         break
     readlen = len(data)
     while readlen > 0:
-        data = ctypes.cast(data, clib.POINTER(ctypes.c_uint8))
+        data = ctypes.cast(data, clib.POINTER(clib.c_uint8))
         parselen = avcodec.parser_parse2(parser, ctx,
-                                         ctypes.byref(pkt.contents.data),
+                                         pkt.contents.data.ref,
                                          pkt.contents.size.ref,
-                                         data, readlen,
+                                         data, clib.c_int(readlen),
                                          av.util.NOPTS, av.util.NOPTS,
-                                         0)
-        data.address += parselen
-        readlen -= parselen
+                                         clib.c_uint64(0))
+        data.address += parselen.value
+        readlen -= parselen.value
         if pkt.contents.size.value:
             raise RuntimeError("Packet parsed")
-        if parselen < 0:
+        if parselen.value < 0:
             raise RuntimeError("Can not parse feed")
 
 f.close()
