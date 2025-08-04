@@ -45,7 +45,7 @@ def loghandler(ptr, level, fmt, vl):
               av.util.EnumLogLevel._enum_.TRACE: logging.DEBUG,
               }
     level = levels.get(level, logging.DEBUG)
-    msg = b"0" * len(fmt) * 2
+    msg = b"\0" * len(fmt) * 2
     libc._lib.vsnprintf(msg, len(msg), fmt, vl)
     record = log.LOGGER.makeRecord(log.LOGGER.name,
                                    level,
@@ -98,16 +98,21 @@ while True:
     data = f.read(CHUNK)
     if data == b"":
         break
-    datalen = len(data)
-    data = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
-    ret = avcodec.parser_parse2(parser, ctx,
-                                ctypes.byref(pkt.contents.data),
-                                pkt.contents.size.ref,
-                                data, datalen,
-                                av.util.NOPTS, av.util.NOPTS,
-                                0)
-    if(ret < 0):
-        raise RuntimeError("Can not parse feed")
+    readlen = len(data)
+    while readlen > 0:
+        data = ctypes.cast(data, clib.POINTER(ctypes.c_uint8))
+        parselen = avcodec.parser_parse2(parser, ctx,
+                                         ctypes.byref(pkt.contents.data),
+                                         pkt.contents.size.ref,
+                                         data, readlen,
+                                         av.util.NOPTS, av.util.NOPTS,
+                                         0)
+        data.address += parselen
+        readlen -= parselen
+        if pkt.contents.size.value:
+            raise RuntimeError("Packet parsed")
+        if parselen < 0:
+            raise RuntimeError("Can not parse feed")
 
 f.close()
 pass

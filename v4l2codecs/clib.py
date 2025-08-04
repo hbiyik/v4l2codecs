@@ -48,6 +48,25 @@ class c_uint(UnionWrapper):
     pass
 
 
+class _POINTER(ctypes._Pointer):
+    @property
+    def address(self):
+        return ctypes.cast(self, ctypes.c_void_p).value
+
+    @address.setter
+    def address(self, addr):
+        # change the pointers existing address
+        ctypes.memmove(ctypes.byref(self),
+                       ctypes.byref(ctypes.c_void_p(addr)),
+                       ctypes.sizeof(self))
+
+
+def POINTER(typ):
+    ptyp = ctypes.POINTER(typ)
+    ptyp.address = _POINTER.address
+    return ptyp
+
+
 def ptr_address(ptr):
     return ctypes.cast(ptr, ctypes.c_void_p).value
 
