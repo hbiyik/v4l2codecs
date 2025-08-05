@@ -58,16 +58,11 @@ def loghandler(ptr, level, fmt, vl):
                                    [], [],
                                    func=ctx.contents.class_name.value.decode())
     log.LOGGER.handle(record)
-    pass
 
 
-cb = ctypes.CFUNCTYPE(clib.c_void_p,
-                      clib.c_void_p,
-                      clib.c_int,
-                      clib.c_char_p,
-                      clib.c_void_p)(loghandler)
 log.LOGGER.setLevel(log.DEBUG)
 avutil.set_log_level(LOGLEVEL)
+cb = avutil.functype(avutil.log_default_callback)(loghandler)
 avutil.set_log_callback(cb)
 
 avcodec = av.codec.Codec()
@@ -122,7 +117,7 @@ while True:
                         break
                     else:
                         raise RuntimeError(f"Error receiving frame {ret.value}")
-                # log.LOGGER.info(f"Decoded frame {ctx.contents.frame_num.value}")
+                log.LOGGER.info(f"Decoded frame {ctx.contents.frame_num.value}")
         if parselen.value < 0:
             raise RuntimeError("Can not parse feed")
 
