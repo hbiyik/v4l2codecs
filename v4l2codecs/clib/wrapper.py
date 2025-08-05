@@ -16,19 +16,12 @@
 """
 import ctypes
 
+Union = ctypes.Union
+
 
 class BaseType:
     @property
     def ref(self):
-        ptype = None
-        if isinstance(self, UnionWrapper):
-            for k, v in self._fields_:
-                if k != "value":
-                    continue
-                ptype = v
-                break
-        if hasattr(self, "_type_"):
-            ptype = self._type_
         return ctypes.byref(self)
 
     def __str__(self):
@@ -59,7 +52,7 @@ class BasePointer(BaseType):
 
 # wrapper union class so that ctypes will be kept as ctypes when used in Struct
 # otherwise they are converted to pythonic types (ie: struct.c_int -> sctruct.int)
-class UnionWrapper(ctypes.Union, BaseType):
+class UnionWrapper(Union, BaseType):
     @staticmethod
     def type(ctype):
         def wrapper(cls):

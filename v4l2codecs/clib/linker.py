@@ -48,14 +48,24 @@ class Lib:
         log.LOGGER.debug(f"loading library {self._name}")
         self._lib = ctypes.CDLL(self._name)
 
-    def functype(self, callback):
+    @classmethod
+    def _read_signature(cls, callback):
         cargs = callback.__closure__[0].cell_contents
-        retval = callback.__closure__[1].cell_contents(self, *cargs)
+        retval = callback.__closure__[1].cell_contents(cls, *cargs)
         if not hasattr(retval, "_type_") or not isinstance(retval._type_, str) or not retval._type_ != "P":
             retval = wrapper.c_void_p
         functionname = callback.__closure__[2].cell_contents
+        return functionname, retval, cargs
+
+    @classmethod
+    def functype(cls, callback):
+        _fname, retval, cargs = cls._read_signature(callback)
+        return ctypes.CFUNCTYPE(retval, *cargs)
+
+    def funcptr(self, callback):
+        functionname, retval, cargs = self._read_signature(callback)
         ptr = self._wrap_function(functionname, cargs, retval)
-        return ctypes.CFUNCTYPE(retval, *cargs)(ptr)
+        return self.functype(callback)(ptr)
 
     def _wrap_function(self, name, args, rettype=None):
         if self._functions.get(name):

@@ -15,6 +15,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
+import errno
 import logging
 from v4l2codecs import clib
 from v4l2codecs import av
@@ -29,12 +30,12 @@ CHUNK = 4096
 
 
 avutil = av.util.Util()
+libc = clib.Clib()
 
 
 def loghandler(ptr, level, fmt, vl):
     ctx = clib.POINTER(av.util.StructClass).from_address(ptr.address)
     vl = clib.c_void_p(vl.address)
-    libc = clib.Clib()
     levels = {av.util.EnumLogLevel._enum_.QUIET: logging.NOTSET,
               av.util.EnumLogLevel._enum_.PANIC: logging.CRITICAL,
               av.util.EnumLogLevel._enum_.FATAL: logging.FATAL,
@@ -48,6 +49,7 @@ def loghandler(ptr, level, fmt, vl):
     level = levels.get(level.value, logging.DEBUG)
     msg = b"\0" * len(fmt.value) * 2
     libc._lib.vsnprintf(clib.c_char_p(msg), len(msg), fmt, vl)
+    msg = msg.split(b"\n")[0]
     record = log.LOGGER.makeRecord(log.LOGGER.name,
                                    level,
                                    "ffmpeg",
@@ -76,8 +78,6 @@ if not codec.address:
 ctx = avcodec.alloc_context3(codec)
 if not ctx.address:
     raise RuntimeError("Can not alloc context")
-
-avutil.log(ctx, LOGLEVEL, b"test")
 
 pkt = avcodec.packet_alloc()
 if not pkt.address:
@@ -111,7 +111,18 @@ while True:
         data.address += parselen.value
         readlen -= parselen.value
         if pkt.contents.size.value:
-            raise RuntimeError("Packet parsed")
+            ret = avcodec.send_packet(ctx, pkt)
+            if ret.value < 0:
+                raise RuntimeError(f"Error Sending packet {ret.value}")
+            ret = clib.c_int(0)
+            while not ret.value:
+                ret = avcodec.receive_frame(ctx, frame)
+                if ret.value < 0:
+                    if ret.value == -errno.EAGAIN:
+                        break
+                    else:
+                        raise RuntimeError(f"Error receiving frame {ret.value}")
+                # log.LOGGER.info(f"Decoded frame {ctx.contents.frame_num.value}")
         if parselen.value < 0:
             raise RuntimeError("Can not parse feed")
 

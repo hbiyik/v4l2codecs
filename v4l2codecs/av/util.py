@@ -22,6 +22,22 @@ from v4l2codecs import clib
 NOPTS = clib.c_int64(0x8000000000000000)
 
 
+def MKTAG(args):
+    val = 0
+    offset = 0
+    for arg in args:
+        val |= ord(arg) << offset
+        offset += 8
+    return -val
+
+
+ERROR_EXTERNAL = MKTAG("EXT ")
+ERROR_BUG = MKTAG("BUG!")
+ERROR_EXIT = MKTAG("EXIT")
+ERROR_EOF = MKTAG("EOF ")
+ERROR_INVALIDDATA = MKTAG("INDA")
+
+
 class EnumLogLevel(clib.c_intenum):
 
     class _enum_(enum.IntEnum):
