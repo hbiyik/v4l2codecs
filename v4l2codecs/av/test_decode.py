@@ -20,21 +20,29 @@ import logging
 from v4l2codecs import clib
 from v4l2codecs import av
 from v4l2codecs import log
-import ctypes
 
 
 CODECID = av.codec.EnumCodecID(av.codec.EnumCodecID._enum_.H264.value)
 LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.TRACE.value)
+VT_VIDEO = av.util.EnumMediaType(av.util.EnumMediaType._enum_.VIDEO)
+HWTYPE = av.util.EnumHWDeviceType(av.util.EnumHWDeviceType._enum_.VDPAU)
+FMT_NONE = av.util.EnumPixelFormat(av.util.EnumPixelFormat._enum_.NONE)
+FMT_SELECT = av.util.EnumPixelFormat(av.util.EnumPixelFormat._enum_.VDPAU)
 PATH = sys.argv[1]
 CHUNK = 4096
 
 
-avutil = av.util.Util()
+avutil = av.util.Lib()
+avformat = av.format.Lib()
+avcodec = av.codec.Lib()
 libc = clib.Clib()
 
 
 def loghandler(ptr, level, fmt, vl):
-    ctx = clib.POINTER(av.util.StructClass).from_address(ptr.address)
+    name = "ffmpeg"
+    if ptr.address:
+        dec_ctx = clib.POINTER(av.util.StructClass).from_address(ptr.address)
+        name = dec_ctx.contents.class_name.value.decode()
     vl = clib.c_void_p(vl.address)
     levels = {av.util.EnumLogLevel._enum_.QUIET: logging.NOTSET,
               av.util.EnumLogLevel._enum_.PANIC: logging.CRITICAL,
@@ -56,8 +64,18 @@ def loghandler(ptr, level, fmt, vl):
                                    0,
                                    msg.decode(),
                                    [], [],
-                                   func=ctx.contents.class_name.value.decode())
+                                   func=name)
     log.LOGGER.handle(record)
+
+
+def get_format(s, fmts):
+    while True:
+        if fmts.contents == FMT_SELECT:
+            return FMT_SELECT.value
+        if fmts.contents == FMT_NONE:
+            break
+        fmts.address += clib.sizeof(fmts.contents)
+    return FMT_NONE.value
 
 
 log.LOGGER.setLevel(log.DEBUG)
@@ -65,61 +83,92 @@ avutil.set_log_level(LOGLEVEL)
 cb = avutil.functype(avutil.log_default_callback)(loghandler)
 avutil.set_log_callback(cb)
 
-avcodec = av.codec.Codec()
-codec = avcodec.find_decoder(CODECID)
-if not codec.address:
-    raise RuntimeError("Can not find codec")
+in_ctx = clib.POINTER(av.format.StructContext)()
+dec_ctx = clib.POINTER(av.codec.StructContext)()
+dev_ctx = clib.POINTER(av.util.StructBufferRef)()
+frame = clib.POINTER(av.util.StructFrame)()
 
-ctx = avcodec.alloc_context3(codec)
-if not ctx.address:
+dec = clib.POINTER(av.codec.StructCodec)()
+hwconfig = clib.POINTER(av.codec.StructHWConfig)()
+
+
+if avformat.open_input(in_ctx.ref, PATH.encode(), None, None).value:
+    raise RuntimeError("Can not open file")
+
+if avformat.find_stream_info(in_ctx, None).value < 0:
+    raise RuntimeError("Can not find streams")
+
+video_stream = avformat.find_best_stream(in_ctx, VT_VIDEO,
+                                         clib.c_int(-1),
+                                         clib.c_int(-1),
+                                         dec.ref,
+                                         clib.c_int(0))
+
+if video_stream.value < 0:
+    raise RuntimeError("Can not find video stream")
+
+index = clib.c_int(0)
+while True:
+    hwconfig = avcodec.get_hw_config(dec, index)
+    if hwconfig.contents.device_type == HWTYPE:
+        break
+    if not hwconfig.address:
+        raise RuntimeError(f"Can not find hwaccel {HWTYPE}")
+    index.value += 1
+
+dec_ctx = avcodec.alloc_context(dec)
+if not dec_ctx.address:
     raise RuntimeError("Can not alloc context")
+
+if (avcodec.params_to_context(dec_ctx, in_ctx.contents.streams[video_stream.value].contents.codecpar).value < 0):
+    raise RuntimeError("Can not copy dec parameters")
+
+dec_ctx.contents.get_format = av.codec.Lib.functype(av.codec.Lib.get_format)(get_format)
+
+if avutil.hwdevice_ctx_create(dev_ctx.ref, HWTYPE, None, None, clib.c_int(0)).value:
+    raise RuntimeError(f"Can not create {HWTYPE}")
+
+dec_ctx.contents.hw_device_ctx = avutil.buffer_ref(dev_ctx)
+
+if(avcodec.open(dec_ctx, dec, None).value):
+    raise RuntimeError("Can not open dec")
 
 pkt = avcodec.packet_alloc()
 if not pkt.address:
     raise RuntimeError("Can not alloc packet")
 
-frame = avcodec.frame_alloc()
-if not frame.address:
-    raise RuntimeError("Can not alloc frame")
-
-parser = avcodec.parser_init(codec.contents.id)
-if not parser.address:
-    raise RuntimeError("Can not alloc parser")
-
-if(avcodec.open2(ctx, codec, None).value):
-    raise RuntimeError("Can not open codec")
-
-f = open(PATH, "rb")
+newpacket = True
+eof = False
 while True:
-    data = f.read(CHUNK)
-    if data == b"":
+    if newpacket and avformat.read_frame(in_ctx, pkt).value < 0:
+        log.LOGGER.info("file finished")
         break
-    readlen = len(data)
-    while readlen > 0:
-        data = ctypes.cast(data, clib.POINTER(clib.c_uint8))
-        parselen = avcodec.parser_parse2(parser, ctx,
-                                         pkt.contents.data.ref,
-                                         pkt.contents.size.ref,
-                                         data, clib.c_int(readlen),
-                                         av.util.NOPTS, av.util.NOPTS,
-                                         clib.c_uint64(0))
-        data.address += parselen.value
-        readlen -= parselen.value
-        if pkt.contents.size.value:
-            ret = avcodec.send_packet(ctx, pkt)
-            if ret.value < 0:
-                raise RuntimeError(f"Error Sending packet {ret.value}")
-            ret = clib.c_int(0)
-            while not ret.value:
-                ret = avcodec.receive_frame(ctx, frame)
-                if ret.value < 0:
-                    if ret.value == -errno.EAGAIN:
-                        break
-                    else:
-                        raise RuntimeError(f"Error receiving frame {ret.value}")
-                log.LOGGER.info(f"Decoded frame {ctx.contents.frame_num.value}")
-        if parselen.value < 0:
-            raise RuntimeError("Can not parse feed")
 
-f.close()
+    if not video_stream.value == pkt.contents.stream_index.value:
+        continue
+
+    ret = avcodec.send_packet(dec_ctx, pkt)
+    if ret.value == -errno.EAGAIN:
+        newpacket = False
+    elif ret.value < 0:
+        raise RuntimeError(f"Error Sending packet {ret.value}")
+    else:
+        avcodec.packet_unref(pkt)
+        newpacket = True
+
+    if not frame.address:
+        frame = avcodec.frame_alloc()
+        if not frame.address:
+            raise RuntimeError("Can not alloc frame")
+
+    ret = avcodec.receive_frame(dec_ctx, frame)
+    if ret.value == -errno.EAGAIN:
+        continue
+    elif ret.value < 0:
+        raise RuntimeError(f"Error receiving frame {ret.value}")
+    else:
+        avcodec.frame_free(frame.ref)
+        log.LOGGER.info(f"Decoded frame {dec_ctx.contents.frame_num.value}")
+
+# clean stuff
 pass

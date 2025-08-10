@@ -14,10 +14,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import ctypes
 import enum
 
 from v4l2codecs import clib
+
 
 NOPTS = clib.c_int64(0x8000000000000000)
 
@@ -665,7 +665,7 @@ class StructChannelCustom(clib.Structure):
         ('opaque', clib.c_void_p), ]
 
 
-class UnionChannel(ctypes.Union):
+class UnionChannel(clib.Union):
     _fields_ = [
         ('mask', clib.c_uint64),
         ('map', clib.POINTER(StructChannelCustom)),
@@ -688,7 +688,7 @@ class StructOptionArrayDef(clib.Structure):
         ('sep', clib.c_char)]
 
 
-class UnionOption(ctypes.Union):
+class UnionOption(clib.Union):
     _fields_ = [
         ('i64', clib.c_int64),
         ('dbl', clib.c_double),
@@ -730,30 +730,6 @@ class StructOptionRanges(clib.Structure):
 
 class StructClass(clib.Structure):
     pass
-
-
-StructClass._fields_ = [
-    ('class_name', clib.c_char_p),
-    ('item_name', ctypes.CFUNCTYPE(clib.c_char_p,
-                                   clib.c_void_p)),
-    ('option', clib.POINTER(StructOption)),
-    ('version', clib.c_int),
-    ('log_level_offset_offset', clib.c_int),
-    ('parent_log_context_offset', clib.c_int),
-    ('category', EnumClassCategory),
-    ('get_category', ctypes.CFUNCTYPE(EnumClassCategory,
-                                      clib.c_void_p)),
-    ('query_ranges', ctypes.CFUNCTYPE(clib.c_int,
-                                      clib.POINTER(clib.POINTER(StructOptionRanges)),
-                                      clib.c_void_p,
-                                      clib.c_char_p,
-                                      clib.c_int)),
-    ('child_next', ctypes.CFUNCTYPE(clib.POINTER(clib.c_ubyte),
-                                    clib.c_void_p,
-                                    clib.c_void_p)),
-    ('child_class_iterate', ctypes.CFUNCTYPE(clib.POINTER(StructClass),
-                                             clib.POINTER(clib.c_void_p))),
-]
 
 
 class StructBufferRef(clib.Structure):
@@ -832,8 +808,31 @@ class StructBPrint(clib.Structure):
     ]
 
 
-class Util(clib.Lib):
+class Lib(clib.Lib):
     _name_ = "avutil"
+
+    @clib.Lib.Signature(None, clib.POINTER(clib.POINTER(StructOptionRanges)),
+                                        clib.c_void_p,
+                                        clib.c_char_p,
+                                        clib.c_int)
+    def _query_ranges(self, ranges, obj, key, flags):
+        return clib.c_int
+
+    @clib.Lib.Signature(None, clib.c_void_p, clib.c_void_p)
+    def _child_next(self, obj, prev):
+        return clib.POINTER(clib.c_ubyte)
+
+    @clib.Lib.Signature(None, clib.POINTER(clib.c_void_p))
+    def _child_class_iterate(self, it):
+        return clib.POINTER(StructClass)
+
+    @clib.Lib.Signature("av_default_get_category", clib.c_void_p)
+    def get_category(self, ctx):
+        return EnumClassCategory
+
+    @clib.Lib.Signature("av_default_item_name", clib.c_void_p)
+    def item_name(self, ctx):
+        return clib.c_char_p
 
     @clib.Lib.Signature("av_log_get_level")
     def get_log_level(self):
@@ -843,20 +842,16 @@ class Util(clib.Lib):
     def set_log_level(self, level):
         return
 
-    @clib.Lib.Signature("av_log_set_callback", ctypes.CFUNCTYPE(clib.c_void_p,
-                                                                 clib.c_void_p,
-                                                                 clib.c_int,
-                                                                 clib.c_char_p,
-                                                                 clib.c_void_p))
-    def set_log_callback(self, callback):
-        return
-
     @clib.Lib.Signature("av_log_default_callback", clib.c_void_p,
                                                     clib.c_int,
                                                     clib.c_char_p,
                                                     clib.c_void_p)
     def log_default_callback(self, ptr, level, fmt, vl):
         return clib.c_void_p
+
+    @clib.Lib.Signature("av_log_set_callback", clib.Lib.functype(log_default_callback))
+    def set_log_callback(self, callback):
+        return
 
     @clib.Lib.Signature("av_log", clib.c_void_p, clib.c_int, clib.c_char_p)
     def log(self, ctx, level, fmt, *args):
@@ -865,3 +860,45 @@ class Util(clib.Lib):
     @clib.Lib.Signature("av_vbprintf", clib.POINTER(StructBPrint), clib.c_char_p)
     def vbprintf(self, buf, fmt, *args):
         return
+
+    @clib.Lib.Signature("av_image_alloc",
+                        clib.POINTER(clib.c_uint8 * 4),
+                        clib.c_int * 4,
+                        clib.c_int,
+                        clib.c_int,
+                        EnumPixelFormat,
+                        clib.c_int)
+    def image_alloc(self, pointers, linesizes, w, h, pix_fmt, align):
+        return
+
+    @clib.Lib.Signature("av_hwdevice_ctx_create",
+                        clib.POINTER(clib.POINTER(StructBufferRef)),
+                        EnumHWDeviceType,
+                        clib.c_char_p,
+                        clib.c_void_p,
+                        clib.c_int)
+    def hwdevice_ctx_create(self, dctx, dtype, device, opts, flags):
+        return clib.c_int
+
+    @clib.Lib.Signature("av_buffer_ref", clib.POINTER(StructBufferRef))
+    def buffer_ref(self, buf):
+        return clib.POINTER(StructBufferRef)
+
+    @clib.Lib.Signature("av_buffer_ref", clib.POINTER(clib.POINTER(StructBufferRef)))
+    def buffer_unref(self, buf):
+        return
+
+
+StructClass._fields_ = [
+    ('class_name', clib.c_char_p),
+    ('item_name', Lib.functype(Lib.item_name)),
+    ('option', clib.POINTER(StructOption)),
+    ('version', clib.c_int),
+    ('log_level_offset_offset', clib.c_int),
+    ('parent_log_context_offset', clib.c_int),
+    ('category', EnumClassCategory),
+    ('get_category', Lib.functype(Lib.get_category)),
+    ('query_ranges', Lib.functype(Lib._query_ranges)),
+    ('child_next', Lib.functype(Lib._child_next)),
+    ('child_class_iterate', Lib.functype(Lib._child_class_iterate)),
+]

@@ -17,6 +17,8 @@
 import ctypes
 
 Union = ctypes.Union
+sizeof = ctypes.sizeof
+cast = ctypes.cast
 
 
 class BaseType:
@@ -222,3 +224,8 @@ class c_intenum(c_int):
 
     def __repr__(self):
         return f"{str(self)}({self.value})"
+
+    def __eq__(self, value):
+        if isinstance(value, c_int):
+            return value.value == self.value
+        return c_int.__eq__(self, value)

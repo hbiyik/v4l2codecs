@@ -52,7 +52,9 @@ class Lib:
     def _read_signature(cls, callback):
         cargs = callback.__closure__[0].cell_contents
         retval = callback.__closure__[1].cell_contents(cls, *cargs)
-        if not hasattr(retval, "_type_") or not isinstance(retval._type_, str) or not retval._type_ != "P":
+        if hasattr(retval, "_enum_"):
+            retval = dict(retval._fields_)["value"]
+        elif not hasattr(retval, "_type_") or not isinstance(retval._type_, str) or not retval._type_ != "P":
             retval = wrapper.c_void_p
         functionname = callback.__closure__[2].cell_contents
         return functionname, retval, cargs

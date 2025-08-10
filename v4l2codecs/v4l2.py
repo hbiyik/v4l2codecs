@@ -93,7 +93,7 @@ class Capability(enum.IntFlag):
     ASYNCIO = 0x2000000
 
 
-class EnumPixelFormat(clib.CIntEnum):
+class EnumPixelFormat(clib.c_intenum):
     class _enum_(enum.IntEnum):
         RGB332 = v4l2_fourcc("R", "G", "B", "1")  # 8  RGB-3-3-2
         RGB444 = v4l2_fourcc("R", "4", "4", "4")  # 16  xxxxrrrr ggggbbbb

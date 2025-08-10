@@ -15,10 +15,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import enum
-import ctypes
 
 from v4l2codecs import clib
-
 from v4l2codecs.av import util
 
 
@@ -777,192 +775,6 @@ class StructContext(clib.Structure):
     pass
 
 
-StructContext._fields_ = [
-    ('av_class', clib.POINTER(util.StructClass)),
-    ('log_level_offset', clib.c_int),
-    ('codec_type', util.EnumMediaType),
-    ('codec', clib.POINTER(StructCodec)),
-    ('codec_id', EnumCodecID),
-    ('codec_tag', clib.c_uint),
-    ('priv_data', clib.c_void_p),
-    ('internal', clib.c_void_p),
-    ('opaque', clib.c_void_p),
-    ('bit_rate', clib.c_int64),
-    ('flags', clib.c_int),
-    ('flags2', clib.c_int),
-    ('extradata', clib.POINTER(clib.c_uint8)),
-    ('extradata_size', clib.c_int),
-    ('time_base', util.StructRational),
-    ('pkt_timebase', util.StructRational),
-    ('framerate', util.StructRational),
-    ('ticks_per_frame', clib.c_int),
-    ('delay', clib.c_int),
-    ('width', clib.c_int),
-    ('height', clib.c_int),
-    ('coded_width', clib.c_int),
-    ('coded_height', clib.c_int),
-    ('sample_aspect_ratio', util.StructRational),
-    ('pix_fmt', util.EnumPixelFormat),
-    ('sw_pix_fmt', util.EnumPixelFormat),
-    ('color_primaries', util.EnumColorPrimaries),
-    ('color_trc', util.EnumColorTransferCharacteristic),
-    ('colorspace', util.EnumColorSpace),
-    ('color_range', util.EnumColorRange),
-    ('chroma_sample_location', util.EnumChromaLocation),
-    ('field_order', EnumFieldOrder),
-    ('refs', clib.c_int),
-    ('has_b_frames', clib.c_int),
-    ('slice_flags', clib.c_int),
-    ('draw_horiz_band', ctypes.CFUNCTYPE(None,
-                                         clib.POINTER(StructContext),
-                                         clib.POINTER(util.StructFrame),
-                                         clib.c_int * int(8),
-                                         clib.c_int,
-                                         clib.c_int,
-                                         clib.c_int)),
-    ('get_format', ctypes.CFUNCTYPE(util.EnumPixelFormat,
-                                    clib.POINTER(StructCodec),
-                                    clib.POINTER(util.EnumPixelFormat))),
-    ('max_b_frames', clib.c_int),
-    ('b_quant_factor', clib.c_float),
-    ('b_quant_offset', clib.c_float),
-    ('i_quant_factor', clib.c_float),
-    ('i_quant_offset', clib.c_float),
-    ('lumi_masking', clib.c_float),
-    ('temporal_cplx_masking', clib.c_float),
-    ('spatial_cplx_masking', clib.c_float),
-    ('p_masking', clib.c_float),
-    ('dark_masking', clib.c_float),
-    ('nsse_weight', clib.c_int),
-    ('me_cmp', clib.c_int),
-    ('me_sub_cmp', clib.c_int),
-    ('mb_cmp', clib.c_int),
-    ('ildct_cmp', clib.c_int),
-    ('dia_size', clib.c_int),
-    ('last_predictor_count', clib.c_int),
-    ('me_pre_cmp', clib.c_int),
-    ('pre_dia_size', clib.c_int),
-    ('me_subpel_quality', clib.c_int),
-    ('me_range', clib.c_int),
-    ('mb_decision', clib.c_int),
-    ('intra_matrix', clib.POINTER(clib.c_uint16)),
-    ('inter_matrix', clib.POINTER(clib.c_uint16)),
-    ('chroma_intra_matrix', clib.POINTER(clib.c_uint16)),
-    ('intra_dc_precision', clib.c_int),
-    ('mb_lmin', clib.c_int),
-    ('mb_lmax', clib.c_int),
-    ('bidir_refine', clib.c_int),
-    ('keyint_min', clib.c_int),
-    ('gop_size', clib.c_int),
-    ('mv0_threshold', clib.c_int),
-    ('slices', clib.c_int),
-    ('sample_rate', clib.c_int),
-    ('sample_fmt', util.EnumSampleFormat),
-    ('ch_layout', util.StructChannelLayout),
-    ('frame_size', clib.c_int),
-    ('block_align', clib.c_int),
-    ('cutoff', clib.c_int),
-    ('audio_service_type', EnumAudioServiceType),
-    ('request_sample_fmt', util.EnumSampleFormat),
-    ('initial_padding', clib.c_int),
-    ('trailing_padding', clib.c_int),
-    ('seek_preroll', clib.c_int),
-    ('get_buffer2', ctypes.CFUNCTYPE(clib.c_int,
-                                     clib.POINTER(StructContext),
-                                     clib.POINTER(util.StructFrame),
-                                     clib.c_int)),
-    ('bit_rate_tolerance', clib.c_int),
-    ('global_quality', clib.c_int),
-    ('compression_level', clib.c_int),
-    ('qcompress', clib.c_float),
-    ('qblur', clib.c_float),
-    ('qmin', clib.c_int),
-    ('qmax', clib.c_int),
-    ('max_qdiff', clib.c_int),
-    ('rc_buffer_size', clib.c_int),
-    ('rc_override_count', clib.c_int),
-    ('rc_override', clib.POINTER(StructRcOverride)),
-    ('rc_max_rate', clib.c_int64),
-    ('rc_min_rate', clib.c_int64),
-    ('rc_max_available_vbv_use', clib.c_float),
-    ('rc_min_vbv_overflow_use', clib.c_float),
-    ('rc_initial_buffer_occupancy', clib.c_int),
-    ('trellis', clib.c_int),
-    ('stats_out', clib.c_char_p),
-    ('stats_in', clib.c_char_p),
-    ('workaround_bugs', clib.c_int),
-    ('strict_std_compliance', clib.c_int),
-    ('error_concealment', clib.c_int),
-    ('debug', clib.c_int),
-    ('err_recognition', clib.c_int),
-    ('hwaccel', clib.POINTER(StructHWAccel)),
-    ('hwaccel_context', clib.c_void_p),
-    ('hw_frames_ctx', clib.POINTER(util.StructBufferRef)),
-    ('hw_device_ctx', clib.POINTER(util.StructBufferRef)),
-    ('hwaccel_flags', clib.c_int),
-    ('extra_hw_frames', clib.c_int),
-    ('error', clib.c_uint64 * int(8)),
-    ('dct_algo', clib.c_int),
-    ('idct_algo', clib.c_int),
-    ('bits_per_coded_sample', clib.c_int),
-    ('bits_per_raw_sample', clib.c_int),
-    ('thread_count', clib.c_int),
-    ('thread_type', clib.c_int),
-    ('active_thread_type', clib.c_int),
-    ('execute', ctypes.CFUNCTYPE(clib.c_int,
-                                 clib.POINTER(StructContext),
-                                 ctypes.CFUNCTYPE(clib.c_int,
-                                                  clib.POINTER(StructContext),
-                                                  clib.c_void_p),
-                                 clib.c_void_p,
-                                 clib.POINTER(clib.c_int),
-                                 clib.c_int,
-                                 clib.c_int)),
-    ('execute2', ctypes.CFUNCTYPE(clib.c_int,
-                                  clib.POINTER(StructContext),
-                                  ctypes.CFUNCTYPE(clib.c_int,
-                                                   clib.POINTER(StructContext),
-                                                   clib.c_void_p,
-                                                   clib.c_int,
-                                                   clib.c_int),
-                                  clib.c_void_p,
-                                  clib.POINTER(clib.c_int),
-                                  clib.c_int)),
-    ('profile', clib.c_int),
-    ('level', clib.c_int),
-    ('properties', clib.c_uint),
-    ('skip_loop_filter', EnumDiscard),
-    ('skip_idct', EnumDiscard),
-    ('skip_frame', EnumDiscard),
-    ('skip_alpha', clib.c_int),
-    ('skip_top', clib.c_int),
-    ('skip_bottom', clib.c_int),
-    ('lowres', clib.c_int),
-    ('codec_descriptor', clib.POINTER(StructCodecDescriptor)),
-    ('sub_charenc', clib.c_char_p),
-    ('sub_charenc_mode', clib.c_int),
-    ('subtitle_header_size', clib.c_int),
-    ('subtitle_header', clib.POINTER(clib.c_uint8)),
-    ('dump_separator', clib.POINTER(clib.c_uint8)),
-    ('codec_whitelist', clib.c_char_p),
-    ('coded_side_data', clib.POINTER(StructPacketSideData)),
-    ('nb_coded_side_data', clib.c_int),
-    ('export_side_data', clib.c_int),
-    ('max_pixels', clib.c_int64),
-    ('apply_cropping', clib.c_int),
-    ('discard_damaged_percentage', clib.c_int),
-    ('max_samples', clib.c_int64),
-    ('get_encode_buffer', ctypes.CFUNCTYPE(clib.c_int,
-                                           clib.POINTER(StructContext),
-                                           clib.POINTER(StructPacket),
-                                           clib.c_int)),
-    ('frame_num', clib.c_int64),
-    ('side_data_prefer_packet', clib.POINTER(clib.c_int)),
-    ('nb_side_data_prefer_packet', clib.c_uint),
-    ('decoded_side_data', clib.POINTER(clib.POINTER(util.StructFrameSideData))),
-    ('nb_decoded_side_data', clib.c_int)]
-
-
 class StructParser(clib.Structure):
     pass
 
@@ -971,26 +783,33 @@ class StructParserContext(clib.Structure):
     pass
 
 
-StructParser._fields_ = [
-    ('codec_ids', clib.c_int * int(7)),
-    ('priv_data_size', clib.c_int),
-    ('parser_init', ctypes.CFUNCTYPE(clib.c_int,
-                                     clib.POINTER(StructParserContext))),
-    ('parser_parse', ctypes.CFUNCTYPE(clib.c_int,
-                                      clib.POINTER(StructParserContext),
-                                      clib.POINTER(StructContext),
-                                      clib.POINTER(clib.POINTER(clib.c_uint8)),
-                                      clib.POINTER(clib.c_int),
-                                      clib.POINTER(clib.c_uint8),
-                                      clib.c_int)),
-    ('parser_close', ctypes.CFUNCTYPE(None,
-                                      clib.POINTER(StructParserContext))),
-    ('split', ctypes.CFUNCTYPE(clib.c_int,
-                               clib.POINTER(StructContext),
-                               clib.POINTER(clib.c_uint8),
-                               clib.c_int))]
+class _StructParserContext_callbacks_(clib.Lib):
+    @clib.Lib.Signature("parser_init", clib.POINTER(StructParserContext))
+    def parser_init(self, s):
+        return clib.c_int
+
+    @clib.Lib.Signature("parser_parse",
+                        clib.POINTER(StructParserContext),
+                        clib.POINTER(StructContext),
+                        clib.POINTER(clib.POINTER(clib.c_uint8)),
+                        clib.POINTER(clib.c_int),
+                        clib.POINTER(clib.c_uint8),
+                        clib.c_int)
+    def parser_parse(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size):
+        return clib.c_int
+
+    @clib.Lib.Signature("parser_close", clib.POINTER(StructParserContext))
+    def parser_close(self, s):
+        return
+
+    @clib.Lib.Signature("split", clib.POINTER(StructContext),
+                                 clib.POINTER(clib.c_uint8),
+                                 clib.c_int)
+    def split(self, avctx, buf, buf_size):
+        return clib.c_int
 
 
+StructParserContext._callbacks_ = _StructParserContext_callbacks_
 StructParserContext._fields_ = [
     ('priv_data', clib.c_void_p),
     ('parser', clib.POINTER(StructParser)),
@@ -1029,8 +848,41 @@ StructParserContext._fields_ = [
     ('format', clib.c_int)]
 
 
-class Codec(clib.Lib):
+StructParser._fields_ = [
+    ('codec_ids', clib.c_int * int(7)),
+    ('priv_data_size', clib.c_int),
+    ('parser_init', StructParserContext._callbacks_.functype(StructParserContext._callbacks_.parser_init)),
+    ('parser_parse', StructParserContext._callbacks_.functype(StructParserContext._callbacks_.parser_parse)),
+    ('parser_close', StructParserContext._callbacks_.functype(StructParserContext._callbacks_.parser_close)),
+    ('split', StructParserContext._callbacks_.functype(StructParserContext._callbacks_.split))]
+
+
+class Lib(clib.Lib):
     _name_ = "avcodec"
+
+    @clib.Lib.Signature(None,
+                        clib.POINTER(StructContext),
+                        clib.c_void_p)
+    def _execute_cb(self, c, arg):
+        return clib.c_int
+
+    @clib.Lib.Signature(None,
+                        clib.POINTER(StructContext),
+                        clib.c_void_p,
+                        clib.c_int,
+                        clib.c_int)
+    def _execute_cb2(self, c, arg, jobnr, threadnr):
+        return clib.c_int
+
+    @clib.Lib.Signature(None,
+                        clib.POINTER(StructContext),
+                        clib.POINTER(util.StructFrame),
+                        clib.c_int * int(8),
+                        clib.c_int,
+                        clib.c_int,
+                        clib.c_int)
+    def _draw_horiz_band(self, s, src, offset, y, typ, height):
+        pass
 
     @clib.Lib.Signature("av_codec_iterate", clib.POINTER(clib.c_void_p))
     def codec_iterate(self, opaque):
@@ -1081,7 +933,7 @@ class Codec(clib.Lib):
         return clib.c_char_p
 
     @clib.Lib.Signature("avcodec_alloc_context3", clib.POINTER(StructCodec))
-    def alloc_context3(self, codec):
+    def alloc_context(self, codec):
         return clib.POINTER(StructContext)
 
     @clib.Lib.Signature("avcodec_free_context", clib.POINTER(clib.POINTER(StructContext)))
@@ -1101,16 +953,37 @@ class Codec(clib.Lib):
         return clib.c_int
 
     @clib.Lib.Signature("avcodec_open2", clib.POINTER(StructContext), clib.POINTER(StructCodec), clib.POINTER(clib.c_void_p))
-    def open2(self, context, codec, options):
+    def open(self, context, codec, options):
         return clib.c_int
 
     @clib.Lib.Signature("avcodec_default_get_buffer2", clib.POINTER(StructContext), clib.POINTER(util.StructFrame), clib.c_int)
-    def get_buffer2(self, context, frame, flags):
+    def get_buffer(self, context, frame, flags):
         return clib.c_int
 
     @clib.Lib.Signature("avcodec_default_get_encode_buffer", clib.POINTER(StructContext), clib.POINTER(StructPacket), clib.c_int)
     def get_encode_buffer(self, context, packet, flags):
         return clib.c_int
+
+    @clib.Lib.Signature("avcodec_default_execute", clib.POINTER(StructContext),
+                                                   clib.Lib.functype(_execute_cb),
+                                                   clib.c_void_p,
+                                                   clib.POINTER(clib.c_int),
+                                                   clib.c_int,
+                                                   clib.c_int)
+    def execute(self, c, func, arg, ret, count, size):
+        return clib.c_int
+
+    @clib.Lib.Signature("avcodec_default_execute2", clib.POINTER(StructContext),
+                                                    clib.Lib.functype(_execute_cb2),
+                                                    clib.c_void_p,
+                                                    clib.POINTER(clib.c_int),
+                                                    clib.c_int)
+    def execute2(self, c, func, arg, ret, count):
+        return clib.c_int
+
+    @clib.Lib.Signature("avcodec_default_get_format", clib.POINTER(StructCodec), clib.POINTER(util.EnumPixelFormat))
+    def get_format(self, s, fmt):
+        return util.EnumPixelFormat
 
     @clib.Lib.Signature("avcodec_send_packet", clib.POINTER(StructContext), clib.POINTER(StructPacket))
     def send_packet(self, context, packet):
@@ -1192,9 +1065,8 @@ class Codec(clib.Lib):
                          clib.POINTER(clib.c_uint8),
                          clib.c_int,
                          clib.c_int64, clib.c_int64,
-                         clib.c_uint64
-                         )
-    def parser_parse2(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
+                         clib.c_uint64)
+    def parser_parse(self, s, avctx, poutbuf, poutbuf_size, buf, buf_size, pts, dts, pos):
         return clib.c_int
 
     @clib.Lib.Signature("av_parser_close", clib.POINTER(StructParserContext))
@@ -1206,7 +1078,7 @@ class Codec(clib.Lib):
         return clib.POINTER(util.StructFrame)
 
     @clib.Lib.Signature("av_frame_free", clib.POINTER(clib.POINTER(util.StructFrame)))
-    def frame_free(self):
+    def frame_free(self, frame):
         return
 
     @clib.Lib.Signature("av_frame_clone", clib.POINTER(util.StructFrame))
@@ -1232,16 +1104,156 @@ class Codec(clib.Lib):
         return clib.c_int
 
 
-"""
-log.setlevel(log.DEBUG)
-c = Codec()
-log.LOGGER.info(c.version())
-log.LOGGER.info(c.config().decode())
-log.LOGGER.info(c.license().decode())
-p = clib.pointer(clib.c_void_p())
-while True:
-    codec = c.codec_iterate(p)
-    if clib.isnullptr(codec):
-        break
-    log.LOGGER.info(codec.contents.name.decode())
-"""
+StructContext._fields_ = [
+    ('av_class', clib.POINTER(util.StructClass)),
+    ('log_level_offset', clib.c_int),
+    ('codec_type', util.EnumMediaType),
+    ('codec', clib.POINTER(StructCodec)),
+    ('codec_id', EnumCodecID),
+    ('codec_tag', clib.c_uint),
+    ('priv_data', clib.c_void_p),
+    ('internal', clib.c_void_p),
+    ('opaque', clib.c_void_p),
+    ('bit_rate', clib.c_int64),
+    ('flags', clib.c_int),
+    ('flags2', clib.c_int),
+    ('extradata', clib.POINTER(clib.c_uint8)),
+    ('extradata_size', clib.c_int),
+    ('time_base', util.StructRational),
+    ('pkt_timebase', util.StructRational),
+    ('framerate', util.StructRational),
+    ('ticks_per_frame', clib.c_int),
+    ('delay', clib.c_int),
+    ('width', clib.c_int),
+    ('height', clib.c_int),
+    ('coded_width', clib.c_int),
+    ('coded_height', clib.c_int),
+    ('sample_aspect_ratio', util.StructRational),
+    ('pix_fmt', util.EnumPixelFormat),
+    ('sw_pix_fmt', util.EnumPixelFormat),
+    ('color_primaries', util.EnumColorPrimaries),
+    ('color_trc', util.EnumColorTransferCharacteristic),
+    ('colorspace', util.EnumColorSpace),
+    ('color_range', util.EnumColorRange),
+    ('chroma_sample_location', util.EnumChromaLocation),
+    ('field_order', EnumFieldOrder),
+    ('refs', clib.c_int),
+    ('has_b_frames', clib.c_int),
+    ('slice_flags', clib.c_int),
+    ('draw_horiz_band', Lib.functype(Lib._draw_horiz_band)),
+    ('get_format', Lib.functype(Lib.get_format)),
+    ('max_b_frames', clib.c_int),
+    ('b_quant_factor', clib.c_float),
+    ('b_quant_offset', clib.c_float),
+    ('i_quant_factor', clib.c_float),
+    ('i_quant_offset', clib.c_float),
+    ('lumi_masking', clib.c_float),
+    ('temporal_cplx_masking', clib.c_float),
+    ('spatial_cplx_masking', clib.c_float),
+    ('p_masking', clib.c_float),
+    ('dark_masking', clib.c_float),
+    ('nsse_weight', clib.c_int),
+    ('me_cmp', clib.c_int),
+    ('me_sub_cmp', clib.c_int),
+    ('mb_cmp', clib.c_int),
+    ('ildct_cmp', clib.c_int),
+    ('dia_size', clib.c_int),
+    ('last_predictor_count', clib.c_int),
+    ('me_pre_cmp', clib.c_int),
+    ('pre_dia_size', clib.c_int),
+    ('me_subpel_quality', clib.c_int),
+    ('me_range', clib.c_int),
+    ('mb_decision', clib.c_int),
+    ('intra_matrix', clib.POINTER(clib.c_uint16)),
+    ('inter_matrix', clib.POINTER(clib.c_uint16)),
+    ('chroma_intra_matrix', clib.POINTER(clib.c_uint16)),
+    ('intra_dc_precision', clib.c_int),
+    ('mb_lmin', clib.c_int),
+    ('mb_lmax', clib.c_int),
+    ('bidir_refine', clib.c_int),
+    ('keyint_min', clib.c_int),
+    ('gop_size', clib.c_int),
+    ('mv0_threshold', clib.c_int),
+    ('slices', clib.c_int),
+    ('sample_rate', clib.c_int),
+    ('sample_fmt', util.EnumSampleFormat),
+    ('ch_layout', util.StructChannelLayout),
+    ('frame_size', clib.c_int),
+    ('block_align', clib.c_int),
+    ('cutoff', clib.c_int),
+    ('audio_service_type', EnumAudioServiceType),
+    ('request_sample_fmt', util.EnumSampleFormat),
+    ('initial_padding', clib.c_int),
+    ('trailing_padding', clib.c_int),
+    ('seek_preroll', clib.c_int),
+    ('get_buffer', Lib.functype(Lib.get_buffer)),
+    ('bit_rate_tolerance', clib.c_int),
+    ('global_quality', clib.c_int),
+    ('compression_level', clib.c_int),
+    ('qcompress', clib.c_float),
+    ('qblur', clib.c_float),
+    ('qmin', clib.c_int),
+    ('qmax', clib.c_int),
+    ('max_qdiff', clib.c_int),
+    ('rc_buffer_size', clib.c_int),
+    ('rc_override_count', clib.c_int),
+    ('rc_override', clib.POINTER(StructRcOverride)),
+    ('rc_max_rate', clib.c_int64),
+    ('rc_min_rate', clib.c_int64),
+    ('rc_max_available_vbv_use', clib.c_float),
+    ('rc_min_vbv_overflow_use', clib.c_float),
+    ('rc_initial_buffer_occupancy', clib.c_int),
+    ('trellis', clib.c_int),
+    ('stats_out', clib.c_char_p),
+    ('stats_in', clib.c_char_p),
+    ('workaround_bugs', clib.c_int),
+    ('strict_std_compliance', clib.c_int),
+    ('error_concealment', clib.c_int),
+    ('debug', clib.c_int),
+    ('err_recognition', clib.c_int),
+    ('hwaccel', clib.POINTER(StructHWAccel)),
+    ('hwaccel_context', clib.c_void_p),
+    ('hw_frames_ctx', clib.POINTER(util.StructBufferRef)),
+    ('hw_device_ctx', clib.POINTER(util.StructBufferRef)),
+    ('hwaccel_flags', clib.c_int),
+    ('extra_hw_frames', clib.c_int),
+    ('error', clib.c_uint64 * int(8)),
+    ('dct_algo', clib.c_int),
+    ('idct_algo', clib.c_int),
+    ('bits_per_coded_sample', clib.c_int),
+    ('bits_per_raw_sample', clib.c_int),
+    ('thread_count', clib.c_int),
+    ('thread_type', clib.c_int),
+    ('active_thread_type', clib.c_int),
+    ('execute', Lib.functype(Lib.execute)),
+    ('execute2', Lib.functype(Lib.execute2)),
+    ('profile', clib.c_int),
+    ('level', clib.c_int),
+    ('properties', clib.c_uint),
+    ('skip_loop_filter', EnumDiscard),
+    ('skip_idct', EnumDiscard),
+    ('skip_frame', EnumDiscard),
+    ('skip_alpha', clib.c_int),
+    ('skip_top', clib.c_int),
+    ('skip_bottom', clib.c_int),
+    ('lowres', clib.c_int),
+    ('codec_descriptor', clib.POINTER(StructCodecDescriptor)),
+    ('sub_charenc', clib.c_char_p),
+    ('sub_charenc_mode', clib.c_int),
+    ('subtitle_header_size', clib.c_int),
+    ('subtitle_header', clib.POINTER(clib.c_uint8)),
+    ('dump_separator', clib.POINTER(clib.c_uint8)),
+    ('codec_whitelist', clib.c_char_p),
+    ('coded_side_data', clib.POINTER(StructPacketSideData)),
+    ('nb_coded_side_data', clib.c_int),
+    ('export_side_data', clib.c_int),
+    ('max_pixels', clib.c_int64),
+    ('apply_cropping', clib.c_int),
+    ('discard_damaged_percentage', clib.c_int),
+    ('max_samples', clib.c_int64),
+    ('get_encode_buffer', Lib.functype(Lib.get_encode_buffer)),
+    ('frame_num', clib.c_int64),
+    ('side_data_prefer_packet', clib.POINTER(clib.c_int)),
+    ('nb_side_data_prefer_packet', clib.c_uint),
+    ('decoded_side_data', clib.POINTER(clib.POINTER(util.StructFrameSideData))),
+    ('nb_decoded_side_data', clib.c_int)]

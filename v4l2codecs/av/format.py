@@ -265,25 +265,85 @@ class StructContext(clib.Structure):
     pass
 
 
-class _StructContext_callbacks_(clib.Lib):
-    @clib.Lib.Signature("io_open",
+class Lib(clib.Lib):
+    _name_ = "avformat"
+
+    @clib.Lib.Signature(None,
                         clib.POINTER(StructContext),
                         clib.POINTER(clib.POINTER(StructIOContext)),
                         clib.c_char_p, clib.c_int,
                         clib.POINTER(clib.c_void_p))
-    def io_open(self, s, pb, url, flags, options):
+    def _io_open(self, s, pb, url, flags, options):
         return clib.c_int
 
-    @clib.Lib.Signature("io_close2", clib.POINTER(StructContext), clib.POINTER(StructIOContext))
-    def io_close2(self, s, pb):
+    @clib.Lib.Signature(None, clib.POINTER(StructContext), clib.POINTER(StructIOContext))
+    def _io_close(self, s, pb):
         return clib.c_int
 
-    @clib.Lib.Signature("control_message", clib.POINTER(StructContext), clib.c_int, clib.c_void_p, clib.c_size_t)
-    def control_message(self, s, typ, data, data_size):
+    @clib.Lib.Signature(None, clib.POINTER(StructContext), clib.c_int, clib.c_void_p, clib.c_size_t)
+    def _control_message(self, s, typ, data, data_size):
+        return clib.c_int
+
+    @clib.Lib.Signature("avformat_version")
+    def version(self):
+        return clib.c_uint
+
+    @clib.Lib.Signature("avformat_configuration")
+    def config(self):
+        return clib.c_char_p
+
+    @clib.Lib.Signature("avformat_license")
+    def license(self):
+        return clib.c_char_p
+
+    @clib.Lib.Signature("av_muxer_iterate", clib.POINTER(clib.c_void_p))
+    def muter_iterate(self, opaque):
+        return clib.POINTER(StructOutputFormat)
+
+    @clib.Lib.Signature("av_demuxer_iterate", clib.POINTER(clib.c_void_p))
+    def demuter_iterate(self, opaque):
+        return clib.POINTER(StructInputFormat)
+
+    @clib.Lib.Signature("avformat_alloc_context")
+    def alloc_context(self, codec):
+        return clib.POINTER(StructContext)
+
+    @clib.Lib.Signature("avformat_free_context", clib.POINTER(clib.POINTER(StructContext)))
+    def free_context(self, context):
+        return
+
+    @clib.Lib.Signature("avformat_open_input",
+                        clib.POINTER(clib.POINTER(StructContext)),
+                        clib.c_char_p,
+                        clib.POINTER(StructInputFormat),
+                        clib.POINTER(clib.c_void_p))
+    def open_input(self, ps, url, fmt, options):
+        return clib.c_int
+
+    @clib.Lib.Signature("avformat_find_stream_info",
+                        clib.POINTER(StructContext), clib.POINTER(clib.c_void_p))
+    def find_stream_info(self, ic, options):
+        return clib.c_int
+
+    @clib.Lib.Signature("av_find_best_stream",
+                        clib.POINTER(StructContext),
+                        util.EnumMediaType,
+                        clib.c_int,
+                        clib.c_int,
+                        clib.POINTER(clib.POINTER(codec.StructCodec)),
+                        clib.c_int
+                        )
+    def find_best_stream(self, ic, mtype, wanted_streams_nb, related_stream, decocer_ret, flags):
+        return clib.c_int
+
+    @clib.Lib.Signature("av_read_frame",
+                        clib.POINTER(StructContext),
+                        clib.POINTER(codec.StructPacket),
+                        )
+    def read_frame(self, s, pkt):
         return clib.c_int
 
 
-StructContext._callbacks_ = _StructContext_callbacks_
 StructContext._fields_ = [
     ('av_class', clib.POINTER(util.StructClass)),
     ('iformat', clib.POINTER(StructInputFormat)),
@@ -353,9 +413,9 @@ StructContext._fields_ = [
     ('data_codec', clib.POINTER(codec.StructCodec)),
     ('metadata_header_padding', clib.c_int),
     ('opaque', clib.c_void_p),
-    ('control_message_cb', StructContext._callbacks_.functype(StructContext._callbacks_.control_message)),
+    ('control_message_cb', Lib.functype(Lib._control_message)),
     ('output_ts_offset', clib.c_int64),
     ('dump_separator', clib.POINTER(clib.c_uint8)),
-    ('io_open', StructContext._callbacks_.functype(StructContext._callbacks_.io_open)),
-    ('io_close2', StructContext._callbacks_.functype(StructContext._callbacks_.io_close2)),
+    ('io_open', Lib.functype(Lib._io_open)),
+    ('io_close2', Lib.functype(Lib._io_close)),
     ('duration_probesize', clib.c_int64)]
