@@ -17,17 +17,18 @@
 import sys
 import errno
 import logging
+import time
 from v4l2codecs import clib
 from v4l2codecs import av
 from v4l2codecs import log
 
 
 CODECID = av.codec.EnumCodecID(av.codec.EnumCodecID._enum_.H264.value)
-LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.TRACE.value)
+LOGLEVEL = av.util.EnumLogLevel(av.util.EnumLogLevel._enum_.INFO.value)
 VT_VIDEO = av.util.EnumMediaType(av.util.EnumMediaType._enum_.VIDEO)
-HWTYPE = av.util.EnumHWDeviceType(av.util.EnumHWDeviceType._enum_.VDPAU)
+HWTYPE = av.util.EnumHWDeviceType(av.util.EnumHWDeviceType._enum_.CUDA)
 FMT_NONE = av.util.EnumPixelFormat(av.util.EnumPixelFormat._enum_.NONE)
-FMT_SELECT = av.util.EnumPixelFormat(av.util.EnumPixelFormat._enum_.VDPAU)
+FMT_SELECT = av.util.EnumPixelFormat(av.util.EnumPixelFormat._enum_.CUDA)
 PATH = sys.argv[1]
 CHUNK = 4096
 
@@ -50,11 +51,13 @@ def loghandler(ptr, level, fmt, vl):
               av.util.EnumLogLevel._enum_.ERROR: logging.ERROR,
               av.util.EnumLogLevel._enum_.WARNING: logging.WARNING,
               av.util.EnumLogLevel._enum_.INFO: logging.INFO,
-              av.util.EnumLogLevel._enum_.VERBOSE: logging.DEBUG,
+              av.util.EnumLogLevel._enum_.VERBOSE: logging.INFO,
               av.util.EnumLogLevel._enum_.DEBUG: logging.DEBUG,
               av.util.EnumLogLevel._enum_.TRACE: logging.DEBUG,
               }
     level = levels.get(level.value, logging.DEBUG)
+    if log.LOGGER.getEffectiveLevel() > level:
+        return
     msg = b"\0" * len(fmt.value) * 2
     libc._lib.vsnprintf(clib.c_char_p(msg), len(msg), fmt, vl)
     msg = msg.split(b"\n")[0]
@@ -78,8 +81,8 @@ def get_format(s, fmts):
     return FMT_NONE.value
 
 
-log.LOGGER.setLevel(log.DEBUG)
-avutil.set_log_level(LOGLEVEL)
+log.LOGGER.setLevel(log.INFO)
+# avutil.set_log_level(LOGLEVEL)
 cb = avutil.functype(avutil.log_default_callback)(loghandler)
 avutil.set_log_callback(cb)
 
@@ -139,6 +142,8 @@ if not pkt.address:
 
 newpacket = True
 eof = False
+frametimes = []
+lasttime = None
 while True:
     if newpacket and avformat.read_frame(in_ctx, pkt).value < 0:
         log.LOGGER.info("file finished")
@@ -167,8 +172,16 @@ while True:
     elif ret.value < 0:
         raise RuntimeError(f"Error receiving frame {ret.value}")
     else:
+        fps = 0
+        newtime = time.time()
+        if lasttime:
+            frametimes.append(newtime - lasttime)
+            fps = len(frametimes) / sum(frametimes)
+        if len(frametimes) > 10:
+            frametimes.pop(0)
+        lasttime = newtime
         avcodec.frame_free(frame.ref)
-        log.LOGGER.info(f"Decoded frame {dec_ctx.contents.frame_num.value}")
+        log.LOGGER.info(f"Decoded frame {dec_ctx.contents.frame_num.value}, fps: {fps}")
 
 # clean stuff
 pass

@@ -19,9 +19,9 @@ import fcntl
 import enum
 import ctypes
 import mmap
-from linuxpy.ioctl import IOWR
 
 from v4l2codecs import log
+from v4l2codecs import ioctl
 
 
 devices = ["/dev/dma_heap/system-uncached",
@@ -44,7 +44,7 @@ class dma_heap_allocation_data(ctypes.Structure):
 
 
 class IOC(enum.IntEnum):
-    ALLOC = IOWR("H", 0, dma_heap_allocation_data)
+    ALLOC = ioctl.IOWR("H", 0, dma_heap_allocation_data)
 
 
 class Allocator():

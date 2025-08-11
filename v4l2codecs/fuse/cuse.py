@@ -14,92 +14,171 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import ctypes
+# import ctypes
 import threading
 import errno
 import traceback
-
-from refuse import low
 
 from v4l2codecs import log
 from v4l2codecs import clib
 
 CUSE_UNRESTRICTED_IOCTL = 1 << 0
+c_off_t = clib.c_longlong
 
 
-class IoVec(ctypes.Structure):
-    _fields_ = [("base", ctypes.c_void_p),
-                ("size", ctypes.c_size_t)]
-
-
-class DevInfo(ctypes.Structure):
-    _fields_ = [("major", ctypes.c_uint),
-                ("minor", ctypes.c_uint),
-                ("argc", ctypes.c_uint),
-                ("argv", ctypes.POINTER(ctypes.c_char_p)),
-                ("flags", ctypes.c_uint)]
-
-
-class LowlevelOps(ctypes.Structure):
+class StructFileInfo(clib.Structure):
     _fields_ = [
-        ('init', ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p)),
-
-        ('init_done', ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
-
-        ('destroy', ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
-
-        ('open', ctypes.CFUNCTYPE(None, low.fuse_req_t, low.fuse_file_info_p)),
-
-        ('read', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, ctypes.c_size_t, low.c_off_t,
-            low.fuse_file_info_p)),
-
-        ('write', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, low.c_bytes_p, ctypes.c_size_t,
-            low.c_off_t, low.fuse_file_info_p)),
-
-        ('flush', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, low.fuse_file_info_p)),
-
-        ('release', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, low.fuse_file_info_p)),
-
-        ('fsync', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, ctypes.c_int, low.fuse_file_info_p)),
-
-        ('ioctl', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, ctypes.c_int, ctypes.c_void_p, low.fuse_file_info_p,
-            ctypes.c_uint, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_size_t)),
-
-        ('poll', ctypes.CFUNCTYPE(
-            None, low.fuse_req_t, low.fuse_file_info_p, ctypes.c_void_p)),
-    ]
+        ('flags', clib.c_int),
+        ('fh_old', clib.c_ulong),
+        ('writepage', clib.c_int),
+        ('direct_io', clib.c_uint, 1),
+        ('keep_cache', clib.c_uint, 1),
+        ('flush', clib.c_uint, 1),
+        ('nonseekable', clib.c_uint, 1),
+        ('flock_release', clib.c_uint, 1),
+        ('padding', clib.c_uint, 27),
+        ('fh', clib.c_uint64),
+        ('lock_owner', clib.c_uint64)]
 
 
-class CCuse(threading.Thread):
+class StructIoVec(clib.Structure):
+    _fields_ = [("base", clib.c_void_p),
+                ("size", clib.c_size_t)]
+
+
+class StructDevInfo(clib.Structure):
+    _fields_ = [("major", clib.c_uint),
+                ("minor", clib.c_uint),
+                ("argc", clib.c_uint),
+                ("argv", clib.POINTER(clib.c_char_p)),
+                ("flags", clib.c_uint)]
+
+
+class StructLowlevelOps(clib.Structure):
+    class _callbacks_(clib.Lib):
+        @clib.Lib.Signature(None, clib.c_void_p, clib.c_void_p)
+        def init(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p)
+        def init_done(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p)
+        def destroy(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
+        def open(self):
+            return
+
+        @clib.Lib.Signature(None,
+                            clib.c_void_p,
+                            clib.c_size_t,
+                            c_off_t,
+                            clib.POINTER(StructFileInfo))
+        def read(self):
+            return
+
+        @clib.Lib.Signature(None,
+                            clib.c_void_p,
+                            clib.POINTER(clib.c_byte),
+                            clib.c_size_t,
+                            c_off_t,
+                            clib.POINTER(StructFileInfo))
+        def write(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
+        def flush(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
+        def release(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p, clib.c_int, clib.POINTER(StructFileInfo))
+        def fsync(self):
+            return
+
+        @clib.Lib.Signature(None,
+                            clib.c_void_p,
+                            clib.c_int,
+                            clib.c_void_p,
+                            clib.POINTER(StructFileInfo),
+                            clib.c_uint,
+                            clib.c_void_p,
+                            clib.c_size_t,
+                            clib.c_size_t)
+        def ioctl(self):
+            return
+
+        @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo), clib.c_void_p)
+        def poll(self):
+            return
+
+    _fields_ = [
+        ('init', _callbacks_.functype(_callbacks_.init)),
+        ('init_done', _callbacks_.functype(_callbacks_.init_done)),
+        ('destroy', _callbacks_.functype(_callbacks_.destroy)),
+        ('open', _callbacks_.functype(_callbacks_.open)),
+        ('read', _callbacks_.functype(_callbacks_.read)),
+        ('write', _callbacks_.functype(_callbacks_.write)),
+        ('flush', _callbacks_.functype(_callbacks_.flush)),
+        ('release', _callbacks_.functype(_callbacks_.release)),
+        ('fsync', _callbacks_.functype(_callbacks_.fsync)),
+        ('ioctl', _callbacks_.functype(_callbacks_.ioctl)),
+        ('poll', _callbacks_.functype(_callbacks_.poll))]
+
+
+class Lib(clib.Lib):
+    _name_ = "fuse"
+
+    @clib.Lib.Signature("cuse_lowlevel_main",
+                        clib.c_uint,
+                        clib.POINTER(clib.c_char_p),
+                        clib.POINTER(StructDevInfo),
+                        clib.POINTER(StructLowlevelOps),
+                        clib.c_void_p)
+    def cuse_main(self):
+        return clib.c_int
+
+    @clib.Lib.Signature("cuse_lowlevel_teardown", clib.c_void_p)
+    def cuse_teardown(self):
+        return
+
+    @clib.Lib.Signature("fuse_reply_open", clib.c_void_p, clib.c_void_p)
+    def reply_open(self):
+        return
+
+    @clib.Lib.Signature("fuse_reply_err", clib.c_void_p, clib.c_int)
+    def reply_err(self):
+        return
+
+    @clib.Lib.Signature("fuse_reply_none", clib.c_void_p)
+    def reply_none(self):
+        return
+
+    @clib.Lib.Signature("fuse_reply_ioctl",
+                        clib.c_void_p,
+                        clib.c_int,
+                        clib.c_void_p,
+                        clib.c_size_t)
+    def reply_ioctl(self):
+        return
+
+    @clib.Lib.Signature("fuse_reply_ioctl_retry",
+                        clib.c_void_p,
+                        clib.c_void_p,
+                        clib.c_size_t,
+                        clib.c_void_p,
+                        clib.c_size_t)
+    def reply_ioctl_retry(self):
+        return clib.c_int
+
+
+class CuseThread(threading.Thread):
     ioctls = {}
-
-    class Lib(clib.Lib):
-        _name_ = "fuse"
-        _functions_ = (("cuse_lowlevel_main", (ctypes.c_uint,
-                                               ctypes.POINTER(ctypes.c_char_p),
-                                               ctypes.POINTER(DevInfo),
-                                               ctypes.POINTER(LowlevelOps),
-                                               ctypes.c_void_p), ctypes.c_int),
-                       ("cuse_lowlevel_teardown", (ctypes.c_void_p,)),
-                       ("fuse_reply_open", (low.fuse_req_t, ctypes.c_void_p)),
-                       ("fuse_reply_err", (low.fuse_req_t, ctypes.c_int)),
-                       ("fuse_reply_none", (low.fuse_req_t,)),
-                       ("fuse_reply_ioctl", (low.fuse_req_t,
-                                             ctypes.c_int,
-                                             ctypes.c_void_p,
-                                             ctypes.c_size_t), ctypes.c_int),
-                       ("fuse_reply_ioctl_retry",(low.fuse_req_t,
-                                                  ctypes.c_void_p,
-                                                  ctypes.c_size_t,
-                                                  ctypes.c_void_p,
-                                                  ctypes.c_size_t), ctypes.c_int),
-                       )
 
     def __init__(self, op, name, major=None, minor=None, ioctls=None, debug=True):
         self.ioctls = ioctls or self.ioctls
@@ -111,29 +190,29 @@ class CCuse(threading.Thread):
 
         # devinfo
         devinfo = [f"DEVNAME={name}".encode()]
-        c_devinfo = DevInfo(argc=len(devinfo),
-                            argv=(ctypes.c_char_p * len(devinfo))(*devinfo),
-                            flags=CUSE_UNRESTRICTED_IOCTL)
+        c_devinfo = StructDevInfo(argc=clib.c_int(len(devinfo)),
+                                  argv=(clib.c_char_p * len(devinfo))(*devinfo),
+                                  flags=clib.c_int(CUSE_UNRESTRICTED_IOCTL))
         if major is not None:
-            c_devinfo.major = major
+            c_devinfo.major = clib.c_int(major)
         if minor is not None:
-            c_devinfo.minor = minor
+            c_devinfo.minor = clib.c_int(minor)
 
         # args
         args = [b"\n", b"-f"]
         if debug:
             args.append(b"-d")
-        c_ops = LowlevelOps()
-        for name, prototype in LowlevelOps._fields_:
+        c_ops = StructLowlevelOps()
+        for name, functype in StructLowlevelOps._fields_:
             method = getattr(self, name, None)
             if method:
-                setattr(c_ops, name, prototype(method))
+                setattr(c_ops, name, functype(method))
 
         threading.Thread.__init__(self, args=(len(args),
-                                              (ctypes.c_char_p * len(args))(*args),
-                                              ctypes.byref(c_devinfo),
-                                              ctypes.byref(c_ops),
-                                              None), daemon=True)
+                                              (clib.c_char_p * len(args))(*args),
+                                               c_devinfo.ref,
+                                               c_ops.ref,
+                                               None), daemon=True)
         self.start()
         self.join()
         if not self.returncode:
@@ -172,12 +251,12 @@ class CCuse(threading.Thread):
             log.LOGGER.warning(f"unhandled ioctl: {c_cmd}")
             return
         datatype = self.ioctls[c_cmd]
-        in_iov = ctypes.c_void_p()
-        out_iov = ctypes.c_void_p()
+        in_iov = clib.c_void_p()
+        out_iov = clib.c_void_p()
         if write and not c_in_buf_sz:
-            in_iov = ctypes.byref(IoVec(c_arg_p, ctypes.sizeof(datatype)))
+            in_iov = StructIoVec(c_arg_p, clib.sizeof(datatype)).ref
         if read and not c_out_buf_sz:
-            out_iov = ctypes.byref(IoVec(c_arg_p, ctypes.sizeof(datatype)))
+            out_iov = StructIoVec(c_arg_p, clib.sizeof(datatype)).ref
         if in_iov or out_iov:
             self.c_lib.fuse_reply_ioctl_retry(c_req_p,
                                               in_iov, int(bool(in_iov)),
@@ -187,12 +266,12 @@ class CCuse(threading.Thread):
         if read or write:
             data = datatype()
             if c_in_buf_p:
-                ctypes.memmove(ctypes.byref(data), c_in_buf_p, ctypes.sizeof(datatype))
+                clib.memmove(data.ref, c_in_buf_p, clib.sizeof(datatype))
             ret = self.safe_callback(self.op.ioctl_read, c_fi.contents.fh, c_cmd, data)
             if ret:
                 self.c_lib.fuse_reply_err(c_req_p, ret)
             else:
-                self.c_lib.fuse_reply_ioctl(c_req_p, ret, ctypes.byref(data), ctypes.sizeof(data))
+                self.c_lib.fuse_reply_ioctl(c_req_p, ret, data.ref, clib.sizeof(data))
             return
         log.LOGGER.warning(f"wrong ioctl response: {c_cmd}")
         self.c_lib.fuse_reply_err(c_req_p, errno.EINVAL)

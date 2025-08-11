@@ -12,32 +12,33 @@
 
 import enum
 from v4l2codecs import clib
+from v4l2codecs import ioctl
 
 
-from linuxpy.ctypes import (
-    POINTER,
-    Struct,
-    Union,
-    cchar,
-    cint,
-    clonglong,
-    cuint,
-    culong,
-    culonglong,
-    i16,
-    timespec,
-    timeval,
-    u8,
-    u16,
-    u32,
-    u64,
-)
-from linuxpy.ioctl import IO as _IO, IOR as _IOR, IOW as _IOW, IOWR as _IOWR
-from linuxpy.video.util import v4l2_fourcc, v4l2_fourcc_be
-
-v4l2_std_id = u64
-
+v4l2_std_id = clib.c_uint64
 UNKNOWN = "UNKNOWN"
+
+
+def v4l2_fourcc(a, b, c, d):
+    return ord(a) | (ord(b) << 8) | (ord(c) << 16) | (ord(d) << 24)
+
+
+def v4l2_fourcc_be(a, b, c, d):
+    return (v4l2_fourcc(a, b, c, d)) | (1 << 31)
+
+
+class StructTimeval(clib.Structure):
+    _fields_ = [
+        ("secs", clib.c_long),
+        ("usecs", clib.c_long),
+    ]
+
+
+class StructTimeSpec(clib.Structure):
+    _fields_ = [
+        ("secs", clib.c_long),
+        ("nsecs", clib.c_long),
+    ]
 
 
 class SelectionFlag(enum.IntFlag):
@@ -170,7 +171,7 @@ class EnumPixelFormat(clib.c_intenum):
         VUYX32 = v4l2_fourcc("V", "U", "Y", "X")  # 32  VUYX-8-8-8-8
         YUVA32 = v4l2_fourcc("Y", "U", "V", "A")  # 32  YUVA-8-8-8-8
         YUVX32 = v4l2_fourcc("Y", "U", "V", "X")  # 32  YUVX-8-8-8-8
-        M420 = v4l2_fourcc("M", "4", "2", "0")  # 12  YUV 4:2:0 2 lines y, 1 line uvcinterleaved
+        M420 = v4l2_fourcc("M", "4", "2", "0")  # 12  YUV 4:2:0 2 lines y, 1 line uvclib.c_interleaved
         YUV48_12 = v4l2_fourcc("Y", "3", "1", "2")  # 48  YUV 4:4:4 12-bit per component
         Y210 = v4l2_fourcc("Y", "2", "1", "0")  # 32  YUYV 4:2:2
         Y212 = v4l2_fourcc("Y", "2", "1", "2")  # 32  YUYV 4:2:2
@@ -306,9 +307,9 @@ class EnumPixelFormat(clib.c_intenum):
         KONICA420 = v4l2_fourcc("K", "O", "N", "I")  # YUV420 planar in blocks of 256 pixels
         JPGL = v4l2_fourcc("J", "P", "G", "L")  # JPEG-Lite
         SE401 = v4l2_fourcc("S", "4", "0", "1")  # se401 janggu compressed rgb
-        S5C_UYVY_JPG = v4l2_fourcc("S", "5", "C", "I")  # S5C73M3cinterleaved UYVY/JPEG
-        Y8I = v4l2_fourcc("Y", "8", "I", " ")  # Greyscale 8-bit L/Rcinterleaved
-        Y12I = v4l2_fourcc("Y", "1", "2", "I")  # Greyscale 12-bit L/Rcinterleaved
+        S5C_UYVY_JPG = v4l2_fourcc("S", "5", "C", "I")  # S5C73M3clib.c_interleaved UYVY/JPEG
+        Y8I = v4l2_fourcc("Y", "8", "I", " ")  # Greyscale 8-bit L/Rclib.c_interleaved
+        Y12I = v4l2_fourcc("Y", "1", "2", "I")  # Greyscale 12-bit L/Rclib.c_interleaved
         Z16 = v4l2_fourcc("Z", "1", "6", " ")  # Depth data 16-bit
         MT21C = v4l2_fourcc("M", "T", "2", "1")  # Mediatek compressed block mode
         MM21 = v4l2_fourcc("M", "M", "2", "1")  # Mediatek 8-bit block mode, two non-contiguous planes
@@ -350,12 +351,12 @@ class TouchFormat(enum.IntEnum):
 
 
 class SDRFormat(enum.IntEnum):
-    CU8 = v4l2_fourcc("C", "U", "0", "8")  # IQ u8
-    CU16LE = v4l2_fourcc("C", "U", "1", "6")  # IQ u16le
+    CU8 = v4l2_fourcc("C", "U", "0", "8")  # IQ clib.c_uint8
+    CU16LE = v4l2_fourcc("C", "U", "1", "6")  # IQ clib.c_uint16le
     CS8 = v4l2_fourcc("C", "S", "0", "8")  # complex s8
     CS14LE = v4l2_fourcc("C", "S", "1", "4")  # complex s14le
     RU12LE = v4l2_fourcc("R", "U", "1", "2")  # real u12le
-    PCU16BE = v4l2_fourcc("P", "C", "1", "6")  # planar complex u16be
+    PCU16BE = v4l2_fourcc("P", "C", "1", "6")  # planar complex clib.c_uint16be
     PCU18BE = v4l2_fourcc("P", "C", "1", "8")  # planar complex u18be
     PCU20BE = v4l2_fourcc("P", "C", "2", "0")  # planar complex u20be
 
@@ -1876,9 +1877,9 @@ class CtrlType(enum.IntEnum):
     BITMASK = 8
     INTEGER_MENU = 9
     COMPOUND_TYPES = 256
-    U8 = 256
-    U16 = 257
-    U32 = 258
+    clib.c_uint8 = 256
+    clib.c_uint16 = 257
+    clib.c_uint32 = 258
     AREA = 262
     HDR10_CLL_INFO = 272
     HDR10_MASTERING_DISPLAY = 273
@@ -1990,245 +1991,245 @@ class SubdevFormatWhence(enum.IntEnum):
     ACTIVE = 1
 
 
-class v4l2_edid(Struct):
+class v4l2_edid(clib.Structure):
     pass
 
 
 v4l2_edid._fields_ = [
-    ("pad", cuint),
-    ("start_block", cuint),
-    ("blocks", cuint),
-    ("reserved", cuint * 5),
-    ("edid", POINTER(u8)),
+    ("pad", clib.c_uint),
+    ("start_block", clib.c_uint),
+    ("blocks", clib.c_uint),
+    ("reserved", clib.c_uint * 5),
+    ("edid", clib.POINTER(clib.c_uint8)),
 ]
 
 
-class v4l2_ctrl_h264_sps(Struct):
+class v4l2_ctrl_h264_sps(clib.Structure):
     pass
 
 
 v4l2_ctrl_h264_sps._fields_ = [
-    ("profile_idc", u8),
-    ("constraint_set_flags", u8),
-    ("level_idc", u8),
-    ("seq_parameter_set_id", u8),
-    ("chroma_format_idc", u8),
-    ("bit_depth_luma_minus8", u8),
-    ("bit_depth_chroma_minus8", u8),
-    ("log2_max_frame_num_minus4", u8),
-    ("pic_order_cnt_type", u8),
-    ("log2_max_pic_order_cnt_lsb_minus4", u8),
-    ("max_num_ref_frames", u8),
-    ("num_ref_frames_in_pic_order_cnt_cycle", u8),
-    ("offset_for_ref_frame", cint * 255),
-    ("offset_for_non_ref_pic", cint),
-    ("offset_for_top_to_bottom_field", cint),
-    ("pic_width_in_mbs_minus1", u16),
-    ("pic_height_in_map_units_minus1", u16),
-    ("flags", cuint),
+    ("profile_idc", clib.c_uint8),
+    ("constraint_set_flags", clib.c_uint8),
+    ("level_idc", clib.c_uint8),
+    ("seq_parameter_set_id", clib.c_uint8),
+    ("chroma_format_idc", clib.c_uint8),
+    ("bit_depth_luma_minus8", clib.c_uint8),
+    ("bit_depth_chroma_minus8", clib.c_uint8),
+    ("log2_max_frame_num_minus4", clib.c_uint8),
+    ("pic_order_cnt_type", clib.c_uint8),
+    ("log2_max_pic_order_cnt_lsb_minus4", clib.c_uint8),
+    ("max_num_ref_frames", clib.c_uint8),
+    ("num_ref_frames_in_pic_order_cnt_cycle", clib.c_uint8),
+    ("offset_for_ref_frame", clib.c_int * 255),
+    ("offset_for_non_ref_pic", clib.c_int),
+    ("offset_for_top_to_bottom_field", clib.c_int),
+    ("pic_width_in_mbs_minus1", clib.c_uint16),
+    ("pic_height_in_map_units_minus1", clib.c_uint16),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_ctrl_h264_pps(Struct):
+class v4l2_ctrl_h264_pps(clib.Structure):
     pass
 
 
 v4l2_ctrl_h264_pps._fields_ = [
-    ("pic_parameter_set_id", u8),
-    ("seq_parameter_set_id", u8),
-    ("num_slice_groups_minus1", u8),
-    ("num_ref_idx_l0_default_active_minus1", u8),
-    ("num_ref_idx_l1_default_active_minus1", u8),
-    ("weighted_bipred_idc", u8),
-    ("pic_init_qp_minus26", cchar),
-    ("pic_init_qs_minus26", cchar),
-    ("chroma_qp_index_offset", cchar),
-    ("second_chroma_qp_index_offset", cchar),
-    ("flags", u16),
+    ("pic_parameter_set_id", clib.c_uint8),
+    ("seq_parameter_set_id", clib.c_uint8),
+    ("num_slice_groups_minus1", clib.c_uint8),
+    ("num_ref_idx_l0_default_active_minus1", clib.c_uint8),
+    ("num_ref_idx_l1_default_active_minus1", clib.c_uint8),
+    ("weighted_bipred_idc", clib.c_uint8),
+    ("pic_init_qp_minus26", clib.c_char),
+    ("pic_init_qs_minus26", clib.c_char),
+    ("chroma_qp_index_offset", clib.c_char),
+    ("second_chroma_qp_index_offset", clib.c_char),
+    ("flags", clib.c_uint16),
 ]
 
 
-class v4l2_ctrl_h264_scaling_matrix(Struct):
+class v4l2_ctrl_h264_scaling_matrix(clib.Structure):
     _pack_ = True
 
 
-v4l2_ctrl_h264_scaling_matrix._fields_ = [("scaling_list_4x4", cchar * 16 * 6), ("scaling_list_8x8", cchar * 64 * 6)]
+v4l2_ctrl_h264_scaling_matrix._fields_ = [("scaling_list_4x4", clib.c_char * 16 * 6), ("scaling_list_8x8", clib.c_char * 64 * 6)]
 
 
-class v4l2_h264_weight_factors(Struct):
+class v4l2_h264_weight_factors(clib.Structure):
     pass
 
 
 v4l2_h264_weight_factors._fields_ = [
-    ("luma_weight", i16 * 32),
-    ("luma_offset", i16 * 32),
-    ("chroma_weight", i16 * 2 * 32),
-    ("chroma_offset", i16 * 2 * 32),
+    ("luma_weight", clib.c_int16 * 32),
+    ("luma_offset", clib.c_int16 * 32),
+    ("chroma_weight", clib.c_int16 * 2 * 32),
+    ("chroma_offset", clib.c_int16 * 2 * 32),
 ]
 
 
-class v4l2_ctrl_h264_pred_weights(Struct):
+class v4l2_ctrl_h264_pred_weights(clib.Structure):
     pass
 
 
 v4l2_ctrl_h264_pred_weights._fields_ = [
-    ("luma_log2_weight_denom", u16),
-    ("chroma_log2_weight_denom", u16),
+    ("luma_log2_weight_denom", clib.c_uint16),
+    ("chroma_log2_weight_denom", clib.c_uint16),
     ("weight_factors", v4l2_h264_weight_factors * 2),
 ]
 
 
-class v4l2_h264_reference(Struct):
+class v4l2_h264_reference(clib.Structure):
     _pack_ = True
 
 
-v4l2_h264_reference._fields_ = [("fields", u8), ("index", u8)]
+v4l2_h264_reference._fields_ = [("fields", clib.c_uint8), ("index", clib.c_uint8)]
 
 
-class v4l2_ctrl_h264_slice_params(Struct):
+class v4l2_ctrl_h264_slice_params(clib.Structure):
     pass
 
 
 v4l2_ctrl_h264_slice_params._fields_ = [
-    ("header_bit_size", cuint),
-    ("first_mb_in_slice", cuint),
-    ("slice_type", u8),
-    ("colour_plane_id", u8),
-    ("redundant_pic_cnt", u8),
-    ("cabac_init_idc", u8),
-    ("slice_qp_delta", cchar),
-    ("slice_qs_delta", cchar),
-    ("disable_deblocking_filter_idc", u8),
-    ("slice_alpha_c0_offset_div2", cchar),
-    ("slice_beta_offset_div2", cchar),
-    ("num_ref_idx_l0_active_minus1", u8),
-    ("num_ref_idx_l1_active_minus1", u8),
-    ("reserved", u8),
+    ("header_bit_size", clib.c_uint),
+    ("first_mb_in_slice", clib.c_uint),
+    ("slice_type", clib.c_uint8),
+    ("colour_plane_id", clib.c_uint8),
+    ("redundant_pic_cnt", clib.c_uint8),
+    ("cabac_init_idc", clib.c_uint8),
+    ("slice_qp_delta", clib.c_char),
+    ("slice_qs_delta", clib.c_char),
+    ("disable_deblocking_filter_idc", clib.c_uint8),
+    ("slice_alpha_c0_offset_div2", clib.c_char),
+    ("slice_beta_offset_div2", clib.c_char),
+    ("num_ref_idx_l0_active_minus1", clib.c_uint8),
+    ("num_ref_idx_l1_active_minus1", clib.c_uint8),
+    ("reserved", clib.c_uint8),
     ("ref_pic_list0", v4l2_h264_reference * 32),
     ("ref_pic_list1", v4l2_h264_reference * 32),
-    ("flags", cuint),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_h264_dpb_entry(Struct):
+class v4l2_h264_dpb_entry(clib.Structure):
     pass
 
 
 v4l2_h264_dpb_entry._fields_ = [
-    ("reference_ts", culonglong),
-    ("pic_num", cuint),
-    ("frame_num", u16),
-    ("fields", u8),
-    ("reserved", cchar * 5),
-    ("top_field_order_cnt", cint),
-    ("bottom_field_order_cnt", cint),
-    ("flags", cuint),
+    ("reference_ts", clib.c_ulonglong),
+    ("pic_num", clib.c_uint),
+    ("frame_num", clib.c_uint16),
+    ("fields", clib.c_uint8),
+    ("reserved", clib.c_char * 5),
+    ("top_field_order_cnt", clib.c_int),
+    ("bottom_field_order_cnt", clib.c_int),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_ctrl_h264_decode_params(Struct):
+class v4l2_ctrl_h264_decode_params(clib.Structure):
     pass
 
 
 v4l2_ctrl_h264_decode_params._fields_ = [
     ("dpb", v4l2_h264_dpb_entry * 16),
-    ("nal_ref_idc", u16),
-    ("frame_num", u16),
-    ("top_field_order_cnt", cint),
-    ("bottom_field_order_cnt", cint),
-    ("idr_pic_id", u16),
-    ("pic_order_cnt_lsb", u16),
-    ("delta_pic_order_cnt_bottom", cint),
-    ("delta_pic_order_cnt0", cint),
-    ("delta_pic_order_cnt1", cint),
-    ("dec_ref_pic_marking_bit_size", cuint),
-    ("pic_order_cnt_bit_size", cuint),
-    ("slice_group_change_cycle", cuint),
-    ("reserved", cuint),
-    ("flags", cuint),
+    ("nal_ref_idc", clib.c_uint16),
+    ("frame_num", clib.c_uint16),
+    ("top_field_order_cnt", clib.c_int),
+    ("bottom_field_order_cnt", clib.c_int),
+    ("idr_pic_id", clib.c_uint16),
+    ("pic_order_cnt_lsb", clib.c_uint16),
+    ("delta_pic_order_cnt_bottom", clib.c_int),
+    ("delta_pic_order_cnt0", clib.c_int),
+    ("delta_pic_order_cnt1", clib.c_int),
+    ("dec_ref_pic_marking_bit_size", clib.c_uint),
+    ("pic_order_cnt_bit_size", clib.c_uint),
+    ("slice_group_change_cycle", clib.c_uint),
+    ("reserved", clib.c_uint),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_ctrl_fwht_params(Struct):
+class v4l2_ctrl_fwht_params(clib.Structure):
     pass
 
 
 v4l2_ctrl_fwht_params._fields_ = [
-    ("backward_ref_ts", culonglong),
-    ("version", cuint),
-    ("width", cuint),
-    ("height", cuint),
-    ("flags", cuint),
-    ("colorspace", cuint),
-    ("xfer_func", cuint),
-    ("ycbcr_enc", cuint),
-    ("quantization", cuint),
+    ("backward_ref_ts", clib.c_ulonglong),
+    ("version", clib.c_uint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("colorspace", clib.c_uint),
+    ("xfer_func", clib.c_uint),
+    ("ycbcr_enc", clib.c_uint),
+    ("quantization", clib.c_uint),
 ]
 
 
-class v4l2_vp8_segment(Struct):
+class v4l2_vp8_segment(clib.Structure):
     pass
 
 
 v4l2_vp8_segment._fields_ = [
-    ("quant_update", cchar * 4),
-    ("lf_update", cchar * 4),
-    ("segment_probs", cchar * 3),
-    ("padding", u8),
-    ("flags", cuint),
+    ("quant_update", clib.c_char * 4),
+    ("lf_update", clib.c_char * 4),
+    ("segment_probs", clib.c_char * 3),
+    ("padding", clib.c_uint8),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_vp8_loop_filter(Struct):
+class v4l2_vp8_loop_filter(clib.Structure):
     pass
 
 
 v4l2_vp8_loop_filter._fields_ = [
-    ("ref_frm_delta", cchar * 4),
-    ("mb_mode_delta", cchar * 4),
-    ("sharpness_level", u8),
-    ("level", u8),
-    ("padding", u16),
-    ("flags", cuint),
+    ("ref_frm_delta", clib.c_char * 4),
+    ("mb_mode_delta", clib.c_char * 4),
+    ("sharpness_level", clib.c_uint8),
+    ("level", clib.c_uint8),
+    ("padding", clib.c_uint16),
+    ("flags", clib.c_uint),
 ]
 
 
-class v4l2_vp8_quantization(Struct):
+class v4l2_vp8_quantization(clib.Structure):
     pass
 
 
 v4l2_vp8_quantization._fields_ = [
-    ("y_ac_qi", u8),
-    ("y_dc_delta", cchar),
-    ("y2_dc_delta", cchar),
-    ("y2_ac_delta", cchar),
-    ("uv_dc_delta", cchar),
-    ("uv_ac_delta", cchar),
-    ("padding", u16),
+    ("y_ac_qi", clib.c_uint8),
+    ("y_dc_delta", clib.c_char),
+    ("y2_dc_delta", clib.c_char),
+    ("y2_ac_delta", clib.c_char),
+    ("uv_dc_delta", clib.c_char),
+    ("uv_ac_delta", clib.c_char),
+    ("padding", clib.c_uint16),
 ]
 
 
-class v4l2_vp8_entropy(Struct):
+class v4l2_vp8_entropy(clib.Structure):
     _pack_ = True
 
 
 v4l2_vp8_entropy._fields_ = [
-    ("coeff_probs", cchar * 11 * 3 * 8 * 4),
-    ("y_mode_probs", cchar * 4),
-    ("uv_mode_probs", cchar * 3),
-    ("mv_probs", cchar * 19 * 2),
-    ("padding", cchar * 3),
+    ("coeff_probs", clib.c_char * 11 * 3 * 8 * 4),
+    ("y_mode_probs", clib.c_char * 4),
+    ("uv_mode_probs", clib.c_char * 3),
+    ("mv_probs", clib.c_char * 19 * 2),
+    ("padding", clib.c_char * 3),
 ]
 
 
-class v4l2_vp8_entropy_coder_state(Struct):
+class v4l2_vp8_entropy_coder_state(clib.Structure):
     _pack_ = True
 
 
-v4l2_vp8_entropy_coder_state._fields_ = [("range", u8), ("value", u8), ("bit_count", u8), ("padding", u8)]
+v4l2_vp8_entropy_coder_state._fields_ = [("range", clib.c_uint8), ("value", clib.c_uint8), ("bit_count", clib.c_uint8), ("padding", clib.c_uint8)]
 
 
-class v4l2_ctrl_vp8_frame(Struct):
+class v4l2_ctrl_vp8_frame(clib.Structure):
     pass
 
 
@@ -2238,295 +2239,295 @@ v4l2_ctrl_vp8_frame._fields_ = [
     ("quant", v4l2_vp8_quantization),
     ("entropy", v4l2_vp8_entropy),
     ("coder_state", v4l2_vp8_entropy_coder_state),
-    ("width", u16),
-    ("height", u16),
-    ("horizontal_scale", u8),
-    ("vertical_scale", u8),
-    ("version", u8),
-    ("prob_skip_false", u8),
-    ("prob_intra", u8),
-    ("prob_last", u8),
-    ("prob_gf", u8),
-    ("num_dct_parts", u8),
-    ("first_part_size", cuint),
-    ("first_part_header_bits", cuint),
-    ("dct_part_sizes", cuint * 8),
-    ("last_frame_ts", culonglong),
-    ("golden_frame_ts", culonglong),
-    ("alt_frame_ts", culonglong),
-    ("flags", culonglong),
+    ("width", clib.c_uint16),
+    ("height", clib.c_uint16),
+    ("horizontal_scale", clib.c_uint8),
+    ("vertical_scale", clib.c_uint8),
+    ("version", clib.c_uint8),
+    ("prob_skip_false", clib.c_uint8),
+    ("prob_intra", clib.c_uint8),
+    ("prob_last", clib.c_uint8),
+    ("prob_gf", clib.c_uint8),
+    ("num_dct_parts", clib.c_uint8),
+    ("first_part_size", clib.c_uint),
+    ("first_part_header_bits", clib.c_uint),
+    ("dct_part_sizes", clib.c_uint * 8),
+    ("last_frame_ts", clib.c_ulonglong),
+    ("golden_frame_ts", clib.c_ulonglong),
+    ("alt_frame_ts", clib.c_ulonglong),
+    ("flags", clib.c_ulonglong),
 ]
 
 
-class v4l2_ctrl_mpeg2_sequence(Struct):
+class v4l2_ctrl_mpeg2_sequence(clib.Structure):
     pass
 
 
 v4l2_ctrl_mpeg2_sequence._fields_ = [
-    ("horizontal_size", u16),
-    ("vertical_size", u16),
-    ("vbv_buffer_size", cuint),
-    ("profile_and_level_indication", u16),
-    ("chroma_format", u8),
-    ("flags", u8),
+    ("horizontal_size", clib.c_uint16),
+    ("vertical_size", clib.c_uint16),
+    ("vbv_buffer_size", clib.c_uint),
+    ("profile_and_level_indication", clib.c_uint16),
+    ("chroma_format", clib.c_uint8),
+    ("flags", clib.c_uint8),
 ]
 
 
-class v4l2_ctrl_mpeg2_picture(Struct):
+class v4l2_ctrl_mpeg2_picture(clib.Structure):
     pass
 
 
 v4l2_ctrl_mpeg2_picture._fields_ = [
-    ("backward_ref_ts", culonglong),
-    ("forward_ref_ts", culonglong),
-    ("flags", cuint),
-    ("f_code", cchar * 2 * 2),
-    ("picture_coding_type", u8),
-    ("picture_structure", u8),
-    ("intra_dc_precision", u8),
-    ("reserved", cchar * 5),
+    ("backward_ref_ts", clib.c_ulonglong),
+    ("forward_ref_ts", clib.c_ulonglong),
+    ("flags", clib.c_uint),
+    ("f_code", clib.c_char * 2 * 2),
+    ("picture_coding_type", clib.c_uint8),
+    ("picture_clib.Structureure", clib.c_uint8),
+    ("intra_dc_precision", clib.c_uint8),
+    ("reserved", clib.c_char * 5),
 ]
 
 
-class v4l2_ctrl_mpeg2_quantisation(Struct):
+class v4l2_ctrl_mpeg2_quantisation(clib.Structure):
     _pack_ = True
 
 
 v4l2_ctrl_mpeg2_quantisation._fields_ = [
-    ("intra_quantiser_matrix", cchar * 64),
-    ("non_intra_quantiser_matrix", cchar * 64),
-    ("chroma_intra_quantiser_matrix", cchar * 64),
-    ("chroma_non_intra_quantiser_matrix", cchar * 64),
+    ("intra_quantiser_matrix", clib.c_char * 64),
+    ("non_intra_quantiser_matrix", clib.c_char * 64),
+    ("chroma_intra_quantiser_matrix", clib.c_char * 64),
+    ("chroma_non_intra_quantiser_matrix", clib.c_char * 64),
 ]
 
 
-class v4l2_ctrl_hevc_sps(Struct):
+class v4l2_ctrl_hevc_sps(clib.Structure):
     pass
 
 
 v4l2_ctrl_hevc_sps._fields_ = [
-    ("video_parameter_set_id", u8),
-    ("seq_parameter_set_id", u8),
-    ("pic_width_in_luma_samples", u16),
-    ("pic_height_in_luma_samples", u16),
-    ("bit_depth_luma_minus8", u8),
-    ("bit_depth_chroma_minus8", u8),
-    ("log2_max_pic_order_cnt_lsb_minus4", u8),
-    ("sps_max_dec_pic_buffering_minus1", u8),
-    ("sps_max_num_reorder_pics", u8),
-    ("sps_max_latency_increase_plus1", u8),
-    ("log2_min_luma_coding_block_size_minus3", u8),
-    ("log2_diff_max_min_luma_coding_block_size", u8),
-    ("log2_min_luma_transform_block_size_minus2", u8),
-    ("log2_diff_max_min_luma_transform_block_size", u8),
-    ("max_transform_hierarchy_depth_inter", u8),
-    ("max_transform_hierarchy_depth_intra", u8),
-    ("pcm_sample_bit_depth_luma_minus1", u8),
-    ("pcm_sample_bit_depth_chroma_minus1", u8),
-    ("log2_min_pcm_luma_coding_block_size_minus3", u8),
-    ("log2_diff_max_min_pcm_luma_coding_block_size", u8),
-    ("num_short_term_ref_pic_sets", u8),
-    ("num_long_term_ref_pics_sps", u8),
-    ("chroma_format_idc", u8),
-    ("sps_max_sub_layers_minus1", u8),
-    ("reserved", cchar * 6),
-    ("flags", culonglong),
+    ("video_parameter_set_id", clib.c_uint8),
+    ("seq_parameter_set_id", clib.c_uint8),
+    ("pic_width_in_luma_samples", clib.c_uint16),
+    ("pic_height_in_luma_samples", clib.c_uint16),
+    ("bit_depth_luma_minus8", clib.c_uint8),
+    ("bit_depth_chroma_minus8", clib.c_uint8),
+    ("log2_max_pic_order_cnt_lsb_minus4", clib.c_uint8),
+    ("sps_max_dec_pic_buffering_minus1", clib.c_uint8),
+    ("sps_max_num_reorder_pics", clib.c_uint8),
+    ("sps_max_latency_increase_plus1", clib.c_uint8),
+    ("log2_min_luma_coding_block_size_minus3", clib.c_uint8),
+    ("log2_diff_max_min_luma_coding_block_size", clib.c_uint8),
+    ("log2_min_luma_transform_block_size_minus2", clib.c_uint8),
+    ("log2_diff_max_min_luma_transform_block_size", clib.c_uint8),
+    ("max_transform_hierarchy_depth_inter", clib.c_uint8),
+    ("max_transform_hierarchy_depth_intra", clib.c_uint8),
+    ("pcm_sample_bit_depth_luma_minus1", clib.c_uint8),
+    ("pcm_sample_bit_depth_chroma_minus1", clib.c_uint8),
+    ("log2_min_pcm_luma_coding_block_size_minus3", clib.c_uint8),
+    ("log2_diff_max_min_pcm_luma_coding_block_size", clib.c_uint8),
+    ("num_short_term_ref_pic_sets", clib.c_uint8),
+    ("num_long_term_ref_pics_sps", clib.c_uint8),
+    ("chroma_format_idc", clib.c_uint8),
+    ("sps_max_sub_layers_minus1", clib.c_uint8),
+    ("reserved", clib.c_char * 6),
+    ("flags", clib.c_ulonglong),
 ]
 
 
-class v4l2_ctrl_hevc_pps(Struct):
+class v4l2_ctrl_hevc_pps(clib.Structure):
     pass
 
 
 v4l2_ctrl_hevc_pps._fields_ = [
-    ("pic_parameter_set_id", u8),
-    ("num_extra_slice_header_bits", u8),
-    ("num_ref_idx_l0_default_active_minus1", u8),
-    ("num_ref_idx_l1_default_active_minus1", u8),
-    ("init_qp_minus26", cchar),
-    ("diff_cu_qp_delta_depth", u8),
-    ("pps_cb_qp_offset", cchar),
-    ("pps_cr_qp_offset", cchar),
-    ("num_tile_columns_minus1", u8),
-    ("num_tile_rows_minus1", u8),
-    ("column_width_minus1", cchar * 20),
-    ("row_height_minus1", cchar * 22),
-    ("pps_beta_offset_div2", cchar),
-    ("pps_tc_offset_div2", cchar),
-    ("log2_parallel_merge_level_minus2", u8),
-    ("reserved", u8),
-    ("flags", culonglong),
+    ("pic_parameter_set_id", clib.c_uint8),
+    ("num_extra_slice_header_bits", clib.c_uint8),
+    ("num_ref_idx_l0_default_active_minus1", clib.c_uint8),
+    ("num_ref_idx_l1_default_active_minus1", clib.c_uint8),
+    ("init_qp_minus26", clib.c_char),
+    ("diff_cu_qp_delta_depth", clib.c_uint8),
+    ("pps_cb_qp_offset", clib.c_char),
+    ("pps_cr_qp_offset", clib.c_char),
+    ("num_tile_columns_minus1", clib.c_uint8),
+    ("num_tile_rows_minus1", clib.c_uint8),
+    ("column_width_minus1", clib.c_char * 20),
+    ("row_height_minus1", clib.c_char * 22),
+    ("pps_beta_offset_div2", clib.c_char),
+    ("pps_tc_offset_div2", clib.c_char),
+    ("log2_parallel_merge_level_minus2", clib.c_uint8),
+    ("reserved", clib.c_uint8),
+    ("flags", clib.c_ulonglong),
 ]
 
 
-class v4l2_hevc_dpb_entry(Struct):
+class v4l2_hevc_dpb_entry(clib.Structure):
     pass
 
 
 v4l2_hevc_dpb_entry._fields_ = [
-    ("timestamp", culonglong),
-    ("flags", u8),
-    ("field_pic", u8),
-    ("reserved", u16),
-    ("pic_order_cnt_val", cint),
+    ("timestamp", clib.c_ulonglong),
+    ("flags", clib.c_uint8),
+    ("field_pic", clib.c_uint8),
+    ("reserved", clib.c_uint16),
+    ("pic_order_cnt_val", clib.c_int),
 ]
 
 
-class v4l2_hevc_pred_weight_table(Struct):
+class v4l2_hevc_pred_weight_table(clib.Structure):
     _pack_ = True
 
 
 v4l2_hevc_pred_weight_table._fields_ = [
-    ("delta_luma_weight_l0", cchar * 16),
-    ("luma_offset_l0", cchar * 16),
-    ("delta_chroma_weight_l0", cchar * 2 * 16),
-    ("chroma_offset_l0", cchar * 2 * 16),
-    ("delta_luma_weight_l1", cchar * 16),
-    ("luma_offset_l1", cchar * 16),
-    ("delta_chroma_weight_l1", cchar * 2 * 16),
-    ("chroma_offset_l1", cchar * 2 * 16),
-    ("luma_log2_weight_denom", u8),
-    ("delta_chroma_log2_weight_denom", cchar),
+    ("delta_luma_weight_l0", clib.c_char * 16),
+    ("luma_offset_l0", clib.c_char * 16),
+    ("delta_chroma_weight_l0", clib.c_char * 2 * 16),
+    ("chroma_offset_l0", clib.c_char * 2 * 16),
+    ("delta_luma_weight_l1", clib.c_char * 16),
+    ("luma_offset_l1", clib.c_char * 16),
+    ("delta_chroma_weight_l1", clib.c_char * 2 * 16),
+    ("chroma_offset_l1", clib.c_char * 2 * 16),
+    ("luma_log2_weight_denom", clib.c_uint8),
+    ("delta_chroma_log2_weight_denom", clib.c_char),
 ]
 
 
-class v4l2_ctrl_hevc_slice_params(Struct):
+class v4l2_ctrl_hevc_slice_params(clib.Structure):
     pass
 
 
 v4l2_ctrl_hevc_slice_params._fields_ = [
-    ("bit_size", cuint),
-    ("data_byte_offset", cuint),
-    ("num_entry_point_offsets", cuint),
-    ("nal_unit_type", u8),
-    ("nuh_temporal_id_plus1", u8),
-    ("slice_type", u8),
-    ("colour_plane_id", u8),
-    ("slice_pic_order_cnt", cint),
-    ("num_ref_idx_l0_active_minus1", u8),
-    ("num_ref_idx_l1_active_minus1", u8),
-    ("collocated_ref_idx", u8),
-    ("five_minus_max_num_merge_cand", u8),
-    ("slice_qp_delta", cchar),
-    ("slice_cb_qp_offset", cchar),
-    ("slice_cr_qp_offset", cchar),
-    ("slice_act_y_qp_offset", cchar),
-    ("slice_act_cb_qp_offset", cchar),
-    ("slice_act_cr_qp_offset", cchar),
-    ("slice_beta_offset_div2", cchar),
-    ("slice_tc_offset_div2", cchar),
-    ("pic_struct", u8),
-    ("reserved0", cchar * 3),
-    ("slice_segment_addr", cuint),
-    ("ref_idx_l0", cchar * 16),
-    ("ref_idx_l1", cchar * 16),
-    ("short_term_ref_pic_set_size", u16),
-    ("long_term_ref_pic_set_size", u16),
+    ("bit_size", clib.c_uint),
+    ("data_byte_offset", clib.c_uint),
+    ("num_entry_point_offsets", clib.c_uint),
+    ("nal_unit_type", clib.c_uint8),
+    ("nuh_temporal_id_plus1", clib.c_uint8),
+    ("slice_type", clib.c_uint8),
+    ("colour_plane_id", clib.c_uint8),
+    ("slice_pic_order_cnt", clib.c_int),
+    ("num_ref_idx_l0_active_minus1", clib.c_uint8),
+    ("num_ref_idx_l1_active_minus1", clib.c_uint8),
+    ("collocated_ref_idx", clib.c_uint8),
+    ("five_minus_max_num_merge_cand", clib.c_uint8),
+    ("slice_qp_delta", clib.c_char),
+    ("slice_cb_qp_offset", clib.c_char),
+    ("slice_cr_qp_offset", clib.c_char),
+    ("slice_act_y_qp_offset", clib.c_char),
+    ("slice_act_cb_qp_offset", clib.c_char),
+    ("slice_act_cr_qp_offset", clib.c_char),
+    ("slice_beta_offset_div2", clib.c_char),
+    ("slice_tc_offset_div2", clib.c_char),
+    ("pic_clib.Structure", clib.c_uint8),
+    ("reserved0", clib.c_char * 3),
+    ("slice_segment_addr", clib.c_uint),
+    ("ref_idx_l0", clib.c_char * 16),
+    ("ref_idx_l1", clib.c_char * 16),
+    ("short_term_ref_pic_set_size", clib.c_uint16),
+    ("long_term_ref_pic_set_size", clib.c_uint16),
     ("pred_weight_table", v4l2_hevc_pred_weight_table),
-    ("reserved1", cchar * 2),
-    ("flags", culonglong),
+    ("reserved1", clib.c_char * 2),
+    ("flags", clib.c_ulonglong),
 ]
 
 
-class v4l2_ctrl_hevc_decode_params(Struct):
+class v4l2_ctrl_hevc_decode_params(clib.Structure):
     pass
 
 
 v4l2_ctrl_hevc_decode_params._fields_ = [
-    ("pic_order_cnt_val", cint),
-    ("short_term_ref_pic_set_size", u16),
-    ("long_term_ref_pic_set_size", u16),
-    ("num_active_dpb_entries", u8),
-    ("num_poc_st_curr_before", u8),
-    ("num_poc_st_curr_after", u8),
-    ("num_poc_lt_curr", u8),
-    ("poc_st_curr_before", cchar * 16),
-    ("poc_st_curr_after", cchar * 16),
-    ("poc_lt_curr", cchar * 16),
-    ("num_delta_pocs_of_ref_rps_idx", u8),
-    ("reserved", cchar * 3),
+    ("pic_order_cnt_val", clib.c_int),
+    ("short_term_ref_pic_set_size", clib.c_uint16),
+    ("long_term_ref_pic_set_size", clib.c_uint16),
+    ("num_active_dpb_entries", clib.c_uint8),
+    ("num_poc_st_curr_before", clib.c_uint8),
+    ("num_poc_st_curr_after", clib.c_uint8),
+    ("num_poc_lt_curr", clib.c_uint8),
+    ("poc_st_curr_before", clib.c_char * 16),
+    ("poc_st_curr_after", clib.c_char * 16),
+    ("poc_lt_curr", clib.c_char * 16),
+    ("num_delta_pocs_of_ref_rps_idx", clib.c_uint8),
+    ("reserved", clib.c_char * 3),
     ("dpb", v4l2_hevc_dpb_entry * 16),
-    ("flags", culonglong),
+    ("flags", clib.c_ulonglong),
 ]
 
 
-class v4l2_ctrl_hevc_scaling_matrix(Struct):
+class v4l2_ctrl_hevc_scaling_matrix(clib.Structure):
     _pack_ = True
 
 
 v4l2_ctrl_hevc_scaling_matrix._fields_ = [
-    ("scaling_list_4x4", cchar * 16 * 6),
-    ("scaling_list_8x8", cchar * 64 * 6),
-    ("scaling_list_16x16", cchar * 64 * 6),
-    ("scaling_list_32x32", cchar * 64 * 2),
-    ("scaling_list_dc_coef_16x16", cchar * 6),
-    ("scaling_list_dc_coef_32x32", cchar * 2),
+    ("scaling_list_4x4", clib.c_char * 16 * 6),
+    ("scaling_list_8x8", clib.c_char * 64 * 6),
+    ("scaling_list_16x16", clib.c_char * 64 * 6),
+    ("scaling_list_32x32", clib.c_char * 64 * 2),
+    ("scaling_list_dc_coef_16x16", clib.c_char * 6),
+    ("scaling_list_dc_coef_32x32", clib.c_char * 2),
 ]
 
 
-class v4l2_ctrl_hdr10_cll_info(Struct):
+class v4l2_ctrl_hdr10_cll_info(clib.Structure):
     pass
 
 
-v4l2_ctrl_hdr10_cll_info._fields_ = [("max_content_light_level", u16), ("max_pic_average_light_level", u16)]
+v4l2_ctrl_hdr10_cll_info._fields_ = [("max_content_light_level", clib.c_uint16), ("max_pic_average_light_level", clib.c_uint16)]
 
 
-class v4l2_ctrl_hdr10_mastering_display(Struct):
+class v4l2_ctrl_hdr10_mastering_display(clib.Structure):
     pass
 
 
 v4l2_ctrl_hdr10_mastering_display._fields_ = [
-    ("display_primaries_x", u16 * 3),
-    ("display_primaries_y", u16 * 3),
-    ("white_point_x", u16),
-    ("white_point_y", u16),
-    ("max_display_mastering_luminance", cuint),
-    ("min_display_mastering_luminance", cuint),
+    ("display_primaries_x", clib.c_uint16 * 3),
+    ("display_primaries_y", clib.c_uint16 * 3),
+    ("white_point_x", clib.c_uint16),
+    ("white_point_y", clib.c_uint16),
+    ("max_display_mastering_luminance", clib.c_uint),
+    ("min_display_mastering_luminance", clib.c_uint),
 ]
 
 
-class v4l2_vp9_loop_filter(Struct):
+class v4l2_vp9_loop_filter(clib.Structure):
     _pack_ = True
 
 
 v4l2_vp9_loop_filter._fields_ = [
-    ("ref_deltas", cchar * 4),
-    ("mode_deltas", cchar * 2),
-    ("level", u8),
-    ("sharpness", u8),
-    ("flags", u8),
-    ("reserved", cchar * 7),
+    ("ref_deltas", clib.c_char * 4),
+    ("mode_deltas", clib.c_char * 2),
+    ("level", clib.c_uint8),
+    ("sharpness", clib.c_uint8),
+    ("flags", clib.c_uint8),
+    ("reserved", clib.c_char * 7),
 ]
 
 
-class v4l2_vp9_quantization(Struct):
+class v4l2_vp9_quantization(clib.Structure):
     _pack_ = True
 
 
 v4l2_vp9_quantization._fields_ = [
-    ("base_q_idx", u8),
-    ("delta_q_y_dc", cchar),
-    ("delta_q_uv_dc", cchar),
-    ("delta_q_uv_ac", cchar),
-    ("reserved", cchar * 4),
+    ("base_q_idx", clib.c_uint8),
+    ("delta_q_y_dc", clib.c_char),
+    ("delta_q_uv_dc", clib.c_char),
+    ("delta_q_uv_ac", clib.c_char),
+    ("reserved", clib.c_char * 4),
 ]
 
 
-class v4l2_vp9_segmentation(Struct):
+class v4l2_vp9_segmentation(clib.Structure):
     pass
 
 
 v4l2_vp9_segmentation._fields_ = [
-    ("feature_data", i16 * 4 * 8),
-    ("feature_enabled", cchar * 8),
-    ("tree_probs", cchar * 7),
-    ("pred_probs", cchar * 3),
-    ("flags", u8),
-    ("reserved", cchar * 5),
+    ("feature_data", clib.c_int16 * 4 * 8),
+    ("feature_enabled", clib.c_char * 8),
+    ("tree_probs", clib.c_char * 7),
+    ("pred_probs", clib.c_char * 3),
+    ("flags", clib.c_uint8),
+    ("reserved", clib.c_char * 5),
 ]
 
 
-class v4l2_ctrl_vp9_frame(Struct):
+class v4l2_ctrl_vp9_frame(clib.Structure):
     pass
 
 
@@ -2534,369 +2535,369 @@ v4l2_ctrl_vp9_frame._fields_ = [
     ("lf", v4l2_vp9_loop_filter),
     ("quant", v4l2_vp9_quantization),
     ("seg", v4l2_vp9_segmentation),
-    ("flags", cuint),
-    ("compressed_header_size", u16),
-    ("uncompressed_header_size", u16),
-    ("frame_width_minus_1", u16),
-    ("frame_height_minus_1", u16),
-    ("render_width_minus_1", u16),
-    ("render_height_minus_1", u16),
-    ("last_frame_ts", culonglong),
-    ("golden_frame_ts", culonglong),
-    ("alt_frame_ts", culonglong),
-    ("ref_frame_sign_bias", u8),
-    ("reset_frame_context", u8),
-    ("frame_context_idx", u8),
-    ("profile", u8),
-    ("bit_depth", u8),
-    ("interpolation_filter", u8),
-    ("tile_cols_log2", u8),
-    ("tile_rows_log2", u8),
-    ("reference_mode", u8),
-    ("reserved", cchar * 7),
+    ("flags", clib.c_uint),
+    ("compressed_header_size", clib.c_uint16),
+    ("uncompressed_header_size", clib.c_uint16),
+    ("frame_width_minus_1", clib.c_uint16),
+    ("frame_height_minus_1", clib.c_uint16),
+    ("render_width_minus_1", clib.c_uint16),
+    ("render_height_minus_1", clib.c_uint16),
+    ("last_frame_ts", clib.c_ulonglong),
+    ("golden_frame_ts", clib.c_ulonglong),
+    ("alt_frame_ts", clib.c_ulonglong),
+    ("ref_frame_sign_bias", clib.c_uint8),
+    ("reset_frame_context", clib.c_uint8),
+    ("frame_context_idx", clib.c_uint8),
+    ("profile", clib.c_uint8),
+    ("bit_depth", clib.c_uint8),
+    ("interpolation_filter", clib.c_uint8),
+    ("tile_cols_log2", clib.c_uint8),
+    ("tile_rows_log2", clib.c_uint8),
+    ("reference_mode", clib.c_uint8),
+    ("reserved", clib.c_char * 7),
 ]
 
 
-class v4l2_vp9_mv_probs(Struct):
+class v4l2_vp9_mv_probs(clib.Structure):
     _pack_ = True
 
 
 v4l2_vp9_mv_probs._fields_ = [
-    ("joint", cchar * 3),
-    ("sign", cchar * 2),
-    ("classes", cchar * 10 * 2),
-    ("class0_bit", cchar * 2),
-    ("bits", cchar * 10 * 2),
-    ("class0_fr", cchar * 3 * 2 * 2),
-    ("fr", cchar * 3 * 2),
-    ("class0_hp", cchar * 2),
-    ("hp", cchar * 2),
+    ("joint", clib.c_char * 3),
+    ("sign", clib.c_char * 2),
+    ("classes", clib.c_char * 10 * 2),
+    ("class0_bit", clib.c_char * 2),
+    ("bits", clib.c_char * 10 * 2),
+    ("class0_fr", clib.c_char * 3 * 2 * 2),
+    ("fr", clib.c_char * 3 * 2),
+    ("class0_hp", clib.c_char * 2),
+    ("hp", clib.c_char * 2),
 ]
 
 
-class v4l2_ctrl_vp9_compressed_hdr(Struct):
+class v4l2_ctrl_vp9_compressed_hdr(clib.Structure):
     _pack_ = True
 
 
 v4l2_ctrl_vp9_compressed_hdr._fields_ = [
-    ("tx_mode", u8),
-    ("tx8", cchar * 1 * 2),
-    ("tx16", cchar * 2 * 2),
-    ("tx32", cchar * 3 * 2),
-    ("coef", cchar * 3 * 6 * 6 * 2 * 2 * 4),
-    ("skip", cchar * 3),
-    ("inter_mode", cchar * 3 * 7),
-    ("interp_filter", cchar * 2 * 4),
-    ("is_inter", cchar * 4),
-    ("comp_mode", cchar * 5),
-    ("single_ref", cchar * 2 * 5),
-    ("comp_ref", cchar * 5),
-    ("y_mode", cchar * 9 * 4),
-    ("uv_mode", cchar * 9 * 10),
-    ("partition", cchar * 3 * 16),
+    ("tx_mode", clib.c_uint8),
+    ("tx8", clib.c_char * 1 * 2),
+    ("tx16", clib.c_char * 2 * 2),
+    ("tx32", clib.c_char * 3 * 2),
+    ("coef", clib.c_char * 3 * 6 * 6 * 2 * 2 * 4),
+    ("skip", clib.c_char * 3),
+    ("inter_mode", clib.c_char * 3 * 7),
+    ("interp_filter", clib.c_char * 2 * 4),
+    ("is_inter", clib.c_char * 4),
+    ("comp_mode", clib.c_char * 5),
+    ("single_ref", clib.c_char * 2 * 5),
+    ("comp_ref", clib.c_char * 5),
+    ("y_mode", clib.c_char * 9 * 4),
+    ("uv_mode", clib.c_char * 9 * 10),
+    ("partition", clib.c_char * 3 * 16),
     ("mv", v4l2_vp9_mv_probs),
 ]
 
 
-class v4l2_ctrl_av1_sequence(Struct):
+class v4l2_ctrl_av1_sequence(clib.Structure):
     pass
 
 
 v4l2_ctrl_av1_sequence._fields_ = [
-    ("flags", cuint),
-    ("seq_profile", u8),
-    ("order_hint_bits", u8),
-    ("bit_depth", u8),
-    ("reserved", u8),
-    ("max_frame_width_minus_1", u16),
-    ("max_frame_height_minus_1", u16),
+    ("flags", clib.c_uint),
+    ("seq_profile", clib.c_uint8),
+    ("order_hint_bits", clib.c_uint8),
+    ("bit_depth", clib.c_uint8),
+    ("reserved", clib.c_uint8),
+    ("max_frame_width_minus_1", clib.c_uint16),
+    ("max_frame_height_minus_1", clib.c_uint16),
 ]
 
 
-class v4l2_ctrl_av1_tile_group_entry(Struct):
+class v4l2_ctrl_av1_tile_group_entry(clib.Structure):
     pass
 
 
 v4l2_ctrl_av1_tile_group_entry._fields_ = [
-    ("tile_offset", cuint),
-    ("tile_size", cuint),
-    ("tile_row", cuint),
-    ("tile_col", cuint),
+    ("tile_offset", clib.c_uint),
+    ("tile_size", clib.c_uint),
+    ("tile_row", clib.c_uint),
+    ("tile_col", clib.c_uint),
 ]
 
 
-class v4l2_av1_global_motion(Struct):
+class v4l2_av1_global_motion(clib.Structure):
     pass
 
 
 v4l2_av1_global_motion._fields_ = [
-    ("flags", cchar * 8),
-    ("type", cuint * 8),
-    ("params", cint * 6 * 8),
-    ("invalid", u8),
-    ("reserved", cchar * 3),
+    ("flags", clib.c_char * 8),
+    ("type", clib.c_uint * 8),
+    ("params", clib.c_int * 6 * 8),
+    ("invalid", clib.c_uint8),
+    ("reserved", clib.c_char * 3),
 ]
 
 
-class v4l2_av1_loop_restoration(Struct):
+class v4l2_av1_loop_restoration(clib.Structure):
     pass
 
 
 v4l2_av1_loop_restoration._fields_ = [
-    ("flags", u8),
-    ("lr_unit_shift", u8),
-    ("lr_uv_shift", u8),
-    ("reserved", u8),
-    ("frame_restoration_type", cuint * 3),
-    ("loop_restoration_size", cuint * 3),
+    ("flags", clib.c_uint8),
+    ("lr_unit_shift", clib.c_uint8),
+    ("lr_uv_shift", clib.c_uint8),
+    ("reserved", clib.c_uint8),
+    ("frame_restoration_type", clib.c_uint * 3),
+    ("loop_restoration_size", clib.c_uint * 3),
 ]
 
 
-class v4l2_av1_cdef(Struct):
+class v4l2_av1_cdef(clib.Structure):
     _pack_ = True
 
 
 v4l2_av1_cdef._fields_ = [
-    ("damping_minus_3", u8),
-    ("bits", u8),
-    ("y_pri_strength", cchar * 8),
-    ("y_sec_strength", cchar * 8),
-    ("uv_pri_strength", cchar * 8),
-    ("uv_sec_strength", cchar * 8),
+    ("damping_minus_3", clib.c_uint8),
+    ("bits", clib.c_uint8),
+    ("y_pri_strength", clib.c_char * 8),
+    ("y_sec_strength", clib.c_char * 8),
+    ("uv_pri_strength", clib.c_char * 8),
+    ("uv_sec_strength", clib.c_char * 8),
 ]
 
 
-class v4l2_av1_segmentation(Struct):
+class v4l2_av1_segmentation(clib.Structure):
     pass
 
 
 v4l2_av1_segmentation._fields_ = [
-    ("flags", u8),
-    ("last_active_seg_id", u8),
-    ("feature_enabled", cchar * 8),
-    ("feature_data", i16 * 8 * 8),
+    ("flags", clib.c_uint8),
+    ("last_active_seg_id", clib.c_uint8),
+    ("feature_enabled", clib.c_char * 8),
+    ("feature_data", clib.c_int16 * 8 * 8),
 ]
 
 
-class v4l2_av1_loop_filter(Struct):
+class v4l2_av1_loop_filter(clib.Structure):
     _pack_ = True
 
 
 v4l2_av1_loop_filter._fields_ = [
-    ("flags", u8),
-    ("level", cchar * 4),
-    ("sharpness", u8),
-    ("ref_deltas", cchar * 8),
-    ("mode_deltas", cchar * 2),
-    ("delta_lf_res", u8),
+    ("flags", clib.c_uint8),
+    ("level", clib.c_char * 4),
+    ("sharpness", clib.c_uint8),
+    ("ref_deltas", clib.c_char * 8),
+    ("mode_deltas", clib.c_char * 2),
+    ("delta_lf_res", clib.c_uint8),
 ]
 
 
-class v4l2_av1_quantization(Struct):
+class v4l2_av1_quantization(clib.Structure):
     _pack_ = True
 
 
 v4l2_av1_quantization._fields_ = [
-    ("flags", u8),
-    ("base_q_idx", u8),
-    ("delta_q_y_dc", cchar),
-    ("delta_q_u_dc", cchar),
-    ("delta_q_u_ac", cchar),
-    ("delta_q_v_dc", cchar),
-    ("delta_q_v_ac", cchar),
-    ("qm_y", u8),
-    ("qm_u", u8),
-    ("qm_v", u8),
-    ("delta_q_res", u8),
+    ("flags", clib.c_uint8),
+    ("base_q_idx", clib.c_uint8),
+    ("delta_q_y_dc", clib.c_char),
+    ("delta_q_u_dc", clib.c_char),
+    ("delta_q_u_ac", clib.c_char),
+    ("delta_q_v_dc", clib.c_char),
+    ("delta_q_v_ac", clib.c_char),
+    ("qm_y", clib.c_uint8),
+    ("qm_u", clib.c_uint8),
+    ("qm_v", clib.c_uint8),
+    ("delta_q_res", clib.c_uint8),
 ]
 
 
-class v4l2_av1_tile_info(Struct):
+class v4l2_av1_tile_info(clib.Structure):
     pass
 
 
 v4l2_av1_tile_info._fields_ = [
-    ("flags", u8),
-    ("context_update_tile_id", u8),
-    ("tile_cols", u8),
-    ("tile_rows", u8),
-    ("mi_col_starts", cuint * 65),
-    ("mi_row_starts", cuint * 65),
-    ("width_in_sbs_minus_1", cuint * 64),
-    ("height_in_sbs_minus_1", cuint * 64),
-    ("tile_size_bytes", u8),
-    ("reserved", cchar * 3),
+    ("flags", clib.c_uint8),
+    ("context_update_tile_id", clib.c_uint8),
+    ("tile_cols", clib.c_uint8),
+    ("tile_rows", clib.c_uint8),
+    ("mi_col_starts", clib.c_uint * 65),
+    ("mi_row_starts", clib.c_uint * 65),
+    ("width_in_sbs_minus_1", clib.c_uint * 64),
+    ("height_in_sbs_minus_1", clib.c_uint * 64),
+    ("tile_size_bytes", clib.c_uint8),
+    ("reserved", clib.c_char * 3),
 ]
 
 
-class v4l2_ctrl_av1_frame(Struct):
+class v4l2_ctrl_av1_frame(clib.Structure):
     pass
 
 
 v4l2_ctrl_av1_frame._fields_ = [
     ("tile_info", v4l2_av1_tile_info),
     ("quantization", v4l2_av1_quantization),
-    ("superres_denom", u8),
+    ("superres_denom", clib.c_uint8),
     ("segmentation", v4l2_av1_segmentation),
     ("loop_filter", v4l2_av1_loop_filter),
     ("cdef", v4l2_av1_cdef),
-    ("skip_mode_frame", cchar * 2),
-    ("primary_ref_frame", u8),
+    ("skip_mode_frame", clib.c_char * 2),
+    ("primary_ref_frame", clib.c_uint8),
     ("loop_restoration", v4l2_av1_loop_restoration),
     ("global_motion", v4l2_av1_global_motion),
-    ("flags", cuint),
-    ("frame_type", cuint),
-    ("order_hint", cuint),
-    ("upscaled_width", cuint),
-    ("interpolation_filter", cuint),
-    ("tx_mode", cuint),
-    ("frame_width_minus_1", cuint),
-    ("frame_height_minus_1", cuint),
-    ("render_width_minus_1", u16),
-    ("render_height_minus_1", u16),
-    ("current_frame_id", cuint),
-    ("buffer_removal_time", cuint * 32),
-    ("reserved", cchar * 4),
-    ("order_hints", cuint * 8),
-    ("reference_frame_ts", culonglong * 8),
-    ("ref_frame_idx", cchar * 7),
-    ("refresh_frame_flags", u8),
+    ("flags", clib.c_uint),
+    ("frame_type", clib.c_uint),
+    ("order_hint", clib.c_uint),
+    ("upscaled_width", clib.c_uint),
+    ("interpolation_filter", clib.c_uint),
+    ("tx_mode", clib.c_uint),
+    ("frame_width_minus_1", clib.c_uint),
+    ("frame_height_minus_1", clib.c_uint),
+    ("render_width_minus_1", clib.c_uint16),
+    ("render_height_minus_1", clib.c_uint16),
+    ("current_frame_id", clib.c_uint),
+    ("buffer_removal_time", clib.c_uint * 32),
+    ("reserved", clib.c_char * 4),
+    ("order_hints", clib.c_uint * 8),
+    ("reference_frame_ts", clib.c_ulonglong * 8),
+    ("ref_frame_idx", clib.c_char * 7),
+    ("refresh_frame_flags", clib.c_uint8),
 ]
 
 
-class v4l2_ctrl_av1_film_grain(Struct):
+class v4l2_ctrl_av1_film_grain(clib.Structure):
     pass
 
 
 v4l2_ctrl_av1_film_grain._fields_ = [
-    ("flags", u8),
-    ("cr_mult", u8),
-    ("grain_seed", u16),
-    ("film_grain_params_ref_idx", u8),
-    ("num_y_points", u8),
-    ("point_y_value", cchar * 16),
-    ("point_y_scaling", cchar * 16),
-    ("num_cb_points", u8),
-    ("point_cb_value", cchar * 16),
-    ("point_cb_scaling", cchar * 16),
-    ("num_cr_points", u8),
-    ("point_cr_value", cchar * 16),
-    ("point_cr_scaling", cchar * 16),
-    ("grain_scaling_minus_8", u8),
-    ("ar_coeff_lag", u8),
-    ("ar_coeffs_y_plus_128", cchar * 25),
-    ("ar_coeffs_cb_plus_128", cchar * 25),
-    ("ar_coeffs_cr_plus_128", cchar * 25),
-    ("ar_coeff_shift_minus_6", u8),
-    ("grain_scale_shift", u8),
-    ("cb_mult", u8),
-    ("cb_luma_mult", u8),
-    ("cr_luma_mult", u8),
-    ("cb_offset", u16),
-    ("cr_offset", u16),
-    ("reserved", cchar * 4),
+    ("flags", clib.c_uint8),
+    ("cr_mult", clib.c_uint8),
+    ("grain_seed", clib.c_uint16),
+    ("film_grain_params_ref_idx", clib.c_uint8),
+    ("num_y_points", clib.c_uint8),
+    ("point_y_value", clib.c_char * 16),
+    ("point_y_scaling", clib.c_char * 16),
+    ("num_cb_points", clib.c_uint8),
+    ("point_cb_value", clib.c_char * 16),
+    ("point_cb_scaling", clib.c_char * 16),
+    ("num_cr_points", clib.c_uint8),
+    ("point_cr_value", clib.c_char * 16),
+    ("point_cr_scaling", clib.c_char * 16),
+    ("grain_scaling_minus_8", clib.c_uint8),
+    ("ar_coeff_lag", clib.c_uint8),
+    ("ar_coeffs_y_plus_128", clib.c_char * 25),
+    ("ar_coeffs_cb_plus_128", clib.c_char * 25),
+    ("ar_coeffs_cr_plus_128", clib.c_char * 25),
+    ("ar_coeff_shift_minus_6", clib.c_uint8),
+    ("grain_scale_shift", clib.c_uint8),
+    ("cb_mult", clib.c_uint8),
+    ("cb_luma_mult", clib.c_uint8),
+    ("cr_luma_mult", clib.c_uint8),
+    ("cb_offset", clib.c_uint16),
+    ("cr_offset", clib.c_uint16),
+    ("reserved", clib.c_char * 4),
 ]
 
 
-class v4l2_rect(Struct):
+class v4l2_rect(clib.Structure):
     pass
 
 
-v4l2_rect._fields_ = [("left", cint), ("top", cint), ("width", cuint), ("height", cuint)]
+v4l2_rect._fields_ = [("left", clib.c_int), ("top", clib.c_int), ("width", clib.c_uint), ("height", clib.c_uint)]
 
 
-class v4l2_fract(Struct):
+class v4l2_fract(clib.Structure):
     pass
 
 
-v4l2_fract._fields_ = [("numerator", cuint), ("denominator", cuint)]
+v4l2_fract._fields_ = [("numerator", clib.c_uint), ("denominator", clib.c_uint)]
 
 
-class v4l2_area(Struct):
+class v4l2_area(clib.Structure):
     pass
 
 
-v4l2_area._fields_ = [("width", cuint), ("height", cuint)]
+v4l2_area._fields_ = [("width", clib.c_uint), ("height", clib.c_uint)]
 
 
-class v4l2_capability(Struct):
+class v4l2_capability(clib.Structure):
     pass
 
 
 v4l2_capability._fields_ = [
-    ("driver", cchar * 16),
-    ("card", cchar * 32),
-    ("bus_info", cchar * 32),
-    ("version", cuint),
-    ("capabilities", cuint),
-    ("device_caps", cuint),
-    ("reserved", cuint * 3),
+    ("driver", clib.c_char * 16),
+    ("card", clib.c_char * 32),
+    ("bus_info", clib.c_char * 32),
+    ("version", clib.c_uint),
+    ("capabilities", clib.c_uint),
+    ("device_caps", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_pix_format(Struct):
-    class M1(Union):
+class v4l2_pix_format(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("ycbcr_enc", cuint), ("hsv_enc", cuint)]
+    M1._fields_ = [("ycbcr_enc", clib.c_uint), ("hsv_enc", clib.c_uint)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_pix_format._fields_ = [
-    ("width", cuint),
-    ("height", cuint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
     ("pixelformat", EnumPixelFormat),
-    ("field", cuint),
-    ("bytesperline", cuint),
-    ("sizeimage", cuint),
-    ("colorspace", cuint),
-    ("priv", cuint),
-    ("flags", cuint),
+    ("field", clib.c_uint),
+    ("bytesperline", clib.c_uint),
+    ("sizeimage", clib.c_uint),
+    ("colorspace", clib.c_uint),
+    ("priv", clib.c_uint),
+    ("flags", clib.c_uint),
     ("m1", v4l2_pix_format.M1),
-    ("quantization", cuint),
-    ("xfer_func", cuint),
+    ("quantization", clib.c_uint),
+    ("xfer_func", clib.c_uint),
 ]
 
 
-class v4l2_fmtdesc(Struct):
+class v4l2_fmtdesc(clib.Structure):
     pass
 
 
 v4l2_fmtdesc._fields_ = [
-    ("index", cuint),
-    ("type", cuint),
-    ("flags", cuint),
-    ("description", cchar * 32),
+    ("index", clib.c_uint),
+    ("type", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("description", clib.c_char * 32),
     ("pixelformat", EnumPixelFormat),
-    ("mbus_code", cuint),
-    ("reserved", cuint * 3),
+    ("mbus_code", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_frmsize_discrete(Struct):
+class v4l2_frmsize_discrete(clib.Structure):
     pass
 
 
-v4l2_frmsize_discrete._fields_ = [("width", cuint), ("height", cuint)]
+v4l2_frmsize_discrete._fields_ = [("width", clib.c_uint), ("height", clib.c_uint)]
 
 
-class v4l2_frmsize_stepwise(Struct):
+class v4l2_frmsize_stepwise(clib.Structure):
     pass
 
 
 v4l2_frmsize_stepwise._fields_ = [
-    ("min_width", cuint),
-    ("max_width", cuint),
-    ("step_width", cuint),
-    ("min_height", cuint),
-    ("max_height", cuint),
-    ("step_height", cuint),
+    ("min_width", clib.c_uint),
+    ("max_width", clib.c_uint),
+    ("step_width", clib.c_uint),
+    ("min_height", clib.c_uint),
+    ("max_height", clib.c_uint),
+    ("step_height", clib.c_uint),
 ]
 
 
-class v4l2_frmsizeenum(Struct):
-    class M1(Union):
+class v4l2_frmsizeenum(clib.Structure):
+    class M1(clib.Union):
         pass
 
     M1._fields_ = [("discrete", v4l2_frmsize_discrete), ("stepwise", v4l2_frmsize_stepwise)]
@@ -2905,23 +2906,23 @@ class v4l2_frmsizeenum(Struct):
 
 
 v4l2_frmsizeenum._fields_ = [
-    ("index", cuint),
-    ("pixel_format", cuint),
-    ("type", cuint),
+    ("index", clib.c_uint),
+    ("pixel_format", clib.c_uint),
+    ("type", clib.c_uint),
     ("m1", v4l2_frmsizeenum.M1),
-    ("reserved", cuint * 2),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_frmival_stepwise(Struct):
+class v4l2_frmival_stepwise(clib.Structure):
     pass
 
 
 v4l2_frmival_stepwise._fields_ = [("min", v4l2_fract), ("max", v4l2_fract), ("step", v4l2_fract)]
 
 
-class v4l2_frmivalenum(Struct):
-    class M1(Union):
+class v4l2_frmivalenum(clib.Structure):
+    class M1(clib.Union):
         pass
 
     M1._fields_ = [("discrete", v4l2_fract), ("stepwise", v4l2_frmival_stepwise)]
@@ -2930,734 +2931,734 @@ class v4l2_frmivalenum(Struct):
 
 
 v4l2_frmivalenum._fields_ = [
-    ("index", cuint),
-    ("pixel_format", cuint),
-    ("width", cuint),
-    ("height", cuint),
-    ("type", cuint),
+    ("index", clib.c_uint),
+    ("pixel_format", clib.c_uint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
+    ("type", clib.c_uint),
     ("m1", v4l2_frmivalenum.M1),
-    ("reserved", cuint * 2),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_timecode(Struct):
+class v4l2_timecode(clib.Structure):
     pass
 
 
 v4l2_timecode._fields_ = [
-    ("type", cuint),
-    ("flags", cuint),
-    ("frames", u8),
-    ("seconds", u8),
-    ("minutes", u8),
-    ("hours", u8),
-    ("userbits", cchar * 4),
+    ("type", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("frames", clib.c_uint8),
+    ("seconds", clib.c_uint8),
+    ("minutes", clib.c_uint8),
+    ("hours", clib.c_uint8),
+    ("userbits", clib.c_char * 4),
 ]
 
 
-class v4l2_jpegcompression(Struct):
+class v4l2_jpegcompression(clib.Structure):
     pass
 
 
 v4l2_jpegcompression._fields_ = [
-    ("quality", cint),
-    ("APPn", cint),
-    ("APP_len", cint),
-    ("APP_data", cchar * 60),
-    ("COM_len", cint),
-    ("COM_data", cchar * 60),
-    ("jpeg_markers", cuint),
+    ("quality", clib.c_int),
+    ("APPn", clib.c_int),
+    ("APP_len", clib.c_int),
+    ("APP_data", clib.c_char * 60),
+    ("COM_len", clib.c_int),
+    ("COM_data", clib.c_char * 60),
+    ("jpeg_markers", clib.c_uint),
 ]
 
 
-class v4l2_requestbuffers(Struct):
+class v4l2_requestbuffers(clib.Structure):
     pass
 
 
 v4l2_requestbuffers._fields_ = [
-    ("count", cuint),
-    ("type", cuint),
-    ("memory", cuint),
-    ("capabilities", cuint),
-    ("flags", u8),
-    ("reserved", cchar * 3),
+    ("count", clib.c_uint),
+    ("type", clib.c_uint),
+    ("memory", clib.c_uint),
+    ("capabilities", clib.c_uint),
+    ("flags", clib.c_uint8),
+    ("reserved", clib.c_char * 3),
 ]
 
 
-class v4l2_plane(Struct):
-    class M1(Union):
+class v4l2_plane(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("mem_offset", cuint), ("userptr", culong), ("fd", cint)]
+    M1._fields_ = [("mem_offset", clib.c_uint), ("userptr", clib.c_ulong), ("fd", clib.c_int)]
 
 
 v4l2_plane._fields_ = [
-    ("bytesused", cuint),
-    ("length", cuint),
+    ("bytesused", clib.c_uint),
+    ("length", clib.c_uint),
     ("m", v4l2_plane.M1),
-    ("data_offset", cuint),
-    ("reserved", cuint * 11),
+    ("data_offset", clib.c_uint),
+    ("reserved", clib.c_uint * 11),
 ]
 
 
-class v4l2_buffer(Struct):
-    class M1(Union):
+class v4l2_buffer(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("offset", cuint), ("userptr", culong), ("planes", POINTER(v4l2_plane)), ("fd", cint)]
+    M1._fields_ = [("offset", clib.c_uint), ("userptr", clib.c_ulong), ("planes", clib.POINTER(v4l2_plane)), ("fd", clib.c_int)]
 
-    class M2(Union):
+    class M2(clib.Union):
         pass
 
-    M2._fields_ = [("request_fd", cint), ("reserved", cuint)]
+    M2._fields_ = [("request_fd", clib.c_int), ("reserved", clib.c_uint)]
 
     _anonymous_ = ("m2",)
 
 
 v4l2_buffer._fields_ = [
-    ("index", cuint),
-    ("type", cuint),
-    ("bytesused", cuint),
-    ("flags", cuint),
-    ("field", cuint),
-    ("timestamp", timeval),
+    ("index", clib.c_uint),
+    ("type", clib.c_uint),
+    ("bytesused", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("field", clib.c_uint),
+    ("timestamp", StructTimeval),
     ("timecode", v4l2_timecode),
-    ("sequence", cuint),
-    ("memory", cuint),
+    ("sequence", clib.c_uint),
+    ("memory", clib.c_uint),
     ("m", v4l2_buffer.M1),
-    ("length", cuint),
-    ("reserved2", cuint),
+    ("length", clib.c_uint),
+    ("reserved2", clib.c_uint),
     ("m2", v4l2_buffer.M2),
 ]
 
 
-class v4l2_exportbuffer(Struct):
+class v4l2_exportbuffer(clib.Structure):
     pass
 
 
 v4l2_exportbuffer._fields_ = [
-    ("type", cuint),
-    ("index", cuint),
-    ("plane", cuint),
-    ("flags", cuint),
-    ("fd", cint),
-    ("reserved", cuint * 11),
+    ("type", clib.c_uint),
+    ("index", clib.c_uint),
+    ("plane", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("fd", clib.c_int),
+    ("reserved", clib.c_uint * 11),
 ]
 
 
-class v4l2_framebuffer(Struct):
-    class M1(Struct):
+class v4l2_framebuffer(clib.Structure):
+    class M1(clib.Structure):
         pass
 
     M1._fields_ = [
-        ("width", cuint),
-        ("height", cuint),
+        ("width", clib.c_uint),
+        ("height", clib.c_uint),
         ("pixelformat", EnumPixelFormat),
-        ("field", cuint),
-        ("bytesperline", cuint),
-        ("sizeimage", cuint),
-        ("colorspace", cuint),
-        ("priv", cuint),
+        ("field", clib.c_uint),
+        ("bytesperline", clib.c_uint),
+        ("sizeimage", clib.c_uint),
+        ("colorspace", clib.c_uint),
+        ("priv", clib.c_uint),
     ]
 
 
 v4l2_framebuffer._fields_ = [
-    ("capability", cuint),
-    ("flags", cuint),
-    ("base", POINTER(None)),
+    ("capability", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("base", clib.POINTER(None)),
     ("fmt", v4l2_framebuffer.M1),
 ]
 
 
-class v4l2_clip(Struct):
+class v4l2_clip(clib.Structure):
     pass
 
 
-v4l2_clip._fields_ = [("c", v4l2_rect), ("next", POINTER(v4l2_clip))]
+v4l2_clip._fields_ = [("c", v4l2_rect), ("next", clib.POINTER(v4l2_clip))]
 
 
-class v4l2_window(Struct):
+class v4l2_window(clib.Structure):
     pass
 
 
 v4l2_window._fields_ = [
     ("w", v4l2_rect),
-    ("field", cuint),
-    ("chromakey", cuint),
-    ("clips", POINTER(v4l2_clip)),
-    ("clipcount", cuint),
-    ("bitmap", POINTER(None)),
-    ("global_alpha", u8),
+    ("field", clib.c_uint),
+    ("chromakey", clib.c_uint),
+    ("clips", clib.POINTER(v4l2_clip)),
+    ("clipcount", clib.c_uint),
+    ("bitmap", clib.POINTER(None)),
+    ("global_alpha", clib.c_uint8),
 ]
 
 
-class v4l2_captureparm(Struct):
+class v4l2_captureparm(clib.Structure):
     pass
 
 
 v4l2_captureparm._fields_ = [
-    ("capability", cuint),
-    ("capturemode", cuint),
+    ("capability", clib.c_uint),
+    ("capturemode", clib.c_uint),
     ("timeperframe", v4l2_fract),
-    ("extendedmode", cuint),
-    ("readbuffers", cuint),
-    ("reserved", cuint * 4),
+    ("extendedmode", clib.c_uint),
+    ("readbuffers", clib.c_uint),
+    ("reserved", clib.c_uint * 4),
 ]
 
 
-class v4l2_outputparm(Struct):
+class v4l2_outputparm(clib.Structure):
     pass
 
 
 v4l2_outputparm._fields_ = [
-    ("capability", cuint),
-    ("outputmode", cuint),
+    ("capability", clib.c_uint),
+    ("outputmode", clib.c_uint),
     ("timeperframe", v4l2_fract),
-    ("extendedmode", cuint),
-    ("writebuffers", cuint),
-    ("reserved", cuint * 4),
+    ("extendedmode", clib.c_uint),
+    ("writebuffers", clib.c_uint),
+    ("reserved", clib.c_uint * 4),
 ]
 
 
-class v4l2_cropcap(Struct):
+class v4l2_cropcap(clib.Structure):
     pass
 
 
-v4l2_cropcap._fields_ = [("type", cuint), ("bounds", v4l2_rect), ("defrect", v4l2_rect), ("pixelaspect", v4l2_fract)]
+v4l2_cropcap._fields_ = [("type", clib.c_uint), ("bounds", v4l2_rect), ("defrect", v4l2_rect), ("pixelaspect", v4l2_fract)]
 
 
-class v4l2_crop(Struct):
+class v4l2_crop(clib.Structure):
     pass
 
 
-v4l2_crop._fields_ = [("type", cuint), ("c", v4l2_rect)]
+v4l2_crop._fields_ = [("type", clib.c_uint), ("c", v4l2_rect)]
 
 
-class v4l2_selection(Struct):
+class v4l2_selection(clib.Structure):
     pass
 
 
 v4l2_selection._fields_ = [
-    ("type", cuint),
-    ("target", cuint),
-    ("flags", cuint),
+    ("type", clib.c_uint),
+    ("target", clib.c_uint),
+    ("flags", clib.c_uint),
     ("r", v4l2_rect),
-    ("reserved", cuint * 9),
+    ("reserved", clib.c_uint * 9),
 ]
 
 
-class v4l2_standard(Struct):
+class v4l2_standard(clib.Structure):
     pass
 
 
 v4l2_standard._fields_ = [
-    ("index", cuint),
-    ("id", culonglong),
-    ("name", cchar * 24),
+    ("index", clib.c_uint),
+    ("id", clib.c_ulonglong),
+    ("name", clib.c_char * 24),
     ("frameperiod", v4l2_fract),
-    ("framelines", cuint),
-    ("reserved", cuint * 4),
+    ("framelines", clib.c_uint),
+    ("reserved", clib.c_uint * 4),
 ]
 
 
-class v4l2_bt_timings(Struct):
+class v4l2_bt_timings(clib.Structure):
     _pack_ = True
 
 
 v4l2_bt_timings._fields_ = [
-    ("width", cuint),
-    ("height", cuint),
-    ("interlaced", cuint),
-    ("polarities", cuint),
-    ("pixelclock", culonglong),
-    ("hfrontporch", cuint),
-    ("hsync", cuint),
-    ("hbackporch", cuint),
-    ("vfrontporch", cuint),
-    ("vsync", cuint),
-    ("vbackporch", cuint),
-    ("il_vfrontporch", cuint),
-    ("il_vsync", cuint),
-    ("il_vbackporch", cuint),
-    ("standards", cuint),
-    ("flags", cuint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
+    ("interlaced", clib.c_uint),
+    ("polarities", clib.c_uint),
+    ("pixelclock", clib.c_ulonglong),
+    ("hfrontporch", clib.c_uint),
+    ("hsync", clib.c_uint),
+    ("hbackporch", clib.c_uint),
+    ("vfrontporch", clib.c_uint),
+    ("vsync", clib.c_uint),
+    ("vbackporch", clib.c_uint),
+    ("il_vfrontporch", clib.c_uint),
+    ("il_vsync", clib.c_uint),
+    ("il_vbackporch", clib.c_uint),
+    ("standards", clib.c_uint),
+    ("flags", clib.c_uint),
     ("picture_aspect", v4l2_fract),
-    ("cea861_vic", u8),
-    ("hdmi_vic", u8),
-    ("reserved", cchar * 46),
+    ("cea861_vic", clib.c_uint8),
+    ("hdmi_vic", clib.c_uint8),
+    ("reserved", clib.c_char * 46),
 ]
 
 
-class v4l2_dv_timings(Struct):
+class v4l2_dv_timings(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("bt", v4l2_bt_timings), ("reserved", cuint * 32)]
+    M1._fields_ = [("bt", v4l2_bt_timings), ("reserved", clib.c_uint * 32)]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_dv_timings._fields_ = [("type", cuint), ("m1", v4l2_dv_timings.M1)]
+v4l2_dv_timings._fields_ = [("type", clib.c_uint), ("m1", v4l2_dv_timings.M1)]
 
 
-class v4l2_enum_dv_timings(Struct):
+class v4l2_enum_dv_timings(clib.Structure):
     pass
 
 
 v4l2_enum_dv_timings._fields_ = [
-    ("index", cuint),
-    ("pad", cuint),
-    ("reserved", cuint * 2),
+    ("index", clib.c_uint),
+    ("pad", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
     ("timings", v4l2_dv_timings),
 ]
 
 
-class v4l2_bt_timings_cap(Struct):
+class v4l2_bt_timings_cap(clib.Structure):
     _pack_ = True
 
 
 v4l2_bt_timings_cap._fields_ = [
-    ("min_width", cuint),
-    ("max_width", cuint),
-    ("min_height", cuint),
-    ("max_height", cuint),
-    ("min_pixelclock", culonglong),
-    ("max_pixelclock", culonglong),
-    ("standards", cuint),
-    ("capabilities", cuint),
-    ("reserved", cuint * 16),
+    ("min_width", clib.c_uint),
+    ("max_width", clib.c_uint),
+    ("min_height", clib.c_uint),
+    ("max_height", clib.c_uint),
+    ("min_pixelclock", clib.c_ulonglong),
+    ("max_pixelclock", clib.c_ulonglong),
+    ("standards", clib.c_uint),
+    ("capabilities", clib.c_uint),
+    ("reserved", clib.c_uint * 16),
 ]
 
 
-class v4l2_dv_timings_cap(Struct):
-    class M1(Union):
+class v4l2_dv_timings_cap(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("bt", v4l2_bt_timings_cap), ("raw_data", cuint * 32)]
+    M1._fields_ = [("bt", v4l2_bt_timings_cap), ("raw_data", clib.c_uint * 32)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_dv_timings_cap._fields_ = [
-    ("type", cuint),
-    ("pad", cuint),
-    ("reserved", cuint * 2),
+    ("type", clib.c_uint),
+    ("pad", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
     ("m1", v4l2_dv_timings_cap.M1),
 ]
 
 
-class v4l2_input(Struct):
+class v4l2_input(clib.Structure):
     pass
 
 
 v4l2_input._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("type", cuint),
-    ("audioset", cuint),
-    ("tuner", cuint),
-    ("std", culonglong),
-    ("status", cuint),
-    ("capabilities", cuint),
-    ("reserved", cuint * 3),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("type", clib.c_uint),
+    ("audioset", clib.c_uint),
+    ("tuner", clib.c_uint),
+    ("std", clib.c_ulonglong),
+    ("status", clib.c_uint),
+    ("capabilities", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_output(Struct):
+class v4l2_output(clib.Structure):
     pass
 
 
 v4l2_output._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("type", cuint),
-    ("audioset", cuint),
-    ("modulator", cuint),
-    ("std", culonglong),
-    ("capabilities", cuint),
-    ("reserved", cuint * 3),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("type", clib.c_uint),
+    ("audioset", clib.c_uint),
+    ("modulator", clib.c_uint),
+    ("std", clib.c_ulonglong),
+    ("capabilities", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_control(Struct):
+class v4l2_control(clib.Structure):
     pass
 
 
-v4l2_control._fields_ = [("id", cuint), ("value", cint)]
+v4l2_control._fields_ = [("id", clib.c_uint), ("value", clib.c_int)]
 
 
-class v4l2_ext_control(Struct):
+class v4l2_ext_control(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         _pack_ = True
 
     M1._fields_ = [
-        ("value", cint),
-        ("value64", clonglong),
-        ("string", POINTER(cchar)),
-        ("p_u8", POINTER(u8)),
-        ("p_u16", POINTER(u16)),
-        ("p_u32", POINTER(cuint)),
-        ("p_s32", POINTER(cint)),
-        ("p_s64", POINTER(clonglong)),
-        ("p_area", POINTER(v4l2_area)),
-        ("p_h264_sps", POINTER(v4l2_ctrl_h264_sps)),
-        ("p_h264_pps", POINTER(v4l2_ctrl_h264_pps)),
-        ("p_h264_scaling_matrix", POINTER(v4l2_ctrl_h264_scaling_matrix)),
-        ("p_h264_pred_weights", POINTER(v4l2_ctrl_h264_pred_weights)),
-        ("p_h264_slice_params", POINTER(v4l2_ctrl_h264_slice_params)),
-        ("p_h264_decode_params", POINTER(v4l2_ctrl_h264_decode_params)),
-        ("p_fwht_params", POINTER(v4l2_ctrl_fwht_params)),
-        ("p_vp8_frame", POINTER(v4l2_ctrl_vp8_frame)),
-        ("p_mpeg2_sequence", POINTER(v4l2_ctrl_mpeg2_sequence)),
-        ("p_mpeg2_picture", POINTER(v4l2_ctrl_mpeg2_picture)),
-        ("p_mpeg2_quantisation", POINTER(v4l2_ctrl_mpeg2_quantisation)),
-        ("p_vp9_compressed_hdr_probs", POINTER(v4l2_ctrl_vp9_compressed_hdr)),
-        ("p_vp9_frame", POINTER(v4l2_ctrl_vp9_frame)),
-        ("p_hevc_sps", POINTER(v4l2_ctrl_hevc_sps)),
-        ("p_hevc_pps", POINTER(v4l2_ctrl_hevc_pps)),
-        ("p_hevc_slice_params", POINTER(v4l2_ctrl_hevc_slice_params)),
-        ("p_hevc_scaling_matrix", POINTER(v4l2_ctrl_hevc_scaling_matrix)),
-        ("p_hevc_decode_params", POINTER(v4l2_ctrl_hevc_decode_params)),
-        ("p_av1_sequence", POINTER(v4l2_ctrl_av1_sequence)),
-        ("p_av1_tile_group_entry", POINTER(v4l2_ctrl_av1_tile_group_entry)),
-        ("p_av1_frame", POINTER(v4l2_ctrl_av1_frame)),
-        ("p_av1_film_grain", POINTER(v4l2_ctrl_av1_film_grain)),
-        ("p_hdr10_cll_info", POINTER(v4l2_ctrl_hdr10_cll_info)),
-        ("p_hdr10_mastering_display", POINTER(v4l2_ctrl_hdr10_mastering_display)),
-        ("ptr", POINTER(None)),
+        ("value", clib.c_int),
+        ("value64", clib.c_longlong),
+        ("string", clib.POINTER(clib.c_char)),
+        ("p_clib.c_uint8", clib.POINTER(clib.c_uint8)),
+        ("p_clib.c_uint16", clib.POINTER(clib.c_uint16)),
+        ("p_clib.c_uint32", clib.POINTER(clib.c_uint)),
+        ("p_s32", clib.POINTER(clib.c_int)),
+        ("p_s64", clib.POINTER(clib.c_longlong)),
+        ("p_area", clib.POINTER(v4l2_area)),
+        ("p_h264_sps", clib.POINTER(v4l2_ctrl_h264_sps)),
+        ("p_h264_pps", clib.POINTER(v4l2_ctrl_h264_pps)),
+        ("p_h264_scaling_matrix", clib.POINTER(v4l2_ctrl_h264_scaling_matrix)),
+        ("p_h264_pred_weights", clib.POINTER(v4l2_ctrl_h264_pred_weights)),
+        ("p_h264_slice_params", clib.POINTER(v4l2_ctrl_h264_slice_params)),
+        ("p_h264_decode_params", clib.POINTER(v4l2_ctrl_h264_decode_params)),
+        ("p_fwht_params", clib.POINTER(v4l2_ctrl_fwht_params)),
+        ("p_vp8_frame", clib.POINTER(v4l2_ctrl_vp8_frame)),
+        ("p_mpeg2_sequence", clib.POINTER(v4l2_ctrl_mpeg2_sequence)),
+        ("p_mpeg2_picture", clib.POINTER(v4l2_ctrl_mpeg2_picture)),
+        ("p_mpeg2_quantisation", clib.POINTER(v4l2_ctrl_mpeg2_quantisation)),
+        ("p_vp9_compressed_hdr_probs", clib.POINTER(v4l2_ctrl_vp9_compressed_hdr)),
+        ("p_vp9_frame", clib.POINTER(v4l2_ctrl_vp9_frame)),
+        ("p_hevc_sps", clib.POINTER(v4l2_ctrl_hevc_sps)),
+        ("p_hevc_pps", clib.POINTER(v4l2_ctrl_hevc_pps)),
+        ("p_hevc_slice_params", clib.POINTER(v4l2_ctrl_hevc_slice_params)),
+        ("p_hevc_scaling_matrix", clib.POINTER(v4l2_ctrl_hevc_scaling_matrix)),
+        ("p_hevc_decode_params", clib.POINTER(v4l2_ctrl_hevc_decode_params)),
+        ("p_av1_sequence", clib.POINTER(v4l2_ctrl_av1_sequence)),
+        ("p_av1_tile_group_entry", clib.POINTER(v4l2_ctrl_av1_tile_group_entry)),
+        ("p_av1_frame", clib.POINTER(v4l2_ctrl_av1_frame)),
+        ("p_av1_film_grain", clib.POINTER(v4l2_ctrl_av1_film_grain)),
+        ("p_hdr10_cll_info", clib.POINTER(v4l2_ctrl_hdr10_cll_info)),
+        ("p_hdr10_mastering_display", clib.POINTER(v4l2_ctrl_hdr10_mastering_display)),
+        ("ptr", clib.POINTER(None)),
     ]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_ext_control._fields_ = [("id", cuint), ("size", cuint), ("reserved2", cuint * 1), ("m1", v4l2_ext_control.M1)]
+v4l2_ext_control._fields_ = [("id", clib.c_uint), ("size", clib.c_uint), ("reserved2", clib.c_uint * 1), ("m1", v4l2_ext_control.M1)]
 
 
-class v4l2_ext_controls(Struct):
-    class M1(Union):
+class v4l2_ext_controls(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("ctrl_class", cuint), ("which", cuint)]
+    M1._fields_ = [("ctrl_class", clib.c_uint), ("which", clib.c_uint)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_ext_controls._fields_ = [
     ("m1", v4l2_ext_controls.M1),
-    ("count", cuint),
-    ("error_idx", cuint),
-    ("request_fd", cint),
-    ("reserved", cuint * 1),
-    ("controls", POINTER(v4l2_ext_control)),
+    ("count", clib.c_uint),
+    ("error_idx", clib.c_uint),
+    ("request_fd", clib.c_int),
+    ("reserved", clib.c_uint * 1),
+    ("controls", clib.POINTER(v4l2_ext_control)),
 ]
 
 
-class v4l2_queryctrl(Struct):
+class v4l2_queryctrl(clib.Structure):
     pass
 
 
 v4l2_queryctrl._fields_ = [
-    ("id", cuint),
-    ("type", cuint),
-    ("name", cchar * 32),
-    ("minimum", cint),
-    ("maximum", cint),
-    ("step", cint),
-    ("default_value", cint),
-    ("flags", cuint),
-    ("reserved", cuint * 2),
+    ("id", clib.c_uint),
+    ("type", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("minimum", clib.c_int),
+    ("maximum", clib.c_int),
+    ("step", clib.c_int),
+    ("default_value", clib.c_int),
+    ("flags", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_query_ext_ctrl(Struct):
+class v4l2_query_ext_ctrl(clib.Structure):
     pass
 
 
 v4l2_query_ext_ctrl._fields_ = [
-    ("id", cuint),
-    ("type", cuint),
-    ("name", cchar * 32),
-    ("minimum", clonglong),
-    ("maximum", clonglong),
-    ("step", culonglong),
-    ("default_value", clonglong),
-    ("flags", cuint),
-    ("elem_size", cuint),
-    ("elems", cuint),
-    ("nr_of_dims", cuint),
-    ("dims", cuint * 4),
-    ("reserved", cuint * 32),
+    ("id", clib.c_uint),
+    ("type", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("minimum", clib.c_longlong),
+    ("maximum", clib.c_longlong),
+    ("step", clib.c_ulonglong),
+    ("default_value", clib.c_longlong),
+    ("flags", clib.c_uint),
+    ("elem_size", clib.c_uint),
+    ("elems", clib.c_uint),
+    ("nr_of_dims", clib.c_uint),
+    ("dims", clib.c_uint * 4),
+    ("reserved", clib.c_uint * 32),
 ]
 
 
-class v4l2_querymenu(Struct):
+class v4l2_querymenu(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("name", cchar * 32), ("value", clonglong)]
+    M1._fields_ = [("name", clib.c_char * 32), ("value", clib.c_longlong)]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_querymenu._fields_ = [("id", cuint), ("index", cuint), ("m1", v4l2_querymenu.M1), ("reserved", cuint)]
+v4l2_querymenu._fields_ = [("id", clib.c_uint), ("index", clib.c_uint), ("m1", v4l2_querymenu.M1), ("reserved", clib.c_uint)]
 
 
-class v4l2_tuner(Struct):
+class v4l2_tuner(clib.Structure):
     pass
 
 
 v4l2_tuner._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("type", cuint),
-    ("capability", cuint),
-    ("rangelow", cuint),
-    ("rangehigh", cuint),
-    ("rxsubchans", cuint),
-    ("audmode", cuint),
-    ("signal", cint),
-    ("afc", cint),
-    ("reserved", cuint * 4),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("type", clib.c_uint),
+    ("capability", clib.c_uint),
+    ("rangelow", clib.c_uint),
+    ("rangehigh", clib.c_uint),
+    ("rxsubchans", clib.c_uint),
+    ("audmode", clib.c_uint),
+    ("signal", clib.c_int),
+    ("afc", clib.c_int),
+    ("reserved", clib.c_uint * 4),
 ]
 
 
-class v4l2_modulator(Struct):
+class v4l2_modulator(clib.Structure):
     pass
 
 
 v4l2_modulator._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("capability", cuint),
-    ("rangelow", cuint),
-    ("rangehigh", cuint),
-    ("txsubchans", cuint),
-    ("type", cuint),
-    ("reserved", cuint * 3),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("capability", clib.c_uint),
+    ("rangelow", clib.c_uint),
+    ("rangehigh", clib.c_uint),
+    ("txsubchans", clib.c_uint),
+    ("type", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_frequency(Struct):
+class v4l2_frequency(clib.Structure):
     pass
 
 
-v4l2_frequency._fields_ = [("tuner", cuint), ("type", cuint), ("frequency", cuint), ("reserved", cuint * 8)]
+v4l2_frequency._fields_ = [("tuner", clib.c_uint), ("type", clib.c_uint), ("frequency", clib.c_uint), ("reserved", clib.c_uint * 8)]
 
 
-class v4l2_frequency_band(Struct):
+class v4l2_frequency_band(clib.Structure):
     pass
 
 
 v4l2_frequency_band._fields_ = [
-    ("tuner", cuint),
-    ("type", cuint),
-    ("index", cuint),
-    ("capability", cuint),
-    ("rangelow", cuint),
-    ("rangehigh", cuint),
-    ("modulation", cuint),
-    ("reserved", cuint * 9),
+    ("tuner", clib.c_uint),
+    ("type", clib.c_uint),
+    ("index", clib.c_uint),
+    ("capability", clib.c_uint),
+    ("rangelow", clib.c_uint),
+    ("rangehigh", clib.c_uint),
+    ("modulation", clib.c_uint),
+    ("reserved", clib.c_uint * 9),
 ]
 
 
-class v4l2_hw_freq_seek(Struct):
+class v4l2_hw_freq_seek(clib.Structure):
     pass
 
 
 v4l2_hw_freq_seek._fields_ = [
-    ("tuner", cuint),
-    ("type", cuint),
-    ("seek_upward", cuint),
-    ("wrap_around", cuint),
-    ("spacing", cuint),
-    ("rangelow", cuint),
-    ("rangehigh", cuint),
-    ("reserved", cuint * 5),
+    ("tuner", clib.c_uint),
+    ("type", clib.c_uint),
+    ("seek_upward", clib.c_uint),
+    ("wrap_around", clib.c_uint),
+    ("spacing", clib.c_uint),
+    ("rangelow", clib.c_uint),
+    ("rangehigh", clib.c_uint),
+    ("reserved", clib.c_uint * 5),
 ]
 
 
-class v4l2_rds_data(Struct):
+class v4l2_rds_data(clib.Structure):
     _pack_ = True
 
 
-v4l2_rds_data._fields_ = [("lsb", u8), ("msb", u8), ("block", u8)]
+v4l2_rds_data._fields_ = [("lsb", clib.c_uint8), ("msb", clib.c_uint8), ("block", clib.c_uint8)]
 
 
-class v4l2_audio(Struct):
+class v4l2_audio(clib.Structure):
     pass
 
 
 v4l2_audio._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("capability", cuint),
-    ("mode", cuint),
-    ("reserved", cuint * 2),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("capability", clib.c_uint),
+    ("mode", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_audioout(Struct):
+class v4l2_audioout(clib.Structure):
     pass
 
 
 v4l2_audioout._fields_ = [
-    ("index", cuint),
-    ("name", cchar * 32),
-    ("capability", cuint),
-    ("mode", cuint),
-    ("reserved", cuint * 2),
+    ("index", clib.c_uint),
+    ("name", clib.c_char * 32),
+    ("capability", clib.c_uint),
+    ("mode", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_enc_idx_entry(Struct):
+class v4l2_enc_idx_entry(clib.Structure):
     pass
 
 
 v4l2_enc_idx_entry._fields_ = [
-    ("offset", culonglong),
-    ("pts", culonglong),
-    ("length", cuint),
-    ("flags", cuint),
-    ("reserved", cuint * 2),
+    ("offset", clib.c_ulonglong),
+    ("pts", clib.c_ulonglong),
+    ("length", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_enc_idx(Struct):
+class v4l2_enc_idx(clib.Structure):
     pass
 
 
 v4l2_enc_idx._fields_ = [
-    ("entries", cuint),
-    ("entries_cap", cuint),
-    ("reserved", cuint * 4),
+    ("entries", clib.c_uint),
+    ("entries_cap", clib.c_uint),
+    ("reserved", clib.c_uint * 4),
     ("entry", v4l2_enc_idx_entry * 64),
 ]
 
 
-class v4l2_encoder_cmd(Struct):
-    class M1(Union):
-        class M1(Struct):
+class v4l2_encoder_cmd(clib.Structure):
+    class M1(clib.Union):
+        class M1(clib.Structure):
             pass
 
-        M1._fields_ = [("data", cuint * 8)]
+        M1._fields_ = [("data", clib.c_uint * 8)]
 
     M1._fields_ = [("raw", M1.M1)]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_encoder_cmd._fields_ = [("cmd", cuint), ("flags", cuint), ("m1", v4l2_encoder_cmd.M1)]
+v4l2_encoder_cmd._fields_ = [("cmd", clib.c_uint), ("flags", clib.c_uint), ("m1", v4l2_encoder_cmd.M1)]
 
 
-class v4l2_decoder_cmd(Struct):
-    class M1(Union):
-        class M1(Struct):
+class v4l2_decoder_cmd(clib.Structure):
+    class M1(clib.Union):
+        class M1(clib.Structure):
             pass
 
-        M1._fields_ = [("pts", culonglong)]
+        M1._fields_ = [("pts", clib.c_ulonglong)]
 
-        class M2(Struct):
+        class M2(clib.Structure):
             pass
 
-        M2._fields_ = [("speed", cint), ("format", cuint)]
+        M2._fields_ = [("speed", clib.c_int), ("format", clib.c_uint)]
 
-        class M3(Struct):
+        class M3(clib.Structure):
             pass
 
-        M3._fields_ = [("data", cuint * 16)]
+        M3._fields_ = [("data", clib.c_uint * 16)]
 
     M1._fields_ = [("stop", M1.M1), ("start", M1.M2), ("raw", M1.M3)]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_decoder_cmd._fields_ = [("cmd", cuint), ("flags", cuint), ("m1", v4l2_decoder_cmd.M1)]
+v4l2_decoder_cmd._fields_ = [("cmd", clib.c_uint), ("flags", clib.c_uint), ("m1", v4l2_decoder_cmd.M1)]
 
 
-class v4l2_vbi_format(Struct):
+class v4l2_vbi_format(clib.Structure):
     pass
 
 
 v4l2_vbi_format._fields_ = [
-    ("sampling_rate", cuint),
-    ("offset", cuint),
-    ("samples_per_line", cuint),
-    ("sample_format", cuint),
-    ("start", cint * 2),
-    ("count", cuint * 2),
-    ("flags", cuint),
-    ("reserved", cuint * 2),
+    ("sampling_rate", clib.c_uint),
+    ("offset", clib.c_uint),
+    ("samples_per_line", clib.c_uint),
+    ("sample_format", clib.c_uint),
+    ("start", clib.c_int * 2),
+    ("count", clib.c_uint * 2),
+    ("flags", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_sliced_vbi_format(Struct):
+class v4l2_sliced_vbi_format(clib.Structure):
     pass
 
 
 v4l2_sliced_vbi_format._fields_ = [
-    ("service_set", u16),
-    ("service_lines", u16 * 24 * 2),
-    ("io_size", cuint),
-    ("reserved", cuint * 2),
+    ("service_set", clib.c_uint16),
+    ("service_lines", clib.c_uint16 * 24 * 2),
+    ("io_size", clib.c_uint),
+    ("reserved", clib.c_uint * 2),
 ]
 
 
-class v4l2_sliced_vbi_cap(Struct):
+class v4l2_sliced_vbi_cap(clib.Structure):
     pass
 
 
 v4l2_sliced_vbi_cap._fields_ = [
-    ("service_set", u16),
-    ("service_lines", u16 * 24 * 2),
-    ("type", cuint),
-    ("reserved", cuint * 3),
+    ("service_set", clib.c_uint16),
+    ("service_lines", clib.c_uint16 * 24 * 2),
+    ("type", clib.c_uint),
+    ("reserved", clib.c_uint * 3),
 ]
 
 
-class v4l2_sliced_vbi_data(Struct):
+class v4l2_sliced_vbi_data(clib.Structure):
     pass
 
 
 v4l2_sliced_vbi_data._fields_ = [
-    ("id", cuint),
-    ("field", cuint),
-    ("line", cuint),
-    ("reserved", cuint),
-    ("data", cchar * 48),
+    ("id", clib.c_uint),
+    ("field", clib.c_uint),
+    ("line", clib.c_uint),
+    ("reserved", clib.c_uint),
+    ("data", clib.c_char * 48),
 ]
 
 
-class v4l2_mpeg_vbi_itv0_line(Struct):
+class v4l2_mpeg_vbi_itv0_line(clib.Structure):
     _pack_ = True
 
 
-v4l2_mpeg_vbi_itv0_line._fields_ = [("id", u8), ("data", cchar * 42)]
+v4l2_mpeg_vbi_itv0_line._fields_ = [("id", clib.c_uint8), ("data", clib.c_char * 42)]
 
 
-class v4l2_mpeg_vbi_itv0(Struct):
+class v4l2_mpeg_vbi_itv0(clib.Structure):
     _pack_ = True
 
 
-v4l2_mpeg_vbi_itv0._fields_ = [("linemask", cuint * 2), ("line", v4l2_mpeg_vbi_itv0_line * 35)]
+v4l2_mpeg_vbi_itv0._fields_ = [("linemask", clib.c_uint * 2), ("line", v4l2_mpeg_vbi_itv0_line * 35)]
 
 
-class v4l2_mpeg_vbi_ITV0(Struct):
+class v4l2_mpeg_vbi_ITV0(clib.Structure):
     _pack_ = True
 
 
 v4l2_mpeg_vbi_ITV0._fields_ = [("line", v4l2_mpeg_vbi_itv0_line * 36)]
 
 
-class v4l2_mpeg_vbi_fmt_ivtv(Struct):
+class v4l2_mpeg_vbi_fmt_ivtv(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         _pack_ = True
 
     M1._fields_ = [("itv0", v4l2_mpeg_vbi_itv0), ("ITV0", v4l2_mpeg_vbi_ITV0)]
@@ -3665,65 +3666,65 @@ class v4l2_mpeg_vbi_fmt_ivtv(Struct):
     _anonymous_ = ("m1",)
 
 
-v4l2_mpeg_vbi_fmt_ivtv._fields_ = [("magic", cchar * 4), ("m1", v4l2_mpeg_vbi_fmt_ivtv.M1)]
+v4l2_mpeg_vbi_fmt_ivtv._fields_ = [("magic", clib.c_char * 4), ("m1", v4l2_mpeg_vbi_fmt_ivtv.M1)]
 
 
-class v4l2_plane_pix_format(Struct):
+class v4l2_plane_pix_format(clib.Structure):
     _pack_ = True
 
 
-v4l2_plane_pix_format._fields_ = [("sizeimage", cuint), ("bytesperline", cuint), ("reserved", u16 * 6)]
+v4l2_plane_pix_format._fields_ = [("sizeimage", clib.c_uint), ("bytesperline", clib.c_uint), ("reserved", clib.c_uint16 * 6)]
 
 
-class v4l2_pix_format_mplane(Struct):
+class v4l2_pix_format_mplane(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         _pack_ = True
 
-    M1._fields_ = [("ycbcr_enc", u8), ("hsv_enc", u8)]
+    M1._fields_ = [("ycbcr_enc", clib.c_uint8), ("hsv_enc", clib.c_uint8)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_pix_format_mplane._fields_ = [
-    ("width", cuint),
-    ("height", cuint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
     ("pixelformat", EnumPixelFormat),
-    ("field", cuint),
-    ("colorspace", cuint),
+    ("field", clib.c_uint),
+    ("colorspace", clib.c_uint),
     ("plane_fmt", v4l2_plane_pix_format * 8),
-    ("num_planes", u8),
-    ("flags", u8),
+    ("num_planes", clib.c_uint8),
+    ("flags", clib.c_uint8),
     ("m1", v4l2_pix_format_mplane.M1),
-    ("quantization", u8),
-    ("xfer_func", u8),
-    ("reserved", cchar * 7),
+    ("quantization", clib.c_uint8),
+    ("xfer_func", clib.c_uint8),
+    ("reserved", clib.c_char * 7),
 ]
 
 
-class v4l2_sdr_format(Struct):
+class v4l2_sdr_format(clib.Structure):
     _pack_ = True
 
 
-v4l2_sdr_format._fields_ = [("pixelformat", EnumPixelFormat), ("buffersize", cuint), ("reserved", cchar * 24)]
+v4l2_sdr_format._fields_ = [("pixelformat", EnumPixelFormat), ("buffersize", clib.c_uint), ("reserved", clib.c_char * 24)]
 
 
-class v4l2_meta_format(Struct):
+class v4l2_meta_format(clib.Structure):
     _pack_ = True
 
 
 v4l2_meta_format._fields_ = [
-    ("dataformat", cuint),
-    ("buffersize", cuint),
-    ("width", cuint),
-    ("height", cuint),
-    ("bytesperline", cuint),
+    ("dataformat", clib.c_uint),
+    ("buffersize", clib.c_uint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
+    ("bytesperline", clib.c_uint),
 ]
 
 
-class v4l2_format(Struct):
-    class M1(Union):
+class v4l2_format(clib.Structure):
+    class M1(clib.Union):
         pass
 
     M1._fields_ = [
@@ -3734,74 +3735,74 @@ class v4l2_format(Struct):
         ("sliced", v4l2_sliced_vbi_format),
         ("sdr", v4l2_sdr_format),
         ("meta", v4l2_meta_format),
-        ("raw_data", cchar * 200),
+        ("raw_data", clib.c_char * 200),
     ]
 
 
-v4l2_format._fields_ = [("type", cuint), ("fmt", v4l2_format.M1)]
+v4l2_format._fields_ = [("type", clib.c_uint), ("fmt", v4l2_format.M1)]
 
 
-class v4l2_streamparm(Struct):
-    class M1(Union):
+class v4l2_streamparm(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("capture", v4l2_captureparm), ("output", v4l2_outputparm), ("raw_data", cchar * 200)]
+    M1._fields_ = [("capture", v4l2_captureparm), ("output", v4l2_outputparm), ("raw_data", clib.c_char * 200)]
 
 
-v4l2_streamparm._fields_ = [("type", cuint), ("parm", v4l2_streamparm.M1)]
+v4l2_streamparm._fields_ = [("type", clib.c_uint), ("parm", v4l2_streamparm.M1)]
 
 
-class v4l2_event_vsync(Struct):
+class v4l2_event_vsync(clib.Structure):
     _pack_ = True
 
 
-v4l2_event_vsync._fields_ = [("field", u8)]
+v4l2_event_vsync._fields_ = [("field", clib.c_uint8)]
 
 
-class v4l2_event_ctrl(Struct):
-    class M1(Union):
+class v4l2_event_ctrl(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("value", cint), ("value64", clonglong)]
+    M1._fields_ = [("value", clib.c_int), ("value64", clib.c_longlong)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_event_ctrl._fields_ = [
-    ("changes", cuint),
-    ("type", cuint),
+    ("changes", clib.c_uint),
+    ("type", clib.c_uint),
     ("m1", v4l2_event_ctrl.M1),
-    ("flags", cuint),
-    ("minimum", cint),
-    ("maximum", cint),
-    ("step", cint),
-    ("default_value", cint),
+    ("flags", clib.c_uint),
+    ("minimum", clib.c_int),
+    ("maximum", clib.c_int),
+    ("step", clib.c_int),
+    ("default_value", clib.c_int),
 ]
 
 
-class v4l2_event_frame_sync(Struct):
+class v4l2_event_frame_sync(clib.Structure):
     pass
 
 
-v4l2_event_frame_sync._fields_ = [("frame_sequence", cuint)]
+v4l2_event_frame_sync._fields_ = [("frame_sequence", clib.c_uint)]
 
 
-class v4l2_event_src_change(Struct):
+class v4l2_event_src_change(clib.Structure):
     pass
 
 
-v4l2_event_src_change._fields_ = [("changes", cuint)]
+v4l2_event_src_change._fields_ = [("changes", clib.c_uint)]
 
 
-class v4l2_event_motion_det(Struct):
+class v4l2_event_motion_det(clib.Structure):
     pass
 
 
-v4l2_event_motion_det._fields_ = [("flags", cuint), ("frame_sequence", cuint), ("region_mask", cuint)]
+v4l2_event_motion_det._fields_ = [("flags", clib.c_uint), ("frame_sequence", clib.c_uint), ("region_mask", clib.c_uint)]
 
 
-class v4l2_event(Struct):
-    class M1(Union):
+class v4l2_event(clib.Structure):
+    class M1(clib.Union):
         pass
 
     M1._fields_ = [
@@ -3810,250 +3811,250 @@ class v4l2_event(Struct):
         ("frame_sync", v4l2_event_frame_sync),
         ("src_change", v4l2_event_src_change),
         ("motion_det", v4l2_event_motion_det),
-        ("data", cchar * 64),
+        ("data", clib.c_char * 64),
     ]
 
 
 v4l2_event._fields_ = [
-    ("type", cuint),
+    ("type", clib.c_uint),
     ("u", v4l2_event.M1),
-    ("pending", cuint),
-    ("sequence", cuint),
-    ("timestamp", timespec),
-    ("id", cuint),
-    ("reserved", cuint * 8),
+    ("pending", clib.c_uint),
+    ("sequence", clib.c_uint),
+    ("timestamp", StructTimeSpec),
+    ("id", clib.c_uint),
+    ("reserved", clib.c_uint * 8),
 ]
 
 
-class v4l2_event_subscription(Struct):
+class v4l2_event_subscription(clib.Structure):
     pass
 
 
-v4l2_event_subscription._fields_ = [("type", cuint), ("id", cuint), ("flags", cuint), ("reserved", cuint * 5)]
+v4l2_event_subscription._fields_ = [("type", clib.c_uint), ("id", clib.c_uint), ("flags", clib.c_uint), ("reserved", clib.c_uint * 5)]
 
 
-class v4l2_dbg_match(Struct):
+class v4l2_dbg_match(clib.Structure):
     _pack_ = True
 
-    class M1(Union):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("addr", cuint), ("name", cchar * 32)]
+    M1._fields_ = [("addr", clib.c_uint), ("name", clib.c_char * 32)]
 
     _anonymous_ = ("m1",)
 
 
-v4l2_dbg_match._fields_ = [("type", cuint), ("m1", v4l2_dbg_match.M1)]
+v4l2_dbg_match._fields_ = [("type", clib.c_uint), ("m1", v4l2_dbg_match.M1)]
 
 
-class v4l2_dbg_register(Struct):
+class v4l2_dbg_register(clib.Structure):
     _pack_ = True
 
 
-v4l2_dbg_register._fields_ = [("match", v4l2_dbg_match), ("size", cuint), ("reg", culonglong), ("val", culonglong)]
+v4l2_dbg_register._fields_ = [("match", v4l2_dbg_match), ("size", clib.c_uint), ("reg", clib.c_ulonglong), ("val", clib.c_ulonglong)]
 
 
-class v4l2_dbg_chip_info(Struct):
+class v4l2_dbg_chip_info(clib.Structure):
     _pack_ = True
 
 
 v4l2_dbg_chip_info._fields_ = [
     ("match", v4l2_dbg_match),
-    ("name", cchar * 32),
-    ("flags", cuint),
-    ("reserved", cuint * 32),
+    ("name", clib.c_char * 32),
+    ("flags", clib.c_uint),
+    ("reserved", clib.c_uint * 32),
 ]
 
 
-class v4l2_create_buffers(Struct):
+class v4l2_create_buffers(clib.Structure):
     pass
 
 
 v4l2_create_buffers._fields_ = [
-    ("index", cuint),
-    ("count", cuint),
-    ("memory", cuint),
+    ("index", clib.c_uint),
+    ("count", clib.c_uint),
+    ("memory", clib.c_uint),
     ("format", v4l2_format),
-    ("capabilities", cuint),
-    ("flags", cuint),
-    ("max_num_buffers", cuint),
-    ("reserved", cuint * 5),
+    ("capabilities", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("max_num_buffers", clib.c_uint),
+    ("reserved", clib.c_uint * 5),
 ]
 
 
-class v4l2_remove_buffers(Struct):
+class v4l2_remove_buffers(clib.Structure):
     pass
 
 
-v4l2_remove_buffers._fields_ = [("index", cuint), ("count", cuint), ("type", cuint), ("reserved", cuint * 13)]
+v4l2_remove_buffers._fields_ = [("index", clib.c_uint), ("count", clib.c_uint), ("type", clib.c_uint), ("reserved", clib.c_uint * 13)]
 
 
-class v4l2_mbus_framefmt(Struct):
-    class M1(Union):
+class v4l2_mbus_framefmt(clib.Structure):
+    class M1(clib.Union):
         pass
 
-    M1._fields_ = [("ycbcr_enc", u16), ("hsv_enc", u16)]
+    M1._fields_ = [("ycbcr_enc", clib.c_uint16), ("hsv_enc", clib.c_uint16)]
 
     _anonymous_ = ("m1",)
 
 
 v4l2_mbus_framefmt._fields_ = [
-    ("width", cuint),
-    ("height", cuint),
-    ("code", cuint),
-    ("field", cuint),
-    ("colorspace", cuint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
+    ("code", clib.c_uint),
+    ("field", clib.c_uint),
+    ("colorspace", clib.c_uint),
     ("m1", v4l2_mbus_framefmt.M1),
-    ("quantization", u16),
-    ("xfer_func", u16),
-    ("flags", u16),
-    ("reserved", u16 * 10),
+    ("quantization", clib.c_uint16),
+    ("xfer_func", clib.c_uint16),
+    ("flags", clib.c_uint16),
+    ("reserved", clib.c_uint16 * 10),
 ]
 
 
-class v4l2_subdev_format(Struct):
+class v4l2_subdev_format(clib.Structure):
     pass
 
 
 v4l2_subdev_format._fields_ = [
-    ("which", cuint),
-    ("pad", cuint),
+    ("which", clib.c_uint),
+    ("pad", clib.c_uint),
     ("format", v4l2_mbus_framefmt),
-    ("stream", cuint),
-    ("reserved", cuint * 7),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_crop(Struct):
+class v4l2_subdev_crop(clib.Structure):
     pass
 
 
 v4l2_subdev_crop._fields_ = [
-    ("which", cuint),
-    ("pad", cuint),
+    ("which", clib.c_uint),
+    ("pad", clib.c_uint),
     ("rect", v4l2_rect),
-    ("stream", cuint),
-    ("reserved", cuint * 7),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_mbus_code_enum(Struct):
+class v4l2_subdev_mbus_code_enum(clib.Structure):
     pass
 
 
 v4l2_subdev_mbus_code_enum._fields_ = [
-    ("pad", cuint),
-    ("index", cuint),
-    ("code", cuint),
-    ("which", cuint),
-    ("flags", cuint),
-    ("stream", cuint),
-    ("reserved", cuint * 6),
+    ("pad", clib.c_uint),
+    ("index", clib.c_uint),
+    ("code", clib.c_uint),
+    ("which", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 6),
 ]
 
 
-class v4l2_subdev_frame_size_enum(Struct):
+class v4l2_subdev_frame_size_enum(clib.Structure):
     pass
 
 
 v4l2_subdev_frame_size_enum._fields_ = [
-    ("index", cuint),
-    ("pad", cuint),
-    ("code", cuint),
-    ("min_width", cuint),
-    ("max_width", cuint),
-    ("min_height", cuint),
-    ("max_height", cuint),
-    ("which", cuint),
-    ("stream", cuint),
-    ("reserved", cuint * 7),
+    ("index", clib.c_uint),
+    ("pad", clib.c_uint),
+    ("code", clib.c_uint),
+    ("min_width", clib.c_uint),
+    ("max_width", clib.c_uint),
+    ("min_height", clib.c_uint),
+    ("max_height", clib.c_uint),
+    ("which", clib.c_uint),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_frame_interval(Struct):
+class v4l2_subdev_frame_interval(clib.Structure):
     pass
 
 
 v4l2_subdev_frame_interval._fields_ = [
-    ("pad", cuint),
+    ("pad", clib.c_uint),
     ("interval", v4l2_fract),
-    ("stream", cuint),
-    ("which", cuint),
-    ("reserved", cuint * 7),
+    ("stream", clib.c_uint),
+    ("which", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_frame_interval_enum(Struct):
+class v4l2_subdev_frame_interval_enum(clib.Structure):
     pass
 
 
 v4l2_subdev_frame_interval_enum._fields_ = [
-    ("index", cuint),
-    ("pad", cuint),
-    ("code", cuint),
-    ("width", cuint),
-    ("height", cuint),
+    ("index", clib.c_uint),
+    ("pad", clib.c_uint),
+    ("code", clib.c_uint),
+    ("width", clib.c_uint),
+    ("height", clib.c_uint),
     ("interval", v4l2_fract),
-    ("which", cuint),
-    ("stream", cuint),
-    ("reserved", cuint * 7),
+    ("which", clib.c_uint),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_selection(Struct):
+class v4l2_subdev_selection(clib.Structure):
     pass
 
 
 v4l2_subdev_selection._fields_ = [
-    ("which", cuint),
-    ("pad", cuint),
-    ("target", cuint),
-    ("flags", cuint),
+    ("which", clib.c_uint),
+    ("pad", clib.c_uint),
+    ("target", clib.c_uint),
+    ("flags", clib.c_uint),
     ("r", v4l2_rect),
-    ("stream", cuint),
-    ("reserved", cuint * 7),
+    ("stream", clib.c_uint),
+    ("reserved", clib.c_uint * 7),
 ]
 
 
-class v4l2_subdev_capability(Struct):
+class v4l2_subdev_capability(clib.Structure):
     pass
 
 
-v4l2_subdev_capability._fields_ = [("version", cuint), ("capabilities", cuint), ("reserved", cuint * 14)]
+v4l2_subdev_capability._fields_ = [("version", clib.c_uint), ("capabilities", clib.c_uint), ("reserved", clib.c_uint * 14)]
 
 
-class v4l2_subdev_route(Struct):
+class v4l2_subdev_route(clib.Structure):
     pass
 
 
 v4l2_subdev_route._fields_ = [
-    ("sink_pad", cuint),
-    ("sink_stream", cuint),
-    ("source_pad", cuint),
-    ("source_stream", cuint),
-    ("flags", cuint),
-    ("reserved", cuint * 5),
+    ("sink_pad", clib.c_uint),
+    ("sink_stream", clib.c_uint),
+    ("source_pad", clib.c_uint),
+    ("source_stream", clib.c_uint),
+    ("flags", clib.c_uint),
+    ("reserved", clib.c_uint * 5),
 ]
 
 
-class v4l2_subdev_routing(Struct):
+class v4l2_subdev_routing(clib.Structure):
     pass
 
 
 v4l2_subdev_routing._fields_ = [
-    ("which", cuint),
-    ("len_routes", cuint),
-    ("routes", culonglong),
-    ("num_routes", cuint),
-    ("reserved", cuint * 11),
+    ("which", clib.c_uint),
+    ("len_routes", clib.c_uint),
+    ("routes", clib.c_ulonglong),
+    ("num_routes", clib.c_uint),
+    ("reserved", clib.c_uint * 11),
 ]
 
 
-class v4l2_subdev_client_capability(Struct):
+class v4l2_subdev_client_capability(clib.Structure):
     pass
 
 
-v4l2_subdev_client_capability._fields_ = [("capabilities", culonglong)]
+v4l2_subdev_client_capability._fields_ = [("capabilities", clib.c_ulonglong)]
 
 
 # STD macros are too complicated to auto generate
@@ -4089,113 +4090,113 @@ class StandardID(enum.IntFlag):
 
 
 class IOC(enum.IntEnum):
-    QUERYCAP = _IOR("V", 0, v4l2_capability)
-    ENUM_FMT = _IOWR("V", 2, v4l2_fmtdesc)
-    G_FMT = _IOWR("V", 4, v4l2_format)
-    S_FMT = _IOWR("V", 5, v4l2_format)
-    REQBUFS = _IOWR("V", 8, v4l2_requestbuffers)
-    QUERYBUF = _IOWR("V", 9, v4l2_buffer)
-    G_FBUF = _IOR("V", 10, v4l2_framebuffer)
-    S_FBUF = _IOW("V", 11, v4l2_framebuffer)
-    OVERLAY = _IOW("V", 14, cint)
-    QBUF = _IOWR("V", 15, v4l2_buffer)
-    EXPBUF = _IOWR("V", 16, v4l2_exportbuffer)
-    DQBUF = _IOWR("V", 17, v4l2_buffer)
-    STREAMON = _IOW("V", 18, cint)
-    STREAMOFF = _IOW("V", 19, cint)
-    G_PARM = _IOWR("V", 21, v4l2_streamparm)
-    S_PARM = _IOWR("V", 22, v4l2_streamparm)
-    G_STD = _IOR("V", 23, v4l2_std_id)
-    S_STD = _IOW("V", 24, v4l2_std_id)
-    ENUMSTD = _IOWR("V", 25, v4l2_standard)
-    ENUMINPUT = _IOWR("V", 26, v4l2_input)
-    G_CTRL = _IOWR("V", 27, v4l2_control)
-    S_CTRL = _IOWR("V", 28, v4l2_control)
-    G_TUNER = _IOWR("V", 29, v4l2_tuner)
-    S_TUNER = _IOW("V", 30, v4l2_tuner)
-    G_AUDIO = _IOR("V", 33, v4l2_audio)
-    S_AUDIO = _IOW("V", 34, v4l2_audio)
-    QUERYCTRL = _IOWR("V", 36, v4l2_queryctrl)
-    QUERYMENU = _IOWR("V", 37, v4l2_querymenu)
-    G_INPUT = _IOR("V", 38, cint)
-    S_INPUT = _IOWR("V", 39, cint)
-    G_EDID = _IOWR("V", 40, v4l2_edid)
-    S_EDID = _IOWR("V", 41, v4l2_edid)
-    G_OUTPUT = _IOR("V", 46, cint)
-    S_OUTPUT = _IOWR("V", 47, cint)
-    ENUMOUTPUT = _IOWR("V", 48, v4l2_output)
-    G_AUDOUT = _IOR("V", 49, v4l2_audioout)
-    S_AUDOUT = _IOW("V", 50, v4l2_audioout)
-    G_MODULATOR = _IOWR("V", 54, v4l2_modulator)
-    S_MODULATOR = _IOW("V", 55, v4l2_modulator)
-    G_FREQUENCY = _IOWR("V", 56, v4l2_frequency)
-    S_FREQUENCY = _IOW("V", 57, v4l2_frequency)
-    CROPCAP = _IOWR("V", 58, v4l2_cropcap)
-    G_CROP = _IOWR("V", 59, v4l2_crop)
-    S_CROP = _IOW("V", 60, v4l2_crop)
-    G_JPEGCOMP = _IOR("V", 61, v4l2_jpegcompression)
-    S_JPEGCOMP = _IOW("V", 62, v4l2_jpegcompression)
-    QUERYSTD = _IOR("V", 63, v4l2_std_id)
-    TRY_FMT = _IOWR("V", 64, v4l2_format)
-    ENUMAUDIO = _IOWR("V", 65, v4l2_audio)
-    ENUMAUDOUT = _IOWR("V", 66, v4l2_audioout)
-    G_PRIORITY = _IOR("V", 67, u32)  # enum v4l2_priority
-    S_PRIORITY = _IOW("V", 68, u32)  # enum v4l2_priority
-    G_SLICED_VBI_CAP = _IOWR("V", 69, v4l2_sliced_vbi_cap)
-    LOG_STATUS = _IO("V", 70)
-    G_EXT_CTRLS = _IOWR("V", 71, v4l2_ext_controls)
-    S_EXT_CTRLS = _IOWR("V", 72, v4l2_ext_controls)
-    TRY_EXT_CTRLS = _IOWR("V", 73, v4l2_ext_controls)
-    ENUM_FRAMESIZES = _IOWR("V", 74, v4l2_frmsizeenum)
-    ENUM_FRAMEINTERVALS = _IOWR("V", 75, v4l2_frmivalenum)
-    G_ENC_INDEX = _IOR("V", 76, v4l2_enc_idx)
-    ENCODER_CMD = _IOWR("V", 77, v4l2_encoder_cmd)
-    TRY_ENCODER_CMD = _IOWR("V", 78, v4l2_encoder_cmd)
-    DBG_S_REGISTER = _IOW("V", 79, v4l2_dbg_register)
-    DBG_G_REGISTER = _IOWR("V", 80, v4l2_dbg_register)
-    S_HW_FREQ_SEEK = _IOW("V", 82, v4l2_hw_freq_seek)
-    S_DV_TIMINGS = _IOWR("V", 87, v4l2_dv_timings)
-    G_DV_TIMINGS = _IOWR("V", 88, v4l2_dv_timings)
-    DQEVENT = _IOR("V", 89, v4l2_event)
-    SUBSCRIBE_EVENT = _IOW("V", 90, v4l2_event_subscription)
-    UNSUBSCRIBE_EVENT = _IOW("V", 91, v4l2_event_subscription)
-    CREATE_BUFS = _IOWR("V", 92, v4l2_create_buffers)
-    PREPARE_BUF = _IOWR("V", 93, v4l2_buffer)
-    G_SELECTION = _IOWR("V", 94, v4l2_selection)
-    S_SELECTION = _IOWR("V", 95, v4l2_selection)
-    DECODER_CMD = _IOWR("V", 96, v4l2_decoder_cmd)
-    TRY_DECODER_CMD = _IOWR("V", 97, v4l2_decoder_cmd)
-    ENUM_DV_TIMINGS = _IOWR("V", 98, v4l2_enum_dv_timings)
-    QUERY_DV_TIMINGS = _IOR("V", 99, v4l2_dv_timings)
-    DV_TIMINGS_CAP = _IOWR("V", 100, v4l2_dv_timings_cap)
-    ENUM_FREQ_BANDS = _IOWR("V", 101, v4l2_frequency_band)
-    DBG_G_CHIP_INFO = _IOWR("V", 102, v4l2_dbg_chip_info)
-    QUERY_EXT_CTRL = _IOWR("V", 103, v4l2_query_ext_ctrl)
-    REMOVE_BUFS = _IOWR("V", 104, v4l2_remove_buffers)
-    SUBDEV_QUERYCAP = _IOR("V", 0, v4l2_subdev_capability)
-    SUBDEV_G_FMT = _IOWR("V", 4, v4l2_subdev_format)
-    SUBDEV_S_FMT = _IOWR("V", 5, v4l2_subdev_format)
-    SUBDEV_G_FRAME_INTERVAL = _IOWR("V", 21, v4l2_subdev_frame_interval)
-    SUBDEV_S_FRAME_INTERVAL = _IOWR("V", 22, v4l2_subdev_frame_interval)
-    SUBDEV_ENUM_MBUS_CODE = _IOWR("V", 2, v4l2_subdev_mbus_code_enum)
-    SUBDEV_ENUM_FRAME_SIZE = _IOWR("V", 74, v4l2_subdev_frame_size_enum)
-    SUBDEV_ENUM_FRAME_INTERVAL = _IOWR("V", 75, v4l2_subdev_frame_interval_enum)
-    SUBDEV_G_CROP = _IOWR("V", 59, v4l2_subdev_crop)
-    SUBDEV_S_CROP = _IOWR("V", 60, v4l2_subdev_crop)
-    SUBDEV_G_SELECTION = _IOWR("V", 61, v4l2_subdev_selection)
-    SUBDEV_S_SELECTION = _IOWR("V", 62, v4l2_subdev_selection)
-    SUBDEV_G_ROUTING = _IOWR("V", 38, v4l2_subdev_routing)
-    SUBDEV_S_ROUTING = _IOWR("V", 39, v4l2_subdev_routing)
-    SUBDEV_G_CLIENT_CAP = _IOR("V", 101, v4l2_subdev_client_capability)
-    SUBDEV_S_CLIENT_CAP = _IOWR("V", 102, v4l2_subdev_client_capability)
-    SUBDEV_G_STD = _IOR("V", 23, v4l2_std_id)
-    SUBDEV_S_STD = _IOW("V", 24, v4l2_std_id)
-    SUBDEV_ENUMSTD = _IOWR("V", 25, v4l2_standard)
-    SUBDEV_G_EDID = _IOWR("V", 40, v4l2_edid)
-    SUBDEV_S_EDID = _IOWR("V", 41, v4l2_edid)
-    SUBDEV_QUERYSTD = _IOR("V", 63, v4l2_std_id)
-    SUBDEV_S_DV_TIMINGS = _IOWR("V", 87, v4l2_dv_timings)
-    SUBDEV_G_DV_TIMINGS = _IOWR("V", 88, v4l2_dv_timings)
-    SUBDEV_ENUM_DV_TIMINGS = _IOWR("V", 98, v4l2_enum_dv_timings)
-    SUBDEV_QUERY_DV_TIMINGS = _IOR("V", 99, v4l2_dv_timings)
-    SUBDEV_DV_TIMINGS_CAP = _IOWR("V", 100, v4l2_dv_timings_cap)
+    QUERYCAP = ioctl.IOR("V", 0, v4l2_capability)
+    ENUM_FMT = ioctl.IOWR("V", 2, v4l2_fmtdesc)
+    G_FMT = ioctl.IOWR("V", 4, v4l2_format)
+    S_FMT = ioctl.IOWR("V", 5, v4l2_format)
+    REQBUFS = ioctl.IOWR("V", 8, v4l2_requestbuffers)
+    QUERYBUF = ioctl.IOWR("V", 9, v4l2_buffer)
+    G_FBUF = ioctl.IOR("V", 10, v4l2_framebuffer)
+    S_FBUF = ioctl.IOW("V", 11, v4l2_framebuffer)
+    OVERLAY = ioctl.IOW("V", 14, clib.c_int)
+    QBUF = ioctl.IOWR("V", 15, v4l2_buffer)
+    EXPBUF = ioctl.IOWR("V", 16, v4l2_exportbuffer)
+    DQBUF = ioctl.IOWR("V", 17, v4l2_buffer)
+    STREAMON = ioctl.IOW("V", 18, clib.c_int)
+    STREAMOFF = ioctl.IOW("V", 19, clib.c_int)
+    G_PARM = ioctl.IOWR("V", 21, v4l2_streamparm)
+    S_PARM = ioctl.IOWR("V", 22, v4l2_streamparm)
+    G_STD = ioctl.IOR("V", 23, v4l2_std_id)
+    S_STD = ioctl.IOW("V", 24, v4l2_std_id)
+    ENUMSTD = ioctl.IOWR("V", 25, v4l2_standard)
+    ENUMINPUT = ioctl.IOWR("V", 26, v4l2_input)
+    G_CTRL = ioctl.IOWR("V", 27, v4l2_control)
+    S_CTRL = ioctl.IOWR("V", 28, v4l2_control)
+    G_TUNER = ioctl.IOWR("V", 29, v4l2_tuner)
+    S_TUNER = ioctl.IOW("V", 30, v4l2_tuner)
+    G_AUDIO = ioctl.IOR("V", 33, v4l2_audio)
+    S_AUDIO = ioctl.IOW("V", 34, v4l2_audio)
+    QUERYCTRL = ioctl.IOWR("V", 36, v4l2_queryctrl)
+    QUERYMENU = ioctl.IOWR("V", 37, v4l2_querymenu)
+    G_INPUT = ioctl.IOR("V", 38, clib.c_int)
+    S_INPUT = ioctl.IOWR("V", 39, clib.c_int)
+    G_EDID = ioctl.IOWR("V", 40, v4l2_edid)
+    S_EDID = ioctl.IOWR("V", 41, v4l2_edid)
+    G_OUTPUT = ioctl.IOR("V", 46, clib.c_int)
+    S_OUTPUT = ioctl.IOWR("V", 47, clib.c_int)
+    ENUMOUTPUT = ioctl.IOWR("V", 48, v4l2_output)
+    G_AUDOUT = ioctl.IOR("V", 49, v4l2_audioout)
+    S_AUDOUT = ioctl.IOW("V", 50, v4l2_audioout)
+    G_MODULATOR = ioctl.IOWR("V", 54, v4l2_modulator)
+    S_MODULATOR = ioctl.IOW("V", 55, v4l2_modulator)
+    G_FREQUENCY = ioctl.IOWR("V", 56, v4l2_frequency)
+    S_FREQUENCY = ioctl.IOW("V", 57, v4l2_frequency)
+    CROPCAP = ioctl.IOWR("V", 58, v4l2_cropcap)
+    G_CROP = ioctl.IOWR("V", 59, v4l2_crop)
+    S_CROP = ioctl.IOW("V", 60, v4l2_crop)
+    G_JPEGCOMP = ioctl.IOR("V", 61, v4l2_jpegcompression)
+    S_JPEGCOMP = ioctl.IOW("V", 62, v4l2_jpegcompression)
+    QUERYSTD = ioctl.IOR("V", 63, v4l2_std_id)
+    TRY_FMT = ioctl.IOWR("V", 64, v4l2_format)
+    ENUMAUDIO = ioctl.IOWR("V", 65, v4l2_audio)
+    ENUMAUDOUT = ioctl.IOWR("V", 66, v4l2_audioout)
+    G_PRIORITY = ioctl.IOR("V", 67, clib.c_uint32)  # enum v4l2_priority
+    S_PRIORITY = ioctl.IOW("V", 68, clib.c_uint32)  # enum v4l2_priority
+    G_SLICED_VBI_CAP = ioctl.IOWR("V", 69, v4l2_sliced_vbi_cap)
+    LOG_STATUS = ioctl.IO("V", 70)
+    G_EXT_CTRLS = ioctl.IOWR("V", 71, v4l2_ext_controls)
+    S_EXT_CTRLS = ioctl.IOWR("V", 72, v4l2_ext_controls)
+    TRY_EXT_CTRLS = ioctl.IOWR("V", 73, v4l2_ext_controls)
+    ENUM_FRAMESIZES = ioctl.IOWR("V", 74, v4l2_frmsizeenum)
+    ENUM_FRAMEINTERVALS = ioctl.IOWR("V", 75, v4l2_frmivalenum)
+    G_ENC_INDEX = ioctl.IOR("V", 76, v4l2_enc_idx)
+    ENCODER_CMD = ioctl.IOWR("V", 77, v4l2_encoder_cmd)
+    TRY_ENCODER_CMD = ioctl.IOWR("V", 78, v4l2_encoder_cmd)
+    DBG_S_REGISTER = ioctl.IOW("V", 79, v4l2_dbg_register)
+    DBG_G_REGISTER = ioctl.IOWR("V", 80, v4l2_dbg_register)
+    S_HW_FREQ_SEEK = ioctl.IOW("V", 82, v4l2_hw_freq_seek)
+    S_DV_TIMINGS = ioctl.IOWR("V", 87, v4l2_dv_timings)
+    G_DV_TIMINGS = ioctl.IOWR("V", 88, v4l2_dv_timings)
+    DQEVENT = ioctl.IOR("V", 89, v4l2_event)
+    SUBSCRIBE_EVENT = ioctl.IOW("V", 90, v4l2_event_subscription)
+    UNSUBSCRIBE_EVENT = ioctl.IOW("V", 91, v4l2_event_subscription)
+    CREATE_BUFS = ioctl.IOWR("V", 92, v4l2_create_buffers)
+    PREPARE_BUF = ioctl.IOWR("V", 93, v4l2_buffer)
+    G_SELECTION = ioctl.IOWR("V", 94, v4l2_selection)
+    S_SELECTION = ioctl.IOWR("V", 95, v4l2_selection)
+    DECODER_CMD = ioctl.IOWR("V", 96, v4l2_decoder_cmd)
+    TRY_DECODER_CMD = ioctl.IOWR("V", 97, v4l2_decoder_cmd)
+    ENUM_DV_TIMINGS = ioctl.IOWR("V", 98, v4l2_enum_dv_timings)
+    QUERY_DV_TIMINGS = ioctl.IOR("V", 99, v4l2_dv_timings)
+    DV_TIMINGS_CAP = ioctl.IOWR("V", 100, v4l2_dv_timings_cap)
+    ENUM_FREQ_BANDS = ioctl.IOWR("V", 101, v4l2_frequency_band)
+    DBG_G_CHIP_INFO = ioctl.IOWR("V", 102, v4l2_dbg_chip_info)
+    QUERY_EXT_CTRL = ioctl.IOWR("V", 103, v4l2_query_ext_ctrl)
+    REMOVE_BUFS = ioctl.IOWR("V", 104, v4l2_remove_buffers)
+    SUBDEV_QUERYCAP = ioctl.IOR("V", 0, v4l2_subdev_capability)
+    SUBDEV_G_FMT = ioctl.IOWR("V", 4, v4l2_subdev_format)
+    SUBDEV_S_FMT = ioctl.IOWR("V", 5, v4l2_subdev_format)
+    SUBDEV_G_FRAME_INTERVAL = ioctl.IOWR("V", 21, v4l2_subdev_frame_interval)
+    SUBDEV_S_FRAME_INTERVAL = ioctl.IOWR("V", 22, v4l2_subdev_frame_interval)
+    SUBDEV_ENUM_MBUS_CODE = ioctl.IOWR("V", 2, v4l2_subdev_mbus_code_enum)
+    SUBDEV_ENUM_FRAME_SIZE = ioctl.IOWR("V", 74, v4l2_subdev_frame_size_enum)
+    SUBDEV_ENUM_FRAME_INTERVAL = ioctl.IOWR("V", 75, v4l2_subdev_frame_interval_enum)
+    SUBDEV_G_CROP = ioctl.IOWR("V", 59, v4l2_subdev_crop)
+    SUBDEV_S_CROP = ioctl.IOWR("V", 60, v4l2_subdev_crop)
+    SUBDEV_G_SELECTION = ioctl.IOWR("V", 61, v4l2_subdev_selection)
+    SUBDEV_S_SELECTION = ioctl.IOWR("V", 62, v4l2_subdev_selection)
+    SUBDEV_G_ROUTING = ioctl.IOWR("V", 38, v4l2_subdev_routing)
+    SUBDEV_S_ROUTING = ioctl.IOWR("V", 39, v4l2_subdev_routing)
+    SUBDEV_G_CLIENT_CAP = ioctl.IOR("V", 101, v4l2_subdev_client_capability)
+    SUBDEV_S_CLIENT_CAP = ioctl.IOWR("V", 102, v4l2_subdev_client_capability)
+    SUBDEV_G_STD = ioctl.IOR("V", 23, v4l2_std_id)
+    SUBDEV_S_STD = ioctl.IOW("V", 24, v4l2_std_id)
+    SUBDEV_ENUMSTD = ioctl.IOWR("V", 25, v4l2_standard)
+    SUBDEV_G_EDID = ioctl.IOWR("V", 40, v4l2_edid)
+    SUBDEV_S_EDID = ioctl.IOWR("V", 41, v4l2_edid)
+    SUBDEV_QUERYSTD = ioctl.IOR("V", 63, v4l2_std_id)
+    SUBDEV_S_DV_TIMINGS = ioctl.IOWR("V", 87, v4l2_dv_timings)
+    SUBDEV_G_DV_TIMINGS = ioctl.IOWR("V", 88, v4l2_dv_timings)
+    SUBDEV_ENUM_DV_TIMINGS = ioctl.IOWR("V", 98, v4l2_enum_dv_timings)
+    SUBDEV_QUERY_DV_TIMINGS = ioctl.IOR("V", 99, v4l2_dv_timings)
+    SUBDEV_DV_TIMINGS_CAP = ioctl.IOWR("V", 100, v4l2_dv_timings_cap)
