@@ -20,7 +20,6 @@ Union = ctypes.Union
 sizeof = ctypes.sizeof
 cast = ctypes.cast
 memmove = ctypes.memmove
-calcsize = ctypes.calcsize
 
 
 class BaseType:

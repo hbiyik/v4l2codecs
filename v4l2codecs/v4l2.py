@@ -1877,9 +1877,9 @@ class CtrlType(enum.IntEnum):
     BITMASK = 8
     INTEGER_MENU = 9
     COMPOUND_TYPES = 256
-    clib.c_uint8 = 256
-    clib.c_uint16 = 257
-    clib.c_uint32 = 258
+    U8 = 256
+    U16 = 257
+    U32 = 258
     AREA = 262
     HDR10_CLL_INFO = 272
     HDR10_MASTERING_DISPLAY = 273
