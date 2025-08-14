@@ -52,19 +52,19 @@ class StructDevInfo(clib.Structure):
 class StructLowlevelOps(clib.Structure):
     class _callbacks_(clib.Lib):
         @clib.Lib.Signature(None, clib.c_void_p, clib.c_void_p)
-        def init(self, *args):
+        def init(self, userdata, conn):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p)
-        def init_done(self, *args):
+        def init_done(self, userdata):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p)
-        def destroy(self, *args):
+        def destroy(self, userdata):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
-        def open(self, *args):
+        def open(self, req, fi):
             return
 
         @clib.Lib.Signature(None,
@@ -72,7 +72,7 @@ class StructLowlevelOps(clib.Structure):
                             clib.c_size_t,
                             c_off_t,
                             clib.POINTER(StructFileInfo))
-        def read(self, *args):
+        def read(self, req, size, off, fi):
             return
 
         @clib.Lib.Signature(None,
@@ -81,19 +81,19 @@ class StructLowlevelOps(clib.Structure):
                             clib.c_size_t,
                             c_off_t,
                             clib.POINTER(StructFileInfo))
-        def write(self, *args):
+        def write(self, req, buf, size, off, fi):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
-        def flush(self, *args):
+        def flush(self, req, fi):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo))
-        def release(self, *args):
+        def release(self, req, fi):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p, clib.c_int, clib.POINTER(StructFileInfo))
-        def fsync(self, *args):
+        def fsync(self, req, datasync, fi):
             return
 
         @clib.Lib.Signature(None,
@@ -105,11 +105,11 @@ class StructLowlevelOps(clib.Structure):
                             clib.c_void_p,
                             clib.c_size_t,
                             clib.c_size_t)
-        def ioctl(self, *args):
+        def ioctl(self, req, cmd, arg, fi, flags, in_buf, in_buf_sz, out_buf_sz):
             return
 
         @clib.Lib.Signature(None, clib.c_void_p, clib.POINTER(StructFileInfo), clib.c_void_p)
-        def poll(self, *args):
+        def poll(self, req, fi, ph):
             return
 
     _fields_ = [
@@ -135,23 +135,23 @@ class Lib(clib.Lib):
                         clib.POINTER(StructDevInfo),
                         clib.POINTER(StructLowlevelOps),
                         clib.c_void_p)
-    def cuse_main(self, *args):
+    def cuse_main(self, argc, argv, ci, clop, userdata):
         return clib.c_int
 
     @clib.Lib.Signature("cuse_lowlevel_teardown", clib.c_void_p)
-    def cuse_teardown(self, *args):
+    def cuse_teardown(self, se):
         return
 
     @clib.Lib.Signature("fuse_reply_open", clib.c_void_p, clib.c_void_p)
-    def reply_open(self, *args):
+    def reply_open(self, req, fi):
         return
 
     @clib.Lib.Signature("fuse_reply_err", clib.c_void_p, clib.c_int)
-    def reply_err(self, *args):
+    def reply_err(self, req, err):
         return
 
     @clib.Lib.Signature("fuse_reply_none", clib.c_void_p)
-    def reply_none(self, *args):
+    def reply_none(self, req):
         return
 
     @clib.Lib.Signature("fuse_reply_ioctl",
@@ -159,7 +159,7 @@ class Lib(clib.Lib):
                         clib.c_int,
                         clib.c_void_p,
                         clib.c_size_t)
-    def reply_ioctl(self, *args):
+    def reply_ioctl(self, req, result, buf, size):
         return
 
     @clib.Lib.Signature("fuse_reply_ioctl_retry",
@@ -168,7 +168,7 @@ class Lib(clib.Lib):
                         clib.c_size_t,
                         clib.c_void_p,
                         clib.c_size_t)
-    def reply_ioctl_retry(self, *args):
+    def reply_ioctl_retry(self, req, iniov, incount, outiov, outcount):
         return clib.c_int
 
 
@@ -226,7 +226,7 @@ class CuseThread(threading.Thread):
 
     def open(self, c_req_p, c_fi):
         handler = self.handler()
-        c_fi.contents.fh = handler
+        c_fi.contents.fh = clib.c_uint64(handler)
         self.safe_callback(self.op.open, handler)
         self.handlers.append(handler)
         self.c_lib.reply_open(c_req_p, c_fi)
@@ -239,13 +239,13 @@ class CuseThread(threading.Thread):
             return errno.EIO
 
     def ioctl(self, c_req_p, c_cmd, c_arg_p, c_fi, flags, c_in_buf_p, c_in_buf_sz, c_out_buf_sz):
-        write = bool((c_cmd >> 30) & 1)
-        read = bool((c_cmd >> 31) & 1)
-        if c_cmd not in self.ioctls:
-            self.c_lib.reply_err(c_req_p, errno.EINVAL)
+        write = bool((c_cmd.value >> 30) & 1)
+        read = bool((c_cmd.value >> 31) & 1)
+        if c_cmd.value not in self.ioctls:
+            self.c_lib.reply_err(c_req_p, clib.c_int(errno.EINVAL))
             log.LOGGER.warning(f"unhandled ioctl: {c_cmd}")
             return
-        datatype = self.ioctls[c_cmd]
+        datatype = self.ioctls[c_cmd.value]
         in_iov = clib.c_void_p()
         out_iov = clib.c_void_p()
         if write and not c_in_buf_sz:
@@ -262,19 +262,19 @@ class CuseThread(threading.Thread):
             data = datatype()
             if c_in_buf_p:
                 clib.memmove(data.ref, c_in_buf_p, clib.sizeof(datatype))
-            ret = self.safe_callback(self.op.ioctl_read, c_fi.contents.fh, c_cmd, data)
-            if ret:
+            ret = clib.c_int(self.safe_callback(self.op.ioctl, c_fi.contents.fh, c_cmd, data))
+            if ret.value:
                 self.c_lib.reply_err(c_req_p, ret)
             else:
-                self.c_lib.reply_ioctl(c_req_p, ret, data.ref, clib.sizeof(data))
+                self.c_lib.reply_ioctl(c_req_p, ret, data.ref, clib.c_size_t(clib.sizeof(data)))
             return
         log.LOGGER.warning(f"wrong ioctl response: {c_cmd}")
-        self.c_lib.reply_err(c_req_p, errno.EINVAL)
+        self.c_lib.reply_err(c_req_p, clib.c_int(errno.EINVAL))
 
     def release(self, c_req_p, c_fi):
-        handler = c_fi.contents.fh
+        handler = c_fi.contents.fh.value
         if handler not in self.handlers:
-            self.c_lib.reply_err(c_req_p, errno.EBADF)
+            self.c_lib.reply_err(c_req_p, clib.c_int(errno.EBADF))
             return
         self.handlers.remove(handler)
-        self.c_lib.reply_err(c_req_p, 0)
+        self.c_lib.reply_err(c_req_p, clib.c_int(0))

@@ -21,6 +21,7 @@ from v4l2codecs.fuse import Cuse
 from v4l2codecs import log
 from v4l2codecs import defs
 from v4l2codecs import v4l2
+from v4l2codecs import clib
 
 
 class Device(Cuse):
@@ -80,20 +81,20 @@ class Device(Cuse):
                 return f_type, f_format, f_flags
 
     def ioctl_querycap(self, data):
-        data.driver = f"ffmpeg-{self.name}".encode()
-        data.card = f"/dev/{self.devname}".encode()
-        data.bus_info = f"platform:{self.devname}".encode()
-        data.version = defs.VERSION_INT
-        data.capabilities = v4l2.Capability.VIDEO_CAPTURE | \
-                            v4l2.Capability.VIDEO_M2M | \
-                            v4l2.Capability.EXT_PIX_FORMAT | \
-                            v4l2.Capability.DEVICE_CAPS | \
-                            v4l2.Capability.RDS_CAPTURE | \
-                            v4l2.Capability.STREAMING
-        data.device_caps = v4l2.Capability.VIDEO_CAPTURE | \
-                           v4l2.Capability.VIDEO_M2M | \
-                           v4l2.Capability.RDS_CAPTURE | \
-                           v4l2.Capability.STREAMING
+        clib.arrset(data.driver, f"ffmpeg-{self.name}".encode())
+        clib.arrset(data.card, f"/dev/{self.devname}".encode())
+        clib.arrset(data.bus_info, f"platform:{self.devname}".encode())
+        data.version.value = defs.VERSION_INT
+        data.capabilities.value = v4l2.Capability.VIDEO_CAPTURE | \
+                                v4l2.Capability.VIDEO_M2M | \
+                                v4l2.Capability.EXT_PIX_FORMAT | \
+                                v4l2.Capability.DEVICE_CAPS | \
+                                v4l2.Capability.RDS_CAPTURE | \
+                                v4l2.Capability.STREAMING
+        data.device_caps.value = v4l2.Capability.VIDEO_CAPTURE | \
+                                 v4l2.Capability.VIDEO_M2M | \
+                                 v4l2.Capability.RDS_CAPTURE | \
+                                 v4l2.Capability.STREAMING
         return 0
 
     def ioctl_enum_fmt(self, data):
@@ -132,9 +133,9 @@ class Device(Cuse):
     def ioctl_querybuf(self, data):
         return 0
 
-    def ioctl_read(self, handler, cmd, data):
+    def ioctl(self, handler, cmd, data):
         try:
-            ioctl_cmd = v4l2.IOC(cmd)
+            ioctl_cmd = v4l2.IOC(cmd.value)
         except ValueError:
             log.LOGGER.warning(f"unknown ioctl {cmd}")
             return errno.EINVAL

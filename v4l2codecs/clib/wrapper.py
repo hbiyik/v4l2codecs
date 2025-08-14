@@ -22,6 +22,11 @@ cast = ctypes.cast
 memmove = ctypes.memmove
 
 
+def arrset(typ, val):
+    for i, v in enumerate(val):
+        typ[i].value = v
+
+
 class BaseType:
     @property
     def ref(self):
