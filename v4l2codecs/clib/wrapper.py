@@ -214,7 +214,7 @@ def POINTER(typ):
 
 
 # combination of enum module and ctype int
-class c_intenum(c_int):
+class c_baseenum:
     _enum_ = None
 
     @property
@@ -235,3 +235,11 @@ class c_intenum(c_int):
         if isinstance(value, c_int):
             return value.value == self.value
         return c_int.__eq__(self, value)
+
+
+class c_intenum(c_int, c_baseenum):
+    pass
+
+
+class c_uintenum(c_uint, c_baseenum):
+    pass

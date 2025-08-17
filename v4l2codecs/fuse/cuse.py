@@ -247,15 +247,19 @@ class CuseThread(threading.Thread):
             return
         datatype = self.ioctls[c_cmd.value]
         in_iov = clib.c_void_p()
+        in_iovs = 0
         out_iov = clib.c_void_p()
+        out_iovs = 0
         if write and not c_in_buf_sz.value:
             in_iov = StructIoVec(c_arg_p, clib.c_size_t(clib.sizeof(datatype))).ref
+            in_iovs += 1
         if read and not c_out_buf_sz.value:
             out_iov = StructIoVec(c_arg_p, clib.c_size_t(clib.sizeof(datatype))).ref
-        if in_iov or out_iov:
+            out_iovs += 1
+        if in_iovs or out_iovs:
             self.c_lib.reply_ioctl_retry(c_req_p,
-                                         in_iov, clib.c_size_t(int(bool(in_iov))),
-                                         out_iov, clib.c_size_t(int(bool(out_iov))),)
+                                         in_iov, clib.c_size_t(in_iovs),
+                                         out_iov, clib.c_size_t(out_iovs))
             return
 
         if read or write:

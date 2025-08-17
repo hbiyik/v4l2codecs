@@ -25,16 +25,20 @@ from v4l2codecs import clib
 
 
 class Device(Cuse):
-    ioctls = {v4l2.IOC.QUERYCAP: v4l2.v4l2_capability,
-              v4l2.IOC.ENUM_FMT: v4l2.v4l2_fmtdesc,
-              v4l2.IOC.TRY_FMT: v4l2.v4l2_format,
-              v4l2.IOC.S_FMT: v4l2.v4l2_format,
-              v4l2.IOC.G_FMT: v4l2.v4l2_format,
+    ioctls = {v4l2.IOC.QUERYCAP: v4l2.StructCapability,
+              v4l2.IOC.ENUM_FMT: v4l2.StructFmtDesc,
+              v4l2.IOC.TRY_FMT: v4l2.StructFormat,
+              v4l2.IOC.S_FMT: v4l2.StructFormat,
+              v4l2.IOC.G_FMT: v4l2.StructFormat,
               v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers,
               v4l2.IOC.QUERYBUF: v4l2.v4l2_buffer}
 
-    formats = [(v4l2.BufType.VIDEO_CAPTURE, v4l2.EnumPixelFormat._enum_.NV12, 0),
-               (v4l2.BufType.VIDEO_OUTPUT, v4l2.EnumPixelFormat._enum_.H264, v4l2.ImageFormatFlag.COMPRESSED)]
+    formats = [(v4l2.BufType.VIDEO_CAPTURE,
+                v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.NV12),
+                v4l2.FlagImageFormat(0)),
+               (v4l2.BufType.VIDEO_OUTPUT,
+                v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.H264),
+                v4l2.FlagImageFormat(v4l2.FlagImageFormat._enum_.COMPRESSED))]
 
     def __init__(self):
         self.name = "mpp"
@@ -85,22 +89,22 @@ class Device(Cuse):
         clib.arrset(data.card, f"/dev/{self.devname}".encode())
         clib.arrset(data.bus_info, f"platform:{self.devname}".encode())
         data.version.value = defs.VERSION_INT
-        data.capabilities.value = v4l2.Capability.VIDEO_CAPTURE | \
-                                v4l2.Capability.VIDEO_M2M | \
-                                v4l2.Capability.EXT_PIX_FORMAT | \
-                                v4l2.Capability.DEVICE_CAPS | \
-                                v4l2.Capability.RDS_CAPTURE | \
-                                v4l2.Capability.STREAMING
-        data.device_caps.value = v4l2.Capability.VIDEO_CAPTURE | \
-                                 v4l2.Capability.VIDEO_M2M | \
-                                 v4l2.Capability.RDS_CAPTURE | \
-                                 v4l2.Capability.STREAMING
+        data.capabilities.value = v4l2.EnumCapability.VIDEO_CAPTURE | \
+                                  v4l2.EnumCapability.VIDEO_M2M | \
+                                  v4l2.EnumCapability.EXT_PIX_FORMAT | \
+                                  v4l2.EnumCapability.DEVICE_CAPS | \
+                                  v4l2.EnumCapability.RDS_CAPTURE | \
+                                  v4l2.EnumCapability.STREAMING
+        data.device_caps.value = v4l2.EnumCapability.VIDEO_CAPTURE | \
+                                 v4l2.EnumCapability.VIDEO_M2M | \
+                                 v4l2.EnumCapability.RDS_CAPTURE | \
+                                 v4l2.EnumCapability.STREAMING
         return 0
 
-    def ioctl_enum_fmt(self, data):
-        if not data.index < len(self.formats):
+    def ioctl_enum_fmt(self, fmtdesc):
+        if not fmtdesc.index.value < len(self.formats):
             return errno.EINVAL
-        data.type, data.pixelformat, data.flags = self.formats[data.index]
+        fmtdesc.type.value, fmtdesc.pixelformat, fmtdesc.flags = self.formats[fmtdesc.index.value]
         return 0
 
     def ioctl_g_fmt(self, data):
