@@ -1764,7 +1764,7 @@ class Field(enum.IntEnum):
     INTERLACED_BT = 9
 
 
-class BufType(enum.IntEnum):
+class EnumBufferType(enum.IntEnum):
     VIDEO_CAPTURE = 1
     VIDEO_OUTPUT = 2
     VIDEO_OVERLAY = 3
@@ -2941,11 +2941,11 @@ v4l2_frmivalenum._fields_ = [
 ]
 
 
-class v4l2_timecode(clib.Structure):
+class StructTimeCode(clib.Structure):
     pass
 
 
-v4l2_timecode._fields_ = [
+StructTimeCode._fields_ = [
     ("type", clib.c_uint),
     ("flags", clib.c_uint),
     ("frames", clib.c_uint8),
@@ -2971,11 +2971,11 @@ v4l2_jpegcompression._fields_ = [
 ]
 
 
-class v4l2_requestbuffers(clib.Structure):
+class StructRequestBuffers(clib.Structure):
     pass
 
 
-v4l2_requestbuffers._fields_ = [
+StructRequestBuffers._fields_ = [
     ("count", clib.c_uint),
     ("type", clib.c_uint),
     ("memory", clib.c_uint),
@@ -2985,27 +2985,27 @@ v4l2_requestbuffers._fields_ = [
 ]
 
 
-class v4l2_plane(clib.Structure):
+class StructPlane(clib.Structure):
     class M1(clib.Union):
         pass
 
     M1._fields_ = [("mem_offset", clib.c_uint), ("userptr", clib.c_ulong), ("fd", clib.c_int)]
 
 
-v4l2_plane._fields_ = [
+StructPlane._fields_ = [
     ("bytesused", clib.c_uint),
     ("length", clib.c_uint),
-    ("m", v4l2_plane.M1),
+    ("m", StructPlane.M1),
     ("data_offset", clib.c_uint),
     ("reserved", clib.c_uint * 11),
 ]
 
 
-class v4l2_buffer(clib.Structure):
+class StructBuffer(clib.Structure):
     class M1(clib.Union):
         pass
 
-    M1._fields_ = [("offset", clib.c_uint), ("userptr", clib.c_ulong), ("planes", clib.POINTER(v4l2_plane)), ("fd", clib.c_int)]
+    M1._fields_ = [("offset", clib.c_uint), ("userptr", clib.c_ulong), ("planes", clib.POINTER(StructPlane)), ("fd", clib.c_int)]
 
     class M2(clib.Union):
         pass
@@ -3015,20 +3015,20 @@ class v4l2_buffer(clib.Structure):
     _anonymous_ = ("m2",)
 
 
-v4l2_buffer._fields_ = [
+StructBuffer._fields_ = [
     ("index", clib.c_uint),
     ("type", clib.c_uint),
     ("bytesused", clib.c_uint),
     ("flags", clib.c_uint),
     ("field", clib.c_uint),
     ("timestamp", StructTimeval),
-    ("timecode", v4l2_timecode),
+    ("timecode", StructTimeCode),
     ("sequence", clib.c_uint),
     ("memory", clib.c_uint),
-    ("m", v4l2_buffer.M1),
+    ("m", StructBuffer.M1),
     ("length", clib.c_uint),
     ("reserved2", clib.c_uint),
-    ("m2", v4l2_buffer.M2),
+    ("m2", StructBuffer.M2),
 ]
 
 
@@ -4094,14 +4094,14 @@ class IOC(enum.IntEnum):
     ENUM_FMT = ioctl.IOWR("V", 2, v4l2_fmtdesc)
     G_FMT = ioctl.IOWR("V", 4, StructFormat)
     S_FMT = ioctl.IOWR("V", 5, StructFormat)
-    REQBUFS = ioctl.IOWR("V", 8, v4l2_requestbuffers)
-    QUERYBUF = ioctl.IOWR("V", 9, v4l2_buffer)
+    REQBUFS = ioctl.IOWR("V", 8, StructRequestBuffers)
+    QUERYBUF = ioctl.IOWR("V", 9, StructBuffer)
     G_FBUF = ioctl.IOR("V", 10, v4l2_framebuffer)
     S_FBUF = ioctl.IOW("V", 11, v4l2_framebuffer)
     OVERLAY = ioctl.IOW("V", 14, clib.c_int)
-    QBUF = ioctl.IOWR("V", 15, v4l2_buffer)
+    QBUF = ioctl.IOWR("V", 15, StructBuffer)
     EXPBUF = ioctl.IOWR("V", 16, v4l2_exportbuffer)
-    DQBUF = ioctl.IOWR("V", 17, v4l2_buffer)
+    DQBUF = ioctl.IOWR("V", 17, StructBuffer)
     STREAMON = ioctl.IOW("V", 18, clib.c_int)
     STREAMOFF = ioctl.IOW("V", 19, clib.c_int)
     G_PARM = ioctl.IOWR("V", 21, v4l2_streamparm)
@@ -4161,7 +4161,7 @@ class IOC(enum.IntEnum):
     SUBSCRIBE_EVENT = ioctl.IOW("V", 90, v4l2_event_subscription)
     UNSUBSCRIBE_EVENT = ioctl.IOW("V", 91, v4l2_event_subscription)
     CREATE_BUFS = ioctl.IOWR("V", 92, v4l2_create_buffers)
-    PREPARE_BUF = ioctl.IOWR("V", 93, v4l2_buffer)
+    PREPARE_BUF = ioctl.IOWR("V", 93, StructBuffer)
     G_SELECTION = ioctl.IOWR("V", 94, v4l2_selection)
     S_SELECTION = ioctl.IOWR("V", 95, v4l2_selection)
     DECODER_CMD = ioctl.IOWR("V", 96, v4l2_decoder_cmd)

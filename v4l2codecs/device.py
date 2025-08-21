@@ -30,15 +30,15 @@ class Device(Cuse):
               v4l2.IOC.TRY_FMT: v4l2.StructFormat,
               v4l2.IOC.S_FMT: v4l2.StructFormat,
               v4l2.IOC.G_FMT: v4l2.StructFormat,
-              v4l2.IOC.REQBUFS: v4l2.v4l2_requestbuffers,
-              v4l2.IOC.QUERYBUF: v4l2.v4l2_buffer}
+              v4l2.IOC.REQBUFS: v4l2.StructRequestBuffers,
+              v4l2.IOC.QUERYBUF: v4l2.StructBuffer}
 
-    formats = [(v4l2.BufType.VIDEO_CAPTURE,
+    formats = [(v4l2.EnumBufferType.VIDEO_CAPTURE,
                 v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.NV12),
-                v4l2.FlagImageFormat(0)),
-               (v4l2.BufType.VIDEO_OUTPUT,
+                v4l2.FlagFormat(0)),
+               (v4l2.EnumBufferType.VIDEO_OUTPUT,
                 v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.H264),
-                v4l2.FlagImageFormat(v4l2.FlagImageFormat._enum_.COMPRESSED))]
+                v4l2.FlagFormat(v4l2.FlagFormat._enum_.COMPRESSED))]
 
     def __init__(self):
         self.name = "mpp"
@@ -89,16 +89,16 @@ class Device(Cuse):
         clib.arrset(data.card, f"/dev/{self.devname}".encode())
         clib.arrset(data.bus_info, f"platform:{self.devname}".encode())
         data.version.value = defs.VERSION_INT
-        data.capabilities.value = v4l2.EnumCapability.VIDEO_CAPTURE | \
-                                  v4l2.EnumCapability.VIDEO_M2M | \
-                                  v4l2.EnumCapability.EXT_PIX_FORMAT | \
-                                  v4l2.EnumCapability.DEVICE_CAPS | \
-                                  v4l2.EnumCapability.RDS_CAPTURE | \
-                                  v4l2.EnumCapability.STREAMING
-        data.device_caps.value = v4l2.EnumCapability.VIDEO_CAPTURE | \
-                                 v4l2.EnumCapability.VIDEO_M2M | \
-                                 v4l2.EnumCapability.RDS_CAPTURE | \
-                                 v4l2.EnumCapability.STREAMING
+        data.capabilities.value = v4l2.FlagCapability.VIDEO_CAPTURE | \
+                                  v4l2.FlagCapability.VIDEO_M2M | \
+                                  v4l2.FlagCapability.EXT_PIX_FORMAT | \
+                                  v4l2.FlagCapability.DEVICE_CAPS | \
+                                  v4l2.FlagCapability.RDS_CAPTURE | \
+                                  v4l2.FlagCapability.STREAMING
+        data.device_caps.value = v4l2.FlagCapability.VIDEO_CAPTURE | \
+                                 v4l2.FlagCapability.VIDEO_M2M | \
+                                 v4l2.FlagCapability.RDS_CAPTURE | \
+                                 v4l2.FlagCapability.STREAMING
         return 0
 
     def ioctl_enum_fmt(self, fmtdesc):
