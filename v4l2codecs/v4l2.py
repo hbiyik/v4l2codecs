@@ -28,39 +28,52 @@ def fourcc_be(a, b, c, d):
     return (fourcc(a, b, c, d)) | (1 << 31)
 
 
-class EnumCapability(clib.c_uintenum):
-    class _enum_(enum.IntEnum):
-        VIDEO_CAPTURE = 0x00000001  # Is a video capture device
-        VIDEO_OUTPUT = 0x00000002  # Is a video output device
-        VIDEO_OVERLAY = 0x00000004  # Can do video overlay
-        VBI_CAPTURE = 0x00000010  # Is a raw VBI capture device
-        VBI_OUTPUT = 0x00000020  # Is a raw VBI output device
-        SLICED_VBI_CAPTURE = 0x00000040  # Is a sliced VBI capture device
-        SLICED_VBI_OUTPUT = 0x00000080  # Is a sliced VBI output device
-        RDS_CAPTURE = 0x00000100  # RDS data capture
-        VIDEO_OUTPUT_OVERLAY = 0x00000200  # Can do video output overlay
-        HW_FREQ_SEEK = 0x00000400  # Can do hardware frequency seek
-        RDS_OUTPUT = 0x00000800  # Is an RDS encoder
-        VIDEO_CAPTURE_MPLANE = 0x1000
-        VIDEO_OUTPUT_MPLANE = 0x2000
-        VIDEO_M2M_MPLANE = 0x4000
-        VIDEO_M2M = 0x8000
-        TUNER = 0x00010000  # has a tuner
-        AUDIO = 0x00020000  # has audio support
-        RADIO = 0x00040000  # is a radio device
-        MODULATOR = 0x00080000  # has a modulator
-        SDR_CAPTURE = 0x00100000  # Is a SDR capture device
-        EXT_PIX_FORMAT = 0x00200000  # Supports the extended pixel format
-        SDR_OUTPUT = 0x00400000  # Is a SDR output device
-        META_CAPTURE = 0x00800000  # Is a metadata capture device
-        READWRITE = 0x01000000  # read/write systemcalls
-        STREAMING = 0x04000000  # streaming I/O ioctls
-        META_OUTPUT = 0x08000000  # Is a metadata output device
-        TOUCH = 0x10000000  # Is a touch device
-        IO_MC = 0x20000000  # Is input/output controlled by the media controller
-        DEVICE_CAPS = 0x80000000  # sets device capabilities field
-        TIMEPERFRAME = 0x1000  # timeperframe field is supported
-        ASYNCIO = 0x2000000
+class FlagCapability(clib.c_uintenum):
+    class _enum_(enum.IntFlag):
+        VIDEO_CAPTURE = 1 << 0  # Is a video capture device
+        VIDEO_OUTPUT = 1 << 1  # Is a video output device
+        VIDEO_OVERLAY = 1 << 2  # Can do video overlay
+        VBI_CAPTURE = 1 << 4  # Is a raw VBI capture device
+        VBI_OUTPUT = 1 << 5  # Is a raw VBI output device
+        SLICED_VBI_CAPTURE = 1 << 6  # Is a sliced VBI capture device
+        SLICED_VBI_OUTPUT = 1 << 7  # Is a sliced VBI output device
+        RDS_CAPTURE = 1 << 8  # RDS data capture
+        VIDEO_OUTPUT_OVERLAY = 1 << 9  # Can do video output overlay
+        HW_FREQ_SEEK = 1 << 10  # Can do hardware frequency seek
+        RDS_OUTPUT = 1 << 11  # Is an RDS encoder
+        VIDEO_CAPTURE_MPLANE = 1 << 12
+        VIDEO_OUTPUT_MPLANE = 1 << 13
+        VIDEO_M2M_MPLANE = 1 << 14
+        VIDEO_M2M = 1 << 15
+        TUNER = 1 << 16  # has a tuner
+        AUDIO = 1 << 17  # has audio support
+        RADIO = 1 << 18  # is a radio device
+        MODULATOR = 1 << 19  # has a modulator
+        SDR_CAPTURE = 1 << 20  # Is a SDR capture device
+        EXT_PIX_FORMAT = 1 << 21  # Supports the extended pixel format
+        SDR_OUTPUT = 1 << 22  # Is a SDR output device
+        META_CAPTURE = 1 << 23  # Is a metadata capture device
+        READWRITE = 1 << 24  # read/write systemcalls
+        STREAMING = 1 << 26  # streaming I/O ioctls
+        META_OUTPUT = 1 << 27  # Is a metadata output device
+        TOUCH = 1 << 28  # Is a touch device
+        IO_MC = 1 << 29  # Is input/output controlled by the media controller
+        DEVICE_CAPS = 1 << 31  # sets device capabilities field
+
+
+class FlagFormat(clib.c_uintenum):
+    class _enum_(enum.IntFlag):
+        COMPRESSED = 1 << 0
+        EMULATED = 1 << 1
+        CONTINUOUS_BYTESTREAM = 1 << 2
+        DYN_RESOLUTION = 1 << 3
+        ENC_CAP_FRAME_INTERVAL = 1 << 4
+        CSC_COLORSPACE = 1 << 5
+        CSC_XFER_FUNC = 1 << 6
+        CSC_YCBCR_ENC = 1 << 7
+        CSC_HSV_ENC = CSC_YCBCR_ENC
+        CSC_QUANTIZATION = 1 << 8
+        META_LINE_BASED = 1 << 9
 
 
 class EnumPixelFormat(clib.c_uintenum):
@@ -300,10 +313,28 @@ class EnumPixelFormat(clib.c_uintenum):
         SUNXI_TILED_NV12 = NV12_32L32
 
 
-class FlagPixelFormat(clib.c_uintenum):
+class FlagPixelFormat(clib.c_uint8enum):
     class _enum_(enum.IntFlag):
-        PREMUL_ALPHA = 0x1
-        SET_CSC = 0x2
+        PREMUL_ALPHA = 1 << 0
+        SET_CSC = 1 << 1
+
+
+class FlagBufferCapability(clib.c_uint8enum):
+    class _enum_(enum.IntFlag):
+        MMAP = 1 << 0
+        USERPTR = 1 << 1
+        DMABUF = 1 << 2
+        REQUESTS = 1 << 3
+        ORPHANED_BUFS = 1 << 4
+        M2M_HOLD_CAPTURE_BUF = 1 << 5
+        MMAP_CACHE_HINTS = 1 << 6
+        MAX_NUM_BUFFERS = 1 << 7
+        REMOVE_BUFS = 1 << 8
+
+
+class FlagBuffer(clib.c_uint8enum):
+    class _enum_(enum.IntFlag):
+        NON_COHERENT = 1 << 0
 
 
 class FlagVbi(clib.c_uintenum):
@@ -316,7 +347,7 @@ class FlagVbi(clib.c_uintenum):
         ITU_625_F2_START = 314
 
 
-class EnumYcbcrEncoding(clib.c_uintenum):
+class EnumYcbcrEncoding(clib.c_uint8enum):
     class _enum_(enum.IntEnum):
         DEFAULT = 0
         _601 = 1
@@ -329,20 +360,20 @@ class EnumYcbcrEncoding(clib.c_uintenum):
         SMPTE240M = 8
 
 
-class EnumHsvEncoding(clib.c_uintenum):
+class EnumHsvEncoding(clib.c_uint8enum):
     class _enum_(enum.IntEnum):
         _180 = 128
         _256 = 129
 
 
-class EnumQuantization(clib.c_uintenum):
+class EnumQuantization(clib.c_uint8enum):
     class _enum_(enum.IntEnum):
         DEFAULT = 0
         FULL_RANGE = 1
         LIM_RANGE = 2
 
 
-class EnumXferFunc(clib.c_uintenum):
+class EnumXferFunc(clib.c_uint8enum):
     class _enum_(enum.IntEnum):
         DEFAULT = 0
         _709 = 1
@@ -385,23 +416,56 @@ class EnumColorSpace(clib.c_uintenum):
         DCI_P3 = 12
 
 
+class EnumBufferType(clib.c_uintenum):
+    class _enum_(enum.IntEnum):
+        VIDEO_CAPTURE = 1
+        VIDEO_OUTPUT = 2
+        VIDEO_OVERLAY = 3
+        VBI_CAPTURE = 4
+        VBI_OUTPUT = 5
+        SLICED_VBI_CAPTURE = 6
+        SLICED_VBI_OUTPUT = 7
+        VIDEO_OUTPUT_OVERLAY = 8
+        VIDEO_CAPTURE_MPLANE = 9
+        VIDEO_OUTPUT_MPLANE = 10
+        SDR_CAPTURE = 11
+        SDR_OUTPUT = 12
+        META_CAPTURE = 13
+        META_OUTPUT = 14
+
+
+class EnumMemory(clib.c_uintenum):
+    class _enum_(enum.IntEnum):
+        MMAP = 1
+        USERPTR = 2
+        OVERLAY = 3
+        DMABUF = 4
+
+
+class StructTimeval(clib.Structure):
+    _fields_ = [
+        ("secs", clib.c_long),
+        ("usecs", clib.c_long),
+    ]
+
+
 class StructCapability(clib.Structure):
     _fields_ = [
         ("driver", clib.c_char * 16),
         ("card", clib.c_char * 32),
         ("bus_info", clib.c_char * 32),
         ("version", clib.c_uint),
-        ("capabilities", EnumCapability),
-        ("device_caps", EnumCapability),
+        ("capabilities", FlagCapability),
+        ("device_caps", FlagCapability),
         ("reserved", clib.c_uint * 3),
     ]
 
 
-class StructFmtdesc(clib.Structure):
+class StructFmtDesc(clib.Structure):
     _fields_ = [
         ("index", clib.c_uint),
-        ("type", clib.c_uint),
-        ("flags", clib.c_uint),
+        ("type", EnumBufferType),
+        ("flags", FlagFormat),
         ("description", clib.c_char * 32),
         ("pixelformat", EnumPixelFormat),
         ("mbus_code", clib.c_uint),
@@ -531,128 +595,91 @@ class StructMetaFormat(clib.Structure):
 
 class StructFormat(clib.Structure):
     class M1(clib.Union):
-        pass
+        _fields_ = [("pix", StructPixFormat),
+                    ("pix_mp", StructPixFormatMplane),
+                    ("win", StructWindow),
+                    ("vbi", StructVbiFormat),
+                    ("sliced", StructSlicedVbiFormat),
+                    ("sdr", StructSdrFormat),
+                    ("meta", StructMetaFormat),
+                    ("raw_data", clib.c_char * 200)]
 
-    M1._fields_ = [
-        ("pix", StructPixFormat),
-        ("pix_mp", StructPixFormatMplane),
-        ("win", StructWindow),
-        ("vbi", StructVbiFormat),
-        ("sliced", StructSlicedVbiFormat),
-        ("sdr", StructSdrFormat),
-        ("meta", StructMetaFormat),
-        ("raw_data", clib.c_char * 200),
+    _fields_ = [("type", EnumBufferType),
+                ("fmt", M1)]
+
+
+class StructRequestBuffers(clib.Structure):
+    _fields_ = [
+        ("count", clib.c_uint),
+        ("type", EnumBufferType),
+        ("memory", EnumMemory),
+        ("capabilities", FlagBufferCapability),
+        ("flags", FlagBuffer),
+        ("reserved", clib.c_char * 3),
+    ]
+
+
+class StructPlane(clib.Structure):
+    class M1(clib.Union):
+        _fields_ = [("mem_offset", clib.c_uint),
+                    ("userptr", clib.c_ulong),
+                    ("fd", clib.c_int)]
+
+    _fields_ = [
+        ("bytesused", clib.c_uint),
+        ("length", clib.c_uint),
+        ("m", M1),
+        ("data_offset", clib.c_uint),
+        ("reserved", clib.c_uint * 11),
+    ]
+
+
+class StructTimeCode(clib.Structure):
+    _fields_ = [
+        ("type", clib.c_uint),
+        ("flags", clib.c_uint),
+        ("frames", clib.c_uint8),
+        ("seconds", clib.c_uint8),
+        ("minutes", clib.c_uint8),
+        ("hours", clib.c_uint8),
+        ("userbits", clib.c_char * 4),
+    ]
+
+
+class StructBuffer(clib.Structure):
+    class M1(clib.Union):
+        _fields_ = [("offset", clib.c_uint),
+                    ("userptr", clib.c_ulong),
+                    ("planes", clib.POINTER(StructPlane)),
+                    ("fd", clib.c_int)]
+
+    class M2(clib.Union):
+        _fields_ = [("request_fd", clib.c_int),
+                    ("reserved", clib.c_uint)]
+
+    _anonymous_ = ("m2",)
+    _fields_ = [
+        ("index", clib.c_uint),
+        ("type", EnumBufferType),
+        ("bytesused", clib.c_uint),
+        ("flags", clib.c_uint),
+        ("field", EnumField),
+        ("timestamp", StructTimeval),
+        ("timecode", StructTimeCode),
+        ("sequence", clib.c_uint),
+        ("memory", EnumMemory),
+        ("m", M1),
+        ("length", clib.c_uint),
+        ("reserved2", clib.c_uint),
+        ("m2", M2),
     ]
 
 
 class IOC(enum.IntEnum):
     QUERYCAP = ioctl.IOR("V", 0, StructCapability)
-    ENUM_FMT = ioctl.IOWR("V", 2, StructFmtdesc)
+    ENUM_FMT = ioctl.IOWR("V", 2, StructFmtDesc)
     G_FMT = ioctl.IOWR("V", 4, StructFormat)
     S_FMT = ioctl.IOWR("V", 5, StructFormat)
-    REQBUFS = ioctl.IOWR("V", 8, v4l2_requestbuffers)
-    QUERYBUF = ioctl.IOWR("V", 9, v4l2_buffer)
-    G_FBUF = ioctl.IOR("V", 10, v4l2_framebuffer)
-    S_FBUF = ioctl.IOW("V", 11, v4l2_framebuffer)
-    OVERLAY = ioctl.IOW("V", 14, clib.c_int)
-    QBUF = ioctl.IOWR("V", 15, v4l2_buffer)
-    EXPBUF = ioctl.IOWR("V", 16, v4l2_exportbuffer)
-    DQBUF = ioctl.IOWR("V", 17, v4l2_buffer)
-    STREAMON = ioctl.IOW("V", 18, clib.c_int)
-    STREAMOFF = ioctl.IOW("V", 19, clib.c_int)
-    G_PARM = ioctl.IOWR("V", 21, v4l2_streamparm)
-    S_PARM = ioctl.IOWR("V", 22, v4l2_streamparm)
-    G_STD = ioctl.IOR("V", 23, v4l2_std_id)
-    S_STD = ioctl.IOW("V", 24, v4l2_std_id)
-    ENUMSTD = ioctl.IOWR("V", 25, v4l2_standard)
-    ENUMINPUT = ioctl.IOWR("V", 26, v4l2_input)
-    G_CTRL = ioctl.IOWR("V", 27, v4l2_control)
-    S_CTRL = ioctl.IOWR("V", 28, v4l2_control)
-    G_TUNER = ioctl.IOWR("V", 29, v4l2_tuner)
-    S_TUNER = ioctl.IOW("V", 30, v4l2_tuner)
-    G_AUDIO = ioctl.IOR("V", 33, v4l2_audio)
-    S_AUDIO = ioctl.IOW("V", 34, v4l2_audio)
-    QUERYCTRL = ioctl.IOWR("V", 36, v4l2_queryctrl)
-    QUERYMENU = ioctl.IOWR("V", 37, v4l2_querymenu)
-    G_INPUT = ioctl.IOR("V", 38, clib.c_int)
-    S_INPUT = ioctl.IOWR("V", 39, clib.c_int)
-    G_EDID = ioctl.IOWR("V", 40, v4l2_edid)
-    S_EDID = ioctl.IOWR("V", 41, v4l2_edid)
-    G_OUTPUT = ioctl.IOR("V", 46, clib.c_int)
-    S_OUTPUT = ioctl.IOWR("V", 47, clib.c_int)
-    ENUMOUTPUT = ioctl.IOWR("V", 48, v4l2_output)
-    G_AUDOUT = ioctl.IOR("V", 49, v4l2_audioout)
-    S_AUDOUT = ioctl.IOW("V", 50, v4l2_audioout)
-    G_MODULATOR = ioctl.IOWR("V", 54, v4l2_modulator)
-    S_MODULATOR = ioctl.IOW("V", 55, v4l2_modulator)
-    G_FREQUENCY = ioctl.IOWR("V", 56, v4l2_frequency)
-    S_FREQUENCY = ioctl.IOW("V", 57, v4l2_frequency)
-    CROPCAP = ioctl.IOWR("V", 58, v4l2_cropcap)
-    G_CROP = ioctl.IOWR("V", 59, v4l2_crop)
-    S_CROP = ioctl.IOW("V", 60, v4l2_crop)
-    G_JPEGCOMP = ioctl.IOR("V", 61, v4l2_jpegcompression)
-    S_JPEGCOMP = ioctl.IOW("V", 62, v4l2_jpegcompression)
-    QUERYSTD = ioctl.IOR("V", 63, v4l2_std_id)
+    REQBUFS = ioctl.IOWR("V", 8, StructRequestBuffers)
+    QUERYBUF = ioctl.IOWR("V", 9, StructBuffer)
     TRY_FMT = ioctl.IOWR("V", 64, StructFormat)
-    ENUMAUDIO = ioctl.IOWR("V", 65, v4l2_audio)
-    ENUMAUDOUT = ioctl.IOWR("V", 66, v4l2_audioout)
-    G_PRIORITY = ioctl.IOR("V", 67, clib.c_uint32)  # enum v4l2_priority
-    S_PRIORITY = ioctl.IOW("V", 68, clib.c_uint32)  # enum v4l2_priority
-    G_SLICED_VBI_CAP = ioctl.IOWR("V", 69, v4l2_sliced_vbi_cap)
-    LOG_STATUS = ioctl.IO("V", 70)
-    G_EXT_CTRLS = ioctl.IOWR("V", 71, v4l2_ext_controls)
-    S_EXT_CTRLS = ioctl.IOWR("V", 72, v4l2_ext_controls)
-    TRY_EXT_CTRLS = ioctl.IOWR("V", 73, v4l2_ext_controls)
-    ENUM_FRAMESIZES = ioctl.IOWR("V", 74, v4l2_frmsizeenum)
-    ENUM_FRAMEINTERVALS = ioctl.IOWR("V", 75, v4l2_frmivalenum)
-    G_ENC_INDEX = ioctl.IOR("V", 76, v4l2_enc_idx)
-    ENCODER_CMD = ioctl.IOWR("V", 77, v4l2_encoder_cmd)
-    TRY_ENCODER_CMD = ioctl.IOWR("V", 78, v4l2_encoder_cmd)
-    DBG_S_REGISTER = ioctl.IOW("V", 79, v4l2_dbg_register)
-    DBG_G_REGISTER = ioctl.IOWR("V", 80, v4l2_dbg_register)
-    S_HW_FREQ_SEEK = ioctl.IOW("V", 82, v4l2_hw_freq_seek)
-    S_DV_TIMINGS = ioctl.IOWR("V", 87, v4l2_dv_timings)
-    G_DV_TIMINGS = ioctl.IOWR("V", 88, v4l2_dv_timings)
-    DQEVENT = ioctl.IOR("V", 89, v4l2_event)
-    SUBSCRIBE_EVENT = ioctl.IOW("V", 90, v4l2_event_subscription)
-    UNSUBSCRIBE_EVENT = ioctl.IOW("V", 91, v4l2_event_subscription)
-    CREATE_BUFS = ioctl.IOWR("V", 92, v4l2_create_buffers)
-    PREPARE_BUF = ioctl.IOWR("V", 93, v4l2_buffer)
-    G_SELECTION = ioctl.IOWR("V", 94, v4l2_selection)
-    S_SELECTION = ioctl.IOWR("V", 95, v4l2_selection)
-    DECODER_CMD = ioctl.IOWR("V", 96, v4l2_decoder_cmd)
-    TRY_DECODER_CMD = ioctl.IOWR("V", 97, v4l2_decoder_cmd)
-    ENUM_DV_TIMINGS = ioctl.IOWR("V", 98, v4l2_enum_dv_timings)
-    QUERY_DV_TIMINGS = ioctl.IOR("V", 99, v4l2_dv_timings)
-    DV_TIMINGS_CAP = ioctl.IOWR("V", 100, v4l2_dv_timings_cap)
-    ENUM_FREQ_BANDS = ioctl.IOWR("V", 101, v4l2_frequency_band)
-    DBG_G_CHIP_INFO = ioctl.IOWR("V", 102, v4l2_dbg_chip_info)
-    QUERY_EXT_CTRL = ioctl.IOWR("V", 103, v4l2_query_ext_ctrl)
-    REMOVE_BUFS = ioctl.IOWR("V", 104, v4l2_remove_buffers)
-    SUBDEV_QUERYCAP = ioctl.IOR("V", 0, v4l2_subdev_capability)
-    SUBDEV_G_FMT = ioctl.IOWR("V", 4, v4l2_subdev_format)
-    SUBDEV_S_FMT = ioctl.IOWR("V", 5, v4l2_subdev_format)
-    SUBDEV_G_FRAME_INTERVAL = ioctl.IOWR("V", 21, v4l2_subdev_frame_interval)
-    SUBDEV_S_FRAME_INTERVAL = ioctl.IOWR("V", 22, v4l2_subdev_frame_interval)
-    SUBDEV_ENUM_MBUS_CODE = ioctl.IOWR("V", 2, v4l2_subdev_mbus_code_enum)
-    SUBDEV_ENUM_FRAME_SIZE = ioctl.IOWR("V", 74, v4l2_subdev_frame_size_enum)
-    SUBDEV_ENUM_FRAME_INTERVAL = ioctl.IOWR("V", 75, v4l2_subdev_frame_interval_enum)
-    SUBDEV_G_CROP = ioctl.IOWR("V", 59, v4l2_subdev_crop)
-    SUBDEV_S_CROP = ioctl.IOWR("V", 60, v4l2_subdev_crop)
-    SUBDEV_G_SELECTION = ioctl.IOWR("V", 61, v4l2_subdev_selection)
-    SUBDEV_S_SELECTION = ioctl.IOWR("V", 62, v4l2_subdev_selection)
-    SUBDEV_G_ROUTING = ioctl.IOWR("V", 38, v4l2_subdev_routing)
-    SUBDEV_S_ROUTING = ioctl.IOWR("V", 39, v4l2_subdev_routing)
-    SUBDEV_G_CLIENT_CAP = ioctl.IOR("V", 101, v4l2_subdev_client_capability)
-    SUBDEV_S_CLIENT_CAP = ioctl.IOWR("V", 102, v4l2_subdev_client_capability)
-    SUBDEV_G_STD = ioctl.IOR("V", 23, v4l2_std_id)
-    SUBDEV_S_STD = ioctl.IOW("V", 24, v4l2_std_id)
-    SUBDEV_ENUMSTD = ioctl.IOWR("V", 25, v4l2_standard)
-    SUBDEV_G_EDID = ioctl.IOWR("V", 40, v4l2_edid)
-    SUBDEV_S_EDID = ioctl.IOWR("V", 41, v4l2_edid)
-    SUBDEV_QUERYSTD = ioctl.IOR("V", 63, v4l2_std_id)
-    SUBDEV_S_DV_TIMINGS = ioctl.IOWR("V", 87, v4l2_dv_timings)
-    SUBDEV_G_DV_TIMINGS = ioctl.IOWR("V", 88, v4l2_dv_timings)
-    SUBDEV_ENUM_DV_TIMINGS = ioctl.IOWR("V", 98, v4l2_enum_dv_timings)
-    SUBDEV_QUERY_DV_TIMINGS = ioctl.IOR("V", 99, v4l2_dv_timings)
-    SUBDEV_DV_TIMINGS_CAP = ioctl.IOWR("V", 100, v4l2_dv_timings_cap)

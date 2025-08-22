@@ -33,12 +33,13 @@ class Device(Cuse):
               v4l2.IOC.REQBUFS: v4l2.StructRequestBuffers,
               v4l2.IOC.QUERYBUF: v4l2.StructBuffer}
 
-    formats = [(v4l2.EnumBufferType.VIDEO_CAPTURE,
-                v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.NV12),
-                v4l2.FlagFormat(0)),
-               (v4l2.EnumBufferType.VIDEO_OUTPUT,
-                v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.H264),
-                v4l2.FlagFormat(v4l2.FlagFormat._enum_.COMPRESSED))]
+    formats = [v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_OUTPUT),
+                                  pixelformat=v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.NV12),
+                                  flags=v4l2.FlagFormat(0)),
+               v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_CAPTURE),
+                                  pixelformat=v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.H264),
+                                  flags=v4l2.FlagFormat(v4l2.FlagFormat._enum_.COMPRESSED))
+               ]
 
     def __init__(self):
         self.name = "mpp"
@@ -78,56 +79,56 @@ class Device(Cuse):
                     return major, minor
 
     def getformat(self, formats, typ=None, fmt=None, flags=None):
-        for f_type, f_format, f_flags in formats:
-            if (typ is None or f_type == typ) and \
-                    (fmt is None or f_format == fmt) and \
-                    (flags is None or f_flags == flags):
-                return f_type, f_format, f_flags
+        for fmtdesc in formats:
+            if (typ is None or fmtdesc.type.value == typ.value) and \
+                    (fmt is None or fmtdesc.pixelformat.value == fmt.value) and \
+                    (flags is None or fmtdesc.flags.value in flags.enum):
+                return fmtdesc
 
-    def ioctl_querycap(self, data):
-        clib.arrset(data.driver, f"ffmpeg-{self.name}".encode())
-        clib.arrset(data.card, f"/dev/{self.devname}".encode())
-        clib.arrset(data.bus_info, f"platform:{self.devname}".encode())
-        data.version.value = defs.VERSION_INT
-        data.capabilities.value = v4l2.FlagCapability.VIDEO_CAPTURE | \
-                                  v4l2.FlagCapability.VIDEO_M2M | \
-                                  v4l2.FlagCapability.EXT_PIX_FORMAT | \
-                                  v4l2.FlagCapability.DEVICE_CAPS | \
-                                  v4l2.FlagCapability.RDS_CAPTURE | \
-                                  v4l2.FlagCapability.STREAMING
-        data.device_caps.value = v4l2.FlagCapability.VIDEO_CAPTURE | \
-                                 v4l2.FlagCapability.VIDEO_M2M | \
-                                 v4l2.FlagCapability.RDS_CAPTURE | \
-                                 v4l2.FlagCapability.STREAMING
+    def ioctl_querycap(self, capability):
+        clib.arrset(capability.driver, f"ffmpeg-{self.name}".encode())
+        clib.arrset(capability.card, f"/dev/{self.devname}".encode())
+        clib.arrset(capability.bus_info, f"platform:{self.devname}".encode())
+        capability.version.value = defs.VERSION_INT
+        capability.capabilities = v4l2.FlagCapability(v4l2.FlagCapability._enum_.VIDEO_CAPTURE |
+                                                      v4l2.FlagCapability._enum_.VIDEO_M2M |
+                                                      v4l2.FlagCapability._enum_.EXT_PIX_FORMAT |
+                                                      v4l2.FlagCapability._enum_.DEVICE_CAPS |
+                                                      v4l2.FlagCapability._enum_.RDS_CAPTURE |
+                                                      v4l2.FlagCapability._enum_.STREAMING)
+        capability.device_caps = v4l2.FlagCapability(v4l2.FlagCapability._enum_.VIDEO_CAPTURE |
+                                                     v4l2.FlagCapability._enum_.VIDEO_M2M |
+                                                     v4l2.FlagCapability._enum_.RDS_CAPTURE |
+                                                     v4l2.FlagCapability._enum_.STREAMING)
         return 0
 
     def ioctl_enum_fmt(self, fmtdesc):
         if not fmtdesc.index.value < len(self.formats):
             return errno.EINVAL
-        fmtdesc.type.value, fmtdesc.pixelformat, fmtdesc.flags = self.formats[fmtdesc.index.value]
+        fmtdesc.type = self.formats[fmtdesc.index.value].type
+        fmtdesc.pixelformat = self.formats[fmtdesc.index.value].pixelformat
+        fmtdesc.flags = self.formats[fmtdesc.index.value].flags
         return 0
 
-    def ioctl_g_fmt(self, data):
-        fmt = self.getformat(self.formats_selected, typ=data.type)
-        if fmt:
-            _typ, fmt, flags = fmt
-            data.fmt.pix.pixelformat = fmt
-            data.fmt.pix.flags = flags
+    def ioctl_g_fmt(self, fmt):
+        getfmt = self.getformat(self.formats_selected, typ=fmt.type)
+        if getfmt is not None:
+            fmt.fmt.pix.pixelformat = getfmt.pixelformat
             return 0
         return errno.EINVAL
 
-    def ioctl_s_fmt(self, data):
-        fmt = self.getformat(self.formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
-        if fmt:
+    def ioctl_s_fmt(self, fmt):
+        setfmt = self.getformat(self.formats, typ=fmt.type, fmt=fmt.fmt.pix.pixelformat)
+        if setfmt is not None:
             # TODO: set formats by type rather than appending
             # TODO: check dims
-            self.formats_selected.append(fmt)
+            self.formats_selected.append(setfmt)
             return 0
         return errno.EINVAL
 
     def ioctl_try_fmt(self, data):
-        fmt = self.getformat(self.formats, typ=data.type, fmt=data.fmt.pix.pixelformat.value)
-        if fmt:
+        fmt = self.getformat(self.formats, typ=data.type, fmt=data.fmt.pix.pixelformat)
+        if fmt is not None:
             return 0
         return errno.EINVAL
 

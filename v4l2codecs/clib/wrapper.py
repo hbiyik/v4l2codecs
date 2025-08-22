@@ -226,7 +226,7 @@ class c_baseenum:
 
     def __str__(self):
         e = self.enum
-        return str(self.value) if e is None else e.name
+        return str(self.value) if e is None else str(e.name)
 
     def __repr__(self):
         return f"{str(self)}({self.value})"
@@ -237,9 +237,13 @@ class c_baseenum:
         return c_int.__eq__(self, value)
 
 
-class c_intenum(c_int, c_baseenum):
+class c_intenum(c_baseenum, c_int):
     pass
 
 
-class c_uintenum(c_uint, c_baseenum):
+class c_uintenum(c_baseenum, c_uint):
+    pass
+
+
+class c_uint8enum(c_baseenum, c_uint8):
     pass

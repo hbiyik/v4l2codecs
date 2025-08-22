@@ -14,16 +14,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+REMOTE_DBG = "localhost"
+# REMOTE_DBG = None
+
+if REMOTE_DBG:
+    import pydevd  # @UnresolvedImport
+    pydevd.settrace(REMOTE_DBG, stdoutToServer=True, stderrToServer=True, suspend=False)
+
 from v4l2codecs import log
 from v4l2codecs import device
 
 
 if __name__ == '__main__':
-    REMOTE_DBG = "localhost"
-    # REMOTE_DBG = None
-
-    if REMOTE_DBG:
-        import pydevd  # @UnresolvedImport
-        pydevd.settrace(REMOTE_DBG, stdoutToServer=True, stderrToServer=True, suspend=False)
     log.setlevel(log.DEBUG)
     device.Device()
