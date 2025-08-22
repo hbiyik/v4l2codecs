@@ -33,10 +33,10 @@ class Device(Cuse):
               v4l2.IOC.REQBUFS: v4l2.StructRequestBuffers,
               v4l2.IOC.QUERYBUF: v4l2.StructBuffer}
 
-    formats = [v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_OUTPUT),
+    formats = [v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_CAPTURE),
                                   pixelformat=v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.NV12),
                                   flags=v4l2.FlagFormat(0)),
-               v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_CAPTURE),
+               v4l2.StructFmtDesc(type=v4l2.EnumBufferType(v4l2.EnumBufferType._enum_.VIDEO_OUTPUT),
                                   pixelformat=v4l2.EnumPixelFormat(v4l2.EnumPixelFormat._enum_.H264),
                                   flags=v4l2.FlagFormat(v4l2.FlagFormat._enum_.COMPRESSED))
                ]
