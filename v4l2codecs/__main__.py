@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-REMOTE_DBG = "localhost"
+REMOTE_DBG = None
 # REMOTE_DBG = None
 
 if REMOTE_DBG:
