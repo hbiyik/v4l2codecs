@@ -17,11 +17,11 @@
 import os
 import fcntl
 import enum
-import ctypes
 import mmap
 
 from v4l2codecs import log
 from v4l2codecs import ioctl
+from v4l2codecs import clib
 
 
 devices = ["/dev/dma_heap/system-uncached",
@@ -34,12 +34,12 @@ devices = ["/dev/dma_heap/system-uncached",
            ]
 
 
-class dma_heap_allocation_data(ctypes.Structure):
+class dma_heap_allocation_data(clib.Structure):
     _fields_ = [
-        ('len', ctypes.c_uint64),
-        ('fd', ctypes.c_uint32),
-        ('fd_flags', ctypes.c_uint32),
-        ('heap_flags', ctypes.c_uint64),
+        ('len', clib.c_uint64),
+        ('fd', clib.c_uint32),
+        ('fd_flags', clib.c_uint32),
+        ('heap_flags', clib.c_uint64),
     ]
 
 
@@ -65,33 +65,32 @@ class Allocator():
             break
 
     def alloc(self, size):
-        data = dma_heap_allocation_data(len=size,
-                                        fd_flags=os.O_RDWR | os.O_CLOEXEC)
+        data = dma_heap_allocation_data(len=clib.c_uint64(size),
+                                        fd_flags=clib.c_uint32(os.O_RDWR | os.O_CLOEXEC))
         fcntl.ioctl(self.fd, IOC.ALLOC, data)
-        self.dma_fds[data.fd] = data, None
+        self.dma_fds[data.fd.value] = data, None
         log.LOGGER.debug(f"Allocated {data.len} bytes with fd {data.fd} on {self.path}")
-        return data.fd
+        return data.fd.value
 
     def unalloc(self, fd):
         if fd in self.dma_fds:
             self.unmap(fd)
             data, _mapped = self.dma_fds.pop(fd)
-            os.close(data.fd)
-            log.LOGGER.debug(f"Unallocated {data.len} bytes with fd {data.fd} on {self.path}")
+            os.close(data.fd.value)
+            log.LOGGER.debug(f"Unallocated {data.len.value} bytes with fd {data.fd.value} on {self.path}")
 
     def map(self, fd):
         if fd not in self.dma_fds:
             raise OSError(f"No dma fd {fd}")
         data, mapped = self.dma_fds[fd]
         if not mapped:
-            mapped = self.mmap = mmap.mmap(data.fd,
-                                           data.len,
+            mapped = self.mmap = mmap.mmap(data.fd.value,
+                                           data.len.value,
                                            mmap.MAP_SHARED,
                                            mmap.PROT_READ | mmap.PROT_WRITE,
                                            0)
-            self.dma_fds[data.fd] = data, mapped
-            addr = ctypes.addressof(ctypes.c_uint.from_buffer(mapped))
-            log.LOGGER.debug(f"Mapped {data.len} bytes with fd {data.fd} on {self.path} to address 0x{addr:x}")
+            self.dma_fds[data.fd.value] = data, mapped
+            log.LOGGER.debug(f"Mapped {data.len.value} bytes with fd {data.fd.value} on {self.path} to address 0x{mapped.ref:x}")
         return mapped
 
     def unmap(self, fd):
@@ -99,10 +98,9 @@ class Allocator():
             raise OSError(f"No dma fd {fd}")
         data, mapped = self.dma_fds[fd]
         if mapped:
-            addr = ctypes.addressof(ctypes.c_uint.from_buffer(mapped))
             mapped.close()
-            self.dma_fds[data.fd] = data, None
-            log.LOGGER.debug(f"Unmapped {data.len} bytes with fd {data.fd} on {self.path} from address 0x{addr:x}")
+            self.dma_fds[data.fd.value] = data, None
+            log.LOGGER.debug(f"Unmapped {data.len.value} bytes with fd {data.fd.value} on {self.path} from address 0x{mapped.ref:x}")
 
     def close(self):
         for fd in list(self.dma_fds):

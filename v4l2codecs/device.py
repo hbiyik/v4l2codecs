@@ -22,6 +22,7 @@ from v4l2codecs import log
 from v4l2codecs import defs
 from v4l2codecs import v4l2
 from v4l2codecs import clib
+from v4l2codecs import dma
 
 
 class Device(Cuse):
@@ -47,6 +48,7 @@ class Device(Cuse):
         self.encoder = False
         self.devname = "video0-ffmpeg-dec"
         self.formats_selected = []
+        self.allocator = None
         super().__init__(self.devname)
 
     def find_v4l2_index(self):
@@ -132,10 +134,21 @@ class Device(Cuse):
             return 0
         return errno.EINVAL
 
-    def ioctl_reqbufs(self, data):
+    def ioctl_reqbufs(self, requestbuffer):
+        buflen = 1024 * 1024 * 100
+        if not self.allocator:
+            self.allocator = dma.Allocator()
+            self.allocator.open()
+        for _i in range(requestbuffer.count.value):
+            self.allocator.alloc(buflen)
         return 0
 
-    def ioctl_querybuf(self, data):
+    def ioctl_querybuf(self, buffer):
+        fds = list(self.allocator.dma_fds.keys())
+        if buffer.index.value >= len(fds):
+            return errno.EINVAL
+        buffer.request_fd.value = fds[buffer.index.value]
+        buffer.length.value = 1024 * 1024 * 100
         return 0
 
     def ioctl(self, handler, cmd, data):
